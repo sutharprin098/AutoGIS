@@ -884,6 +884,7 @@ def tool_compute_road_route(iface, args: dict, run_on_main=None) -> dict:
 STAC_DATASETS: dict[str, tuple[str, str, str]] = {
     "dem": ("cop-dem-glo-30", "data", "Copernicus 30m DEM Elevation"),
     "elevation": ("cop-dem-glo-30", "data", "Copernicus 30m DEM Elevation"),
+    "nasadem": ("nasadem", "elevation", "NASADEM 30m Elevation"),
     "sentinel2": ("sentinel-2-l2a", "visual", "Sentinel-2 True Color (10m)"),
     "sentinel2_rgb": ("sentinel-2-l2a", "visual", "Sentinel-2 True Color (10m)"),
     "sentinel2_nir": ("sentinel-2-l2a", "B08", "Sentinel-2 NIR Band 8 (10m)"),
@@ -891,7 +892,14 @@ STAC_DATASETS: dict[str, tuple[str, str, str]] = {
     "sentinel2_green": ("sentinel-2-l2a", "B03", "Sentinel-2 Green Band 3 (10m)"),
     "sentinel2_blue": ("sentinel-2-l2a", "B02", "Sentinel-2 Blue Band 2 (10m)"),
     "sentinel2_swir": ("sentinel-2-l2a", "B11", "Sentinel-2 SWIR Band 11 (20m)"),
+    "sentinel2_swir2": ("sentinel-2-l2a", "B12", "Sentinel-2 SWIR Band 12 (20m)"),
     "lulc": ("io-lulc-annual-v02", "data", "Esri 10m Land Cover (LULC)"),
+    "landcover": ("io-lulc-annual-v02", "data", "Esri 10m Land Cover (LULC)"),
+    "landsat": ("landsat-c2-l2", "visual", "Landsat 8/9 True Color (30m)"),
+    "landsat8": ("landsat-c2-l2", "visual", "Landsat 8/9 True Color (30m)"),
+    "sar": ("sentinel-1-rtc", "vv", "Sentinel-1 10m Cloud-Penetrating SAR Radar"),
+    "sentinel1": ("sentinel-1-rtc", "vv", "Sentinel-1 10m Cloud-Penetrating SAR Radar"),
+    "radar": ("sentinel-1-rtc", "vv", "Sentinel-1 10m Cloud-Penetrating SAR Radar"),
 }
 
 
@@ -938,8 +946,7 @@ def _apply_raster_transparency(rlayer: QgsRasterLayer) -> None:
         pass
 
 
-def _apply_ndvi_style(layer: QgsRasterLayer) -> None:
-    """Style NDVI single-band raster layer with standard pseudocolor vegetation color ramp (-1 to 1)."""
+def _apply_pseudocolor_ramp(layer: QgsRasterLayer, items: list[tuple[float, str, str]]) -> None:
     try:
         from qgis.core import (
             QgsColorRampShader,
@@ -950,16 +957,11 @@ def _apply_ndvi_style(layer: QgsRasterLayer) -> None:
 
         fcn = QgsColorRampShader()
         fcn.setColorRampType(QgsColorRampShader.Interpolated)
-        items = [
-            QgsColorRampShader.ColorRampItem(-1.0, QColor(0, 0, 255), "Water (-1.0)"),
-            QgsColorRampShader.ColorRampItem(-0.05, QColor(165, 42, 42), "Barren (-0.05)"),
-            QgsColorRampShader.ColorRampItem(0.1, QColor(218, 165, 32), "Soil/Rock (0.1)"),
-            QgsColorRampShader.ColorRampItem(0.25, QColor(255, 255, 0), "Sparse Veg (0.25)"),
-            QgsColorRampShader.ColorRampItem(0.45, QColor(144, 238, 144), "Moderate Veg (0.45)"),
-            QgsColorRampShader.ColorRampItem(0.65, QColor(34, 139, 34), "Dense Veg (0.65)"),
-            QgsColorRampShader.ColorRampItem(1.0, QColor(0, 100, 0), "Very Dense Veg (1.0)"),
+        ramp_items = [
+            QgsColorRampShader.ColorRampItem(val, QColor(hex_col), label)
+            for val, hex_col, label in items
         ]
-        fcn.setColorRampItemList(items)
+        fcn.setColorRampItemList(ramp_items)
         shader = QgsRasterShader()
         shader.setRasterShaderFunction(fcn)
         renderer = QgsSingleBandPseudoColorRenderer(layer.dataProvider(), 1, shader)
@@ -969,6 +971,40 @@ def _apply_ndvi_style(layer: QgsRasterLayer) -> None:
         pass
 
 
+def _apply_ndvi_style(layer: QgsRasterLayer) -> None:
+    _apply_pseudocolor_ramp(layer, [
+        (-1.0, "#0000FF", "Water (-1.0)"),
+        (-0.05, "#A52A2A", "Barren (-0.05)"),
+        (0.1, "#DAA520", "Soil/Rock (0.1)"),
+        (0.25, "#FFFF00", "Sparse Veg (0.25)"),
+        (0.45, "#90EE90", "Moderate Veg (0.45)"),
+        (0.65, "#228B22", "Dense Veg (0.65)"),
+        (1.0, "#006400", "Very Dense Veg (1.0)"),
+    ])
+
+
+def _apply_ndwi_style(layer: QgsRasterLayer) -> None:
+    _apply_pseudocolor_ramp(layer, [
+        (-1.0, "#8B4513", "Dry/Vegetation (-1.0)"),
+        (-0.2, "#D2B48C", "Low Moisture (-0.2)"),
+        (0.0, "#E0FFFF", "Moist Soil (0.0)"),
+        (0.2, "#00BFFF", "Shallow Water (0.2)"),
+        (0.5, "#0000FF", "Water Body (0.5)"),
+        (1.0, "#000080", "Deep Water (1.0)"),
+    ])
+
+
+def _apply_ndbi_style(layer: QgsRasterLayer) -> None:
+    _apply_pseudocolor_ramp(layer, [
+        (-1.0, "#228B22", "Vegetation/Water (-1.0)"),
+        (-0.1, "#90EE90", "Open Soil (-0.1)"),
+        (0.0, "#FFFFE0", "Suburban/Mixed (0.0)"),
+        (0.2, "#FFA500", "Moderate Built-up (0.2)"),
+        (0.5, "#FF4500", "Dense Urban (0.5)"),
+        (1.0, "#800080", "High Density Built-up (1.0)"),
+    ])
+
+
 def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
     dataset_key = str(args.get("dataset") or "dem").strip().lower()
     place = str(args.get("place") or "").strip()
@@ -976,12 +1012,20 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
     max_cloud = float(args.get("max_cloud_cover") if args.get("max_cloud_cover") is not None else 20.0)
 
     is_ndvi = dataset_key in ("ndvi", "sentinel2_ndvi")
+    is_ndwi = dataset_key in ("ndwi", "sentinel2_ndwi", "water_index")
+    is_ndbi = dataset_key in ("ndbi", "sentinel2_ndbi", "builtup_index")
+    is_slope = dataset_key in ("slope", "dem_slope")
+    is_hillshade = dataset_key in ("hillshade", "dem_hillshade")
     is_bands = dataset_key in ("sentinel2_bands", "sentinel2_multispectral", "full_bands")
 
-    if is_ndvi or is_bands or dataset_key.startswith("sentinel2"):
+    if is_ndvi or is_ndwi or is_ndbi or is_bands or dataset_key.startswith("sentinel2"):
         collection = "sentinel-2-l2a"
         asset_key = STAC_DATASETS.get(dataset_key, ("sentinel-2-l2a", "visual", "Sentinel-2"))[1]
         label_prefix = "Sentinel-2"
+    elif is_slope or is_hillshade or dataset_key in ("dem", "elevation"):
+        collection = "cop-dem-glo-30"
+        asset_key = "data"
+        label_prefix = "Copernicus 30m DEM"
     elif dataset_key in STAC_DATASETS:
         collection, asset_key, label_prefix = STAC_DATASETS[dataset_key]
     else:
@@ -1003,10 +1047,14 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
         if not bbox_4326:
             return {"error": "Provide a 'place' name or 'bbox' [xmin, ymin, xmax, ymax]."}
 
+    # Target center coordinate for optimal satellite granule footprint alignment
+    cx = (bbox_4326[0] + bbox_4326[2]) / 2.0
+    cy = (bbox_4326[1] + bbox_4326[3]) / 2.0
+
     search_payload: dict[str, Any] = {
         "collections": [collection],
         "bbox": bbox_4326,
-        "limit": 5,
+        "limit": 8,
     }
     if collection == "sentinel-2-l2a":
         search_payload["query"] = {"eo:cloud_cover": {"lt": max_cloud}}
@@ -1027,96 +1075,181 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
     if not features:
         return {"error": f"No STAC items found for collection '{collection}' in bbox {bbox_4326}."}
 
-    item = features[0]
+    # Best-granule scoring: choose the item that covers the city center with maximum AOI overlap and lowest cloud cover
+    best_item = features[0]
+    best_score = -999999.0
+    for feat in features:
+        item_bb = feat.get("bbox") or []
+        cloud = float(feat.get("properties", {}).get("eo:cloud_cover", 0.0) or 0.0)
+        score = 0.0
+        if len(item_bb) == 4:
+            if item_bb[0] <= cx <= item_bb[2] and item_bb[1] <= cy <= item_bb[3]:
+                score += 2000.0
+            ix_min, iy_min = max(bbox_4326[0], item_bb[0]), max(bbox_4326[1], item_bb[1])
+            ix_max, iy_max = min(bbox_4326[2], item_bb[2]), min(bbox_4326[3], item_bb[3])
+            if ix_max > ix_min and iy_max > iy_min:
+                score += (ix_max - ix_min) * (iy_max - iy_min) * 500.0
+        score -= cloud * 10.0
+        if score > best_score:
+            best_score = score
+            best_item = feat
+
+    item = best_item
     item_id = item.get("id", "item")
     assets = item.get("properties") or {}
     item_assets = item.get("assets") or {}
     place_suffix = f" ({place.title()})" if place else ""
 
-    # ========================================================================
-    # CASE A: NDVI COMPUTATION (Loads B08 NIR & B04 Red, then calculates NDVI)
-    # ========================================================================
-    if is_ndvi:
-        b08_obj = item_assets.get("B08")
-        b04_obj = item_assets.get("B04")
-        if not b08_obj or not b04_obj:
-            return {"error": f"STAC item '{item_id}' does not have B08 (NIR) and B04 (Red) assets."}
+    # Helper to zoom canvas to AOI
+    def _zoom_canvas_to_aoi() -> None:
+        if iface and iface.mapCanvas() and args.get("zoom", True):
+            try:
+                from qgis.core import QgsRectangle
+                rect = QgsRectangle(bbox_4326[0], bbox_4326[1], bbox_4326[2], bbox_4326[3])
+                iface.mapCanvas().setExtent(rect)
+                iface.mapCanvas().refresh()
+            except Exception:
+                pass
 
-        signed_nir = _sign_planetary_computer_href(str(b08_obj["href"]))
-        signed_red = _sign_planetary_computer_href(str(b04_obj["href"]))
+    # ========================================================================
+    # CASE A: SPECTRAL INDICES (NDVI, NDWI, NDBI)
+    # ========================================================================
+    if is_ndvi or is_ndwi or is_ndbi:
+        if is_ndvi:
+            b_high_key, b_low_key = "B08", "B04"
+            idx_name = "NDVI"
+            formula = "(B08 - B04) / (B08 + B04)"
+            style_fn = _apply_ndvi_style
+        elif is_ndwi:
+            b_high_key, b_low_key = "B03", "B08"
+            idx_name = "NDWI"
+            formula = "(B03 - B08) / (B03 + B08)"
+            style_fn = _apply_ndwi_style
+        else:
+            b_high_key, b_low_key = "B11", "B08"
+            idx_name = "NDBI"
+            formula = "(B11 - B08) / (B11 + B08)"
+            style_fn = _apply_ndbi_style
 
-        def _calc_ndvi_on_main() -> dict:
+        bh_obj = item_assets.get(b_high_key)
+        bl_obj = item_assets.get(b_low_key)
+        if not bh_obj or not bl_obj:
+            return {"error": f"STAC item '{item_id}' does not have required bands {b_high_key} and {b_low_key}."}
+
+        signed_h = _sign_planetary_computer_href(str(bh_obj["href"]))
+        signed_l = _sign_planetary_computer_href(str(bl_obj["href"]))
+
+        def _calc_index_on_main() -> dict:
             from .gis_tools import _PROCESSING_LAYER_REFS
 
-            nir_name = f"Sentinel-2 NIR B08{place_suffix}"
-            red_name = f"Sentinel-2 Red B04{place_suffix}"
+            lh_name = f"Sentinel-2 {b_high_key}{place_suffix}"
+            ll_name = f"Sentinel-2 {b_low_key}{place_suffix}"
 
-            nir_layer = QgsRasterLayer(f"/vsicurl/{signed_nir}", nir_name, "gdal")
-            red_layer = QgsRasterLayer(f"/vsicurl/{signed_red}", red_name, "gdal")
+            layer_h = QgsRasterLayer(f"/vsicurl/{signed_h}", lh_name, "gdal")
+            layer_l = QgsRasterLayer(f"/vsicurl/{signed_l}", ll_name, "gdal")
 
-            if not nir_layer.isValid() or not red_layer.isValid():
-                return {"error": "Could not stream Sentinel-2 NIR/Red raster bands from STAC."}
+            if not layer_h.isValid() or not layer_l.isValid():
+                return {"error": f"Could not stream Sentinel-2 {b_high_key}/{b_low_key} bands from STAC."}
 
-            _apply_raster_transparency(nir_layer)
-            _apply_raster_transparency(red_layer)
+            _apply_raster_transparency(layer_h)
+            _apply_raster_transparency(layer_l)
 
-            _PROCESSING_LAYER_REFS.extend([nir_layer, red_layer])
-            QgsProject.instance().addMapLayer(nir_layer)
-            QgsProject.instance().addMapLayer(red_layer)
+            _PROCESSING_LAYER_REFS.extend([layer_h, layer_l])
+            QgsProject.instance().addMapLayer(layer_h)
+            QgsProject.instance().addMapLayer(layer_l)
 
-            ndvi_name = str(args.get("layer_name") or f"Sentinel-2 NDVI (10m){place_suffix}").strip()
-            ndvi_out = os.path.join(data_dir(), f"ndvi_{_safe_slug(place or item_id[:16])}.tif")
+            calc_layer_name = str(args.get("layer_name") or f"Sentinel-2 {idx_name} (10m){place_suffix}").strip()
+            out_file = os.path.join(data_dir(), f"{idx_name.lower()}_{_safe_slug(place or item_id[:16])}.tif")
 
-            ndvi_layer = None
+            calc_layer = None
             try:
                 import processing
                 calc_res = processing.run(
                     "qgis:rastercalculator",
                     {
-                        "EXPRESSION": f'("{nir_name}@1" - "{red_name}@1") / ("{nir_name}@1" + "{red_name}@1")',
-                        "LAYERS": [nir_layer, red_layer],
-                        "OUTPUT": ndvi_out,
+                        "EXPRESSION": f'("{lh_name}@1" - "{ll_name}@1") / ("{lh_name}@1" + "{ll_name}@1")',
+                        "LAYERS": [layer_h, layer_l],
+                        "OUTPUT": out_file,
                     },
                 )
-                actual_out = calc_res.get("OUTPUT", ndvi_out)
-                if os.path.exists(actual_out):
-                    ndvi_layer = QgsRasterLayer(actual_out, ndvi_name, "gdal")
+                act_out = calc_res.get("OUTPUT", out_file)
+                if os.path.exists(act_out):
+                    calc_layer = QgsRasterLayer(act_out, calc_layer_name, "gdal")
             except Exception:
                 pass
 
-            if ndvi_layer is not None and ndvi_layer.isValid():
-                _apply_raster_transparency(ndvi_layer)
-                _apply_ndvi_style(ndvi_layer)
-                _PROCESSING_LAYER_REFS.append(ndvi_layer)
-                QgsProject.instance().addMapLayer(ndvi_layer)
-                if iface and iface.mapCanvas():
-                    iface.mapCanvas().refresh()
+            if calc_layer is not None and calc_layer.isValid():
+                _apply_raster_transparency(calc_layer)
+                style_fn(calc_layer)
+                _PROCESSING_LAYER_REFS.append(calc_layer)
+                QgsProject.instance().addMapLayer(calc_layer)
+                _zoom_canvas_to_aoi()
                 return {
-                    "status": "ndvi_calculated_successfully",
-                    "ndvi_layer": ndvi_layer.name(),
-                    "ndvi_layer_id": ndvi_layer.id(),
-                    "nir_band_layer": nir_name,
-                    "red_band_layer": red_name,
-                    "formula": "(NIR - Red) / (NIR + Red)",
+                    "status": f"{idx_name.lower()}_calculated_successfully",
+                    "index": idx_name,
+                    "layer_name": calc_layer.name(),
+                    "layer_id": calc_layer.id(),
+                    "formula": formula,
                     "resolution": "10m",
                     "cloud_cover": assets.get("eo:cloud_cover"),
                     "datetime": assets.get("datetime"),
-                    "file_path": ndvi_out,
+                    "file_path": out_file,
                 }
             else:
-                if iface and iface.mapCanvas():
-                    iface.mapCanvas().refresh()
+                _zoom_canvas_to_aoi()
                 return {
-                    "status": "multispectral_bands_loaded",
-                    "nir_layer": nir_name,
-                    "red_layer": red_name,
-                    "message": f"Both Sentinel-2 NIR (B08) and Red (B04) 10m bands loaded. Use raster calculator with: ('{nir_name}@1' - '{red_name}@1') / ('{nir_name}@1' + '{red_name}@1').",
+                    "status": "bands_loaded",
+                    "band1": lh_name,
+                    "band2": ll_name,
+                    "message": f"Loaded both Sentinel-2 {b_high_key} and {b_low_key} layers for {idx_name}. Formula: ('{lh_name}@1' - '{ll_name}@1') / ('{lh_name}@1' + '{ll_name}@1').",
                 }
 
-        return run_on_main(_calc_ndvi_on_main) if callable(run_on_main) else _calc_ndvi_on_main()
+        return run_on_main(_calc_index_on_main) if callable(run_on_main) else _calc_index_on_main()
 
     # ========================================================================
-    # CASE B: MULTISPECTRAL BANDS (Loads B04, B08, B03, B02 & True Color)
+    # CASE B: TERRAIN ANALYSIS (SLOPE & HILLSHADE FROM DEM)
+    # ========================================================================
+    if is_slope or is_hillshade:
+        asset_obj = item_assets.get("data")
+        if not asset_obj or not asset_obj.get("href"):
+            return {"error": "DEM GeoTIFF asset not found."}
+        signed_dem = _sign_planetary_computer_href(str(asset_obj["href"]))
+
+        def _calc_terrain_on_main() -> dict:
+            from .gis_tools import _PROCESSING_LAYER_REFS
+            dem_name = f"Copernicus 30m DEM{place_suffix}"
+            dem_layer = QgsRasterLayer(f"/vsicurl/{signed_dem}", dem_name, "gdal")
+            if not dem_layer.isValid():
+                return {"error": "Could not stream DEM raster."}
+            _apply_raster_transparency(dem_layer)
+            _PROCESSING_LAYER_REFS.append(dem_layer)
+            QgsProject.instance().addMapLayer(dem_layer)
+
+            target_out = os.path.join(data_dir(), f"{'slope' if is_slope else 'hillshade'}_{_safe_slug(place or item_id[:16])}.tif")
+            res_layer = None
+            try:
+                import processing
+                alg = "native:slope" if is_slope else "native:hillshade"
+                p_res = processing.run(alg, {"INPUT": dem_layer, "OUTPUT": target_out})
+                out_p = p_res.get("OUTPUT", target_out)
+                if os.path.exists(out_p):
+                    res_layer = QgsRasterLayer(out_p, f"Copernicus {'Slope (Degrees)' if is_slope else 'Hillshade'}{place_suffix}", "gdal")
+            except Exception:
+                pass
+
+            if res_layer is not None and res_layer.isValid():
+                _apply_raster_transparency(res_layer)
+                _PROCESSING_LAYER_REFS.append(res_layer)
+                QgsProject.instance().addMapLayer(res_layer)
+                _zoom_canvas_to_aoi()
+                return {"status": "terrain_analysis_complete", "layer_name": res_layer.name(), "file_path": target_out}
+            _zoom_canvas_to_aoi()
+            return {"status": "dem_loaded", "layer_name": dem_layer.name()}
+
+        return run_on_main(_calc_terrain_on_main) if callable(run_on_main) else _calc_terrain_on_main()
+
+    # ========================================================================
+    # CASE C: MULTISPECTRAL BANDS (Loads B04, B08, B03, B02 & True Color)
     # ========================================================================
     if is_bands:
         band_keys = [("visual", "True Color RGB"), ("B08", "NIR Band 8"), ("B04", "Red Band 4"), ("B03", "Green Band 3"), ("B02", "Blue Band 2")]
@@ -1135,8 +1268,7 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
                         _PROCESSING_LAYER_REFS.append(rlayer)
                         QgsProject.instance().addMapLayer(rlayer)
                         loaded_info.append(lyr_name)
-            if iface and iface.mapCanvas():
-                iface.mapCanvas().refresh()
+            _zoom_canvas_to_aoi()
             return {
                 "status": "sentinel2_bands_loaded",
                 "bands_loaded": loaded_info,
@@ -1147,7 +1279,7 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
         return run_on_main(_load_all_bands_on_main) if callable(run_on_main) else _load_all_bands_on_main()
 
     # ========================================================================
-    # CASE C: STANDARD SINGLE/RGB RASTER (DEM, LULC, Visual Sentinel-2)
+    # CASE D: STANDARD SINGLE/RGB RASTER (DEM, LULC, Visual Sentinel-2, Landsat, SAR)
     # ========================================================================
     asset_obj = item_assets.get(asset_key) or next(
         (v for v in item_assets.values() if "tiff" in str(v.get("type", "")).lower()),
@@ -1165,14 +1297,12 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
         if not rlayer.isValid():
             return {"error": f"GDAL could not stream COG raster from '{signed_href[:120]}'."}
 
-        # Apply NoData transparency so outer satellite black border disappears completely!
         _apply_raster_transparency(rlayer)
 
         from .gis_tools import _PROCESSING_LAYER_REFS
         _PROCESSING_LAYER_REFS.append(rlayer)
         QgsProject.instance().addMapLayer(rlayer)
-        if iface and iface.mapCanvas():
-            iface.mapCanvas().refresh()
+        _zoom_canvas_to_aoi()
         return {
             "status": "streamed_cog_loaded",
             "collection": collection,

@@ -1578,15 +1578,15 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
         ),
         GISToolSpec(
             name="fetch_stac_earth_data",
-            description="Search and stream live Cloud-Optimized GeoTIFF (COG) Earth Observation rasters from Microsoft Planetary Computer STAC API directly into QGIS: 'dem' (Copernicus 30m Elevation DEM), 'sentinel2' (10m True Color Satellite RGB), 'sentinel2_ndvi' or 'ndvi' (Sentinel-2 10m Normalized Difference Vegetation Index & NIR/Red bands), 'sentinel2_nir' (10m NIR Band 8), 'sentinel2_red' (10m Red Band 4), 'sentinel2_bands' (full multispectral bands), or 'lulc' (Esri 10m Land Use / Land Cover).",
+            description="Search and stream live Cloud-Optimized GeoTIFF (COG) Earth Observation rasters and compute spectral/terrain indices from Microsoft Planetary Computer STAC API directly into QGIS: 'dem' (Copernicus 30m Elevation DEM), 'slope' (Slope in degrees), 'hillshade' (Hillshade relief), 'sentinel2' (10m True Color RGB), 'ndvi' (10m Vegetation Index), 'ndwi' (10m Water Bodies Index), 'ndbi' (10m Built-up Index), 'sentinel2_bands' (all bands B02, B03, B04, B08, visual), 'sar' / 'sentinel1' (10m Cloud-penetrating Radar), 'landsat' (Landsat 8/9 30m), or 'lulc' (Esri 10m Land Cover). Automatically matches the best tile covering the location center, zooms to the AOI, and renders with transparent nodata.",
             risk="write",
             parameters={
                 "type": "object",
                 "properties": {
                     "dataset": {
                         "type": "string",
-                        "enum": ["dem", "sentinel2", "sentinel2_ndvi", "ndvi", "sentinel2_nir", "sentinel2_red", "sentinel2_bands", "lulc"],
-                        "description": "'dem' for Copernicus 30m DEM, 'sentinel2' for Sentinel-2 10m True Color RGB, 'ndvi' or 'sentinel2_ndvi' to download NIR (B08) and Red (B04) and automatically calculate 10m NDVI, 'sentinel2_nir' for 10m Band 8, 'sentinel2_red' for 10m Band 4, 'sentinel2_bands' for all multispectral bands, 'lulc' for Esri 10m Land Cover.",
+                        "enum": ["dem", "slope", "hillshade", "sentinel2", "ndvi", "ndwi", "ndbi", "sentinel2_bands", "sentinel2_nir", "sentinel2_red", "sentinel2_green", "sentinel2_blue", "sentinel2_swir", "sar", "sentinel1", "landsat", "lulc"],
+                        "description": "Raster product to load or compute: 'dem' (30m elevation), 'slope' (degrees), 'hillshade' (relief), 'sentinel2' (10m true color RGB), 'ndvi' (10m vegetation index), 'ndwi' (10m water index), 'ndbi' (10m built-up index), 'sentinel2_bands' (all bands), 'sar' (10m radar), 'landsat' (30m), 'lulc' (10m land cover).",
                     },
                     "place": {"type": "string", "description": "Optional place name (e.g. 'Udaipur', 'Dehradun'). If omitted, uses bbox or current canvas extent."},
                     "bbox": {"type": "array", "items": {"type": "number"}, "description": "Optional [xmin, ymin, xmax, ymax] in EPSG:4326."},
