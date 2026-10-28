@@ -41,7 +41,7 @@ class AutoGISPlugin:
         self.toggle_action.setShortcut(QKeySequence(SHORTCUT_KEY))
         self.toggle_action.triggered.connect(self.toggle_dock)
 
-        self.settings_action = QAction(icon, "AutoGIS OpenRouter Settings...", main_win)
+        self.settings_action = QAction(icon, "AutoGIS Settings...", main_win)
         self.settings_action.setObjectName("autogisOpenSettingsAction")
         self.settings_action.triggered.connect(self.open_settings)
 
@@ -100,7 +100,12 @@ class AutoGISPlugin:
             except Exception:
                 pass
             if self.dock.panel is not None:
-                self.dock.panel._engine.cancel_current_run()
+                try:
+                    self.dock.panel._engine.cancel_current_run()
+                    self.dock.panel._engine._timer.stop()
+                    self.dock.panel._status_banner.stop_status()
+                except Exception:
+                    pass
             if self.iface:
                 self.iface.removeDockWidget(self.dock)
             self.dock.deleteLater()

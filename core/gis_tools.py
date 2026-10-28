@@ -20,15 +20,12 @@ from qgis.core import (
     QgsFeature,
     QgsFeatureRequest,
     QgsField,
-    QgsFields,
     QgsFillSymbol,
     QgsGraduatedSymbolRenderer,
     QgsGradientColorRamp,
     QgsHeatmapRenderer,
     QgsLineSymbol,
     QgsMapLayer,
-    QgsMapSettings,
-    QgsMapRendererParallelJob,
     QgsMarkerSymbol,
     QgsPalLayerSettings,
     QgsProject,
@@ -37,7 +34,6 @@ from qgis.core import (
     QgsRendererCategory,
     QgsRendererRange,
     QgsSingleSymbolRenderer,
-    QgsStyle,
     QgsSymbol,
     QgsTextBufferSettings,
     QgsTextFormat,
@@ -47,9 +43,15 @@ from qgis.core import (
     QgsWkbTypes,
 )
 from qgis.PyQt.QtCore import QSize, QVariant
-from qgis.PyQt.QtGui import QColor, QFont, QImage, QPainter
+from qgis.PyQt.QtGui import QColor, QFont, QImage
 
 from .config import data_dir, log_info, log_warn
+
+_NO_GEOM_FLAG = getattr(
+    QgsFeatureRequest,
+    "NoGeometry",
+    getattr(getattr(QgsFeatureRequest, "Flag", None), "NoGeometry", 2),
+)
 
 
 @dataclass
@@ -295,7 +297,7 @@ def _tool_query_features(iface, args: dict) -> dict:
     if expr_str:
         req.setFilterExpression(expr_str)
     if not include_geom:
-        req.setFlags(QgsFeatureRequest.Flag.NoGeometry)
+        req.setFlags(_NO_GEOM_FLAG)
 
     all_field_names = [f.name() for f in lyr.fields()]
     use_fields = [f for f in requested_fields if f in all_field_names] if requested_fields else all_field_names
@@ -332,7 +334,7 @@ def _tool_compute_field_stats(iface, args: dict) -> dict:
     values = []
     null_count = 0
     freq: dict[str, int] = {}
-    req = QgsFeatureRequest().setFlags(QgsFeatureRequest.Flag.NoGeometry).setSubsetOfAttributes([idx])
+    req = QgsFeatureRequest().setFlags(_NO_GEOM_FLAG).setSubsetOfAttributes([idx])
     for feat in lyr.getFeatures(req):
         v = _safe_val(feat[idx])
         if v is None or v == "":
@@ -645,7 +647,7 @@ def _tool_delete_features(iface, args: dict) -> dict:
     if not expr_str:
         return {"error": "'filter_expression' is required to delete features safely."}
 
-    req = QgsFeatureRequest().setFilterExpression(expr_str).setFlags(QgsFeatureRequest.Flag.NoGeometry).setNoAttributes()
+    req = QgsFeatureRequest().setFilterExpression(expr_str).setFlags(_NO_GEOM_FLAG).setNoAttributes()
     fids = [f.id() for f in lyr.getFeatures(req)]
     if not fids:
         return {"layer": lyr.name(), "deleted_count": 0, "message": "No features matched the filter expression."}
@@ -660,8 +662,8 @@ def _tool_delete_features(iface, args: dict) -> dict:
 
 def _create_symbol_for_layer(lyr: QgsVectorLayer, fill_color: QColor, outline_color: QColor,
                              size_or_width: float, opacity: float) -> QgsSymbol:
-    gtype = lyr.geometryType()
-    if gtype == QgsWkbTypes.GeometryType.PointGeometry:
+    glabel = _geom_type_label(lyr)
+    if glabel == "Point":
         sym = QgsMarkerSymbol.createSimple({
             "name": "circle",
             "color": fill_color.name(),
@@ -669,7 +671,7 @@ def _create_symbol_for_layer(lyr: QgsVectorLayer, fill_color: QColor, outline_co
             "outline_width": "0.4",
             "size": str(max(1.0, size_or_width)),
         })
-    elif gtype == QgsWkbTypes.GeometryType.LineGeometry:
+    elif glabel == "LineString":
         sym = QgsLineSymbol.createSimple({
             "color": fill_color.name(),
             "width": str(max(0.2, size_or_width)),
@@ -697,7 +699,8 @@ def _tool_style_vector_layer(iface, args: dict) -> dict:
     palette_name = str(args.get("palette") or "viridis").strip().lower()
     palette = COLOR_PALETTES.get(palette_name, COLOR_PALETTES["viridis"])
     opacity = float(args.get("opacity") if args.get("opacity") is not None else 0.85)
-    default_size = 3.2 if lyr.geometryType() == QgsWkbTypes.GeometryType.PointGeometry else (1.2 if lyr.geometryType() == QgsWkbTypes.GeometryType.LineGeometry else 0.4)
+    glabel = _geom_type_label(lyr)
+    default_size = 3.2 if glabel == "Point" else (1.2 if glabel == "LineString" else 0.4)
     size_val = float(args.get("size") if args.get("size") is not None else default_size)
 
     if style_type == "single":
@@ -730,7 +733,7 @@ def _tool_style_vector_layer(iface, args: dict) -> dict:
             return {"error": f"Numeric field '{field_name}' not found for graduated styling."}
         classes = max(2, min(int(args.get("classes") or 5), 12))
         num_vals = []
-        for feat in lyr.getFeatures(QgsFeatureRequest().setFlags(QgsFeatureRequest.Flag.NoGeometry).setSubsetOfAttributes([idx])):
+        for feat in lyr.getFeatures(QgsFeatureRequest().setFlags(_NO_GEOM_FLAG).setSubsetOfAttributes([idx])):
             try:
                 v = feat[idx]
                 if v is not None:
@@ -754,7 +757,7 @@ def _tool_style_vector_layer(iface, args: dict) -> dict:
         lyr.setRenderer(renderer)
 
     elif style_type == "heatmap":
-        if lyr.geometryType() != QgsWkbTypes.GeometryType.PointGeometry:
+        if glabel != "Point":
             return {"error": "Heatmap renderer is only supported on Point vector layers."}
         hm = QgsHeatmapRenderer()
         hm.setRadius(float(args.get("radius") or 15.0))
