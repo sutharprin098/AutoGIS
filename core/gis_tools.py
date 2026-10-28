@@ -164,49 +164,86 @@ def _interpolate_color(hex_colors: list[str], t: float) -> QColor:
 # TOOL IMPLEMENTATIONS
 # ============================================================================
 
+def _auto_metric_crs_for_layer(lyr: QgsMapLayer) -> QgsCoordinateReferenceSystem:
+    """Determine the optimal metric (projected) CRS for a layer — using Project CRS if metric, or auto-computing the local UTM Zone."""
+    proj_crs = QgsProject.instance().crs()
+    if proj_crs.isValid() and not proj_crs.isGeographic():
+        return proj_crs
+    if lyr.crs().isValid() and not lyr.crs().isGeographic():
+        return lyr.crs()
+    try:
+        ext = lyr.extent()
+        if not ext.isEmpty():
+            wgs84 = QgsCoordinateReferenceSystem("EPSG:4326")
+            if lyr.crs().isValid() and lyr.crs() != wgs84:
+                xform = QgsCoordinateTransform(lyr.crs(), wgs84, QgsProject.instance())
+                ext = xform.transformBoundingBox(ext)
+            lon = (ext.xMinimum() + ext.xMaximum()) / 2.0
+            lat = (ext.yMinimum() + ext.yMaximum()) / 2.0
+            zone = max(1, min(60, int((lon + 180.0) // 6.0) + 1))
+            epsg_code = (32600 + zone) if lat >= 0 else (32700 + zone)
+            utm_crs = QgsCoordinateReferenceSystem(f"EPSG:{epsg_code}")
+            if utm_crs.isValid():
+                return utm_crs
+    except Exception:
+        pass
+    return QgsCoordinateReferenceSystem("EPSG:3857")
+
+
 def _tool_get_project_overview(iface, args: dict) -> dict:
     proj = QgsProject.instance()
+    proj_crs = proj.crs()
+    proj_authid = proj_crs.authid() if proj_crs.isValid() else "EPSG:4326"
+    proj_is_geo = proj_crs.isGeographic() if proj_crs.isValid() else True
+
     canvas = iface.mapCanvas() if iface else None
     extent_dict = {}
     if canvas is not None:
         ext = canvas.extent()
         extent_dict = {
-            "xmin": round(ext.xMinimum(), 6),
-            "ymin": round(ext.yMinimum(), 6),
-            "xmax": round(ext.xMaximum(), 6),
-            "ymax": round(ext.yMaximum(), 6),
-            "scale": round(canvas.scale(), 2),
+            "xmin": round(ext.xMinimum(), 5),
+            "ymin": round(ext.yMinimum(), 5),
+            "xmax": round(ext.xMaximum(), 5),
+            "ymax": round(ext.yMaximum(), 5),
+            "scale": round(canvas.scale(), 1),
         }
     layers_summary = []
+    crs_mismatches = []
     root = proj.layerTreeRoot()
     for lyr in proj.mapLayers().values():
         node = root.findLayer(lyr.id()) if root else None
         vis = bool(node.isVisible()) if node is not None else True
+        lcrs = lyr.crs()
+        l_authid = lcrs.authid() if lcrs.isValid() else ""
+        l_units = "degrees" if (lcrs.isValid() and lcrs.isGeographic()) else "meters"
+        if l_authid and l_authid != proj_authid:
+            crs_mismatches.append(f"{lyr.name()} ({l_authid})")
         info: dict[str, Any] = {
-            "id": lyr.id(),
             "name": lyr.name(),
             "type": "vector" if isinstance(lyr, QgsVectorLayer) else ("raster" if isinstance(lyr, QgsRasterLayer) else "other"),
             "geometry": _geom_type_label(lyr),
-            "crs": lyr.crs().authid() if lyr.crs().isValid() else "",
+            "crs": l_authid,
+            "units": l_units,
             "visible": vis,
         }
         if isinstance(lyr, QgsVectorLayer):
             info["feature_count"] = lyr.featureCount()
-            info["fields"] = [f.name() for f in lyr.fields()][:20]
+            info["fields"] = [f.name() for f in lyr.fields()][:10]
         layers_summary.append(info)
 
     active = iface.activeLayer() if iface else None
-    return {
-        "project_file": proj.fileName() or "(unsaved project)",
-        "project_title": proj.title() or "",
-        "crs": proj.crs().authid() if proj.crs().isValid() else "EPSG:4326",
-        "crs_description": proj.crs().description() if proj.crs().isValid() else "",
-        "distance_units": str(proj.distanceUnits()),
+    out: dict[str, Any] = {
+        "project_file": os.path.basename(proj.fileName()) if proj.fileName() else "(unsaved)",
+        "crs": proj_authid,
+        "crs_units": "degrees (geographic)" if proj_is_geo else "meters (projected)",
         "map_canvas": extent_dict,
         "active_layer": active.name() if active else None,
         "layer_count": len(layers_summary),
         "layers": layers_summary,
     }
+    if crs_mismatches:
+        out["crs_mismatches"] = crs_mismatches[:15]
+    return out
 
 
 def _tool_list_layers(iface, args: dict) -> dict:
@@ -1080,11 +1117,40 @@ def _tool_spatial_buffer(iface, args: dict) -> dict:
     target = args.get("layer") or ""
     distance = float(args.get("distance") or 100.0)
     dissolve = bool(args.get("dissolve", False))
-    output_name = str(args.get("output_name") or f"{target}_buffer_{distance}").strip()
+    output_name = str(args.get("output_name") or f"{target}_buffer_{distance}m").strip()
 
     lyr = _resolve_layer(target)
     if not isinstance(lyr, QgsVectorLayer):
         return {"error": f"Vector layer '{target}' not found."}
+
+    # Automatic CRS intelligence: if layer is in Geographic degrees (e.g. EPSG:4326) and distance >= 0.5,
+    # automatically reproject to metric UTM / Project CRS so distance is buffered accurately in METERS!
+    if lyr.crs().isValid() and lyr.crs().isGeographic() and distance >= 0.5:
+        import processing
+        metric_crs = _auto_metric_crs_for_layer(lyr)
+        try:
+            reproj = processing.run("native:reprojectlayer", {
+                "INPUT": lyr,
+                "TARGET_CRS": metric_crs,
+                "OUTPUT": "TEMPORARY_OUTPUT",
+            })["OUTPUT"]
+            res = _tool_run_processing_algorithm(iface, {
+                "algorithm_id": "native:buffer",
+                "parameters": {
+                    "INPUT": reproj,
+                    "DISTANCE": distance,
+                    "SEGMENTS": 16,
+                    "DISSOLVE": dissolve,
+                    "OUTPUT": "TEMPORARY_OUTPUT",
+                },
+                "load_output": True,
+                "output_layer_name": output_name,
+            })
+            res["crs_auto_reprojected"] = True
+            res["metric_crs_used"] = metric_crs.authid()
+            return res
+        except Exception as exc:
+            log_warn(f"Auto-CRS buffer fallback: {exc}")
 
     return _tool_run_processing_algorithm(iface, {
         "algorithm_id": "native:buffer",
@@ -1121,6 +1187,20 @@ def _tool_spatial_overlay(iface, args: dict) -> dict:
     if not isinstance(overlay_lyr, QgsVectorLayer):
         return {"error": f"Overlay vector layer '{args.get('overlay_layer')}' not found."}
 
+    # Automatic CRS alignment: if overlay_lyr CRS differs from input_lyr CRS, reproject overlay_lyr automatically!
+    crs_aligned = False
+    if input_lyr.crs().isValid() and overlay_lyr.crs().isValid() and input_lyr.crs() != overlay_lyr.crs():
+        try:
+            import processing
+            overlay_lyr = processing.run("native:reprojectlayer", {
+                "INPUT": overlay_lyr,
+                "TARGET_CRS": input_lyr.crs(),
+                "OUTPUT": "TEMPORARY_OUTPUT",
+            })["OUTPUT"]
+            crs_aligned = True
+        except Exception as exc:
+            log_warn(f"Auto-CRS overlay alignment warning: {exc}")
+
     alg_map = {
         "clip": "native:clip",
         "intersection": "native:intersection",
@@ -1128,12 +1208,15 @@ def _tool_spatial_overlay(iface, args: dict) -> dict:
         "union": "native:union",
     }
     alg_id = alg_map.get(op, "native:clip")
-    return _tool_run_processing_algorithm(iface, {
+    res = _tool_run_processing_algorithm(iface, {
         "algorithm_id": alg_id,
         "parameters": {"INPUT": input_lyr, "OVERLAY": overlay_lyr, "OUTPUT": "TEMPORARY_OUTPUT"},
         "load_output": True,
         "output_layer_name": output_name,
     })
+    if crs_aligned:
+        res["crs_auto_aligned_to"] = input_lyr.crs().authid()
+    return res
 
 
 def _tool_export_layer(iface, args: dict) -> dict:

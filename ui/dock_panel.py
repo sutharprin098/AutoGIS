@@ -9,6 +9,7 @@ from qgis.PyQt.QtWidgets import (
     QFileDialog,
     QFrame,
     QHBoxLayout,
+    QInputDialog,
     QLabel,
     QMenu,
     QPlainTextEdit,
@@ -20,7 +21,7 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from ..core.agent_engine import AutoGISEngine
-from ..core.config import CURATED_MODELS, AutoGISConfig, ThreadHistoryStore
+from ..core.config import AutoGISConfig, ThreadHistoryStore
 from .settings_dialog import AutoGISSettingsDialog
 from .theme import create_autogis_icon, create_autogis_pixmap, get_studio_stylesheet, set_custom_logo_path
 from .widgets import (
@@ -132,21 +133,21 @@ class AutoGISPanel(QWidget):
 
         row.addStretch(1)
 
-        new_btn = QPushButton("＋ New", hdr)
+        new_btn = QPushButton("New", hdr)
         new_btn.setObjectName("AutoGISGhostBtn")
         new_btn.setToolTip("New Session")
         new_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         new_btn.clicked.connect(self.start_new_session)
         row.addWidget(new_btn)
 
-        self._hist_btn = QPushButton("🕒", hdr)
+        self._hist_btn = QPushButton("History", hdr)
         self._hist_btn.setObjectName("AutoGISGhostBtn")
         self._hist_btn.setToolTip("Session History")
         self._hist_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._hist_btn.clicked.connect(self._show_history_menu)
         row.addWidget(self._hist_btn)
 
-        cfg_btn = QPushButton("⚙", hdr)
+        cfg_btn = QPushButton("Settings", hdr)
         cfg_btn.setObjectName("AutoGISGhostBtn")
         cfg_btn.setToolTip("Settings")
         cfg_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -161,38 +162,31 @@ class AutoGISPanel(QWidget):
         col.setContentsMargins(10, 4, 10, 10)
         col.setSpacing(5)
 
-        # Compact Attachment Bar
+        # Compact Attachment Bar (Zero emojis, no Data button)
         self._chips_row = QHBoxLayout()
         self._chips_row.setContentsMargins(0, 0, 0, 0)
         self._chips_row.setSpacing(4)
 
-        pin_lyr_btn = QPushButton("＋ Layer", host)
+        pin_lyr_btn = QPushButton("+ Layer", host)
         pin_lyr_btn.setObjectName("AutoGISGhostBtn")
         pin_lyr_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         pin_lyr_btn.setToolTip("Pin active QGIS layer")
         pin_lyr_btn.clicked.connect(self._pin_active_layer)
         self._chips_row.addWidget(pin_lyr_btn)
 
-        attach_btn = QPushButton("📎 File/PDF", host)
+        attach_btn = QPushButton("File / PDF", host)
         attach_btn.setObjectName("AutoGISGhostBtn")
         attach_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         attach_btn.setToolTip("Attach PDF, Excel, Word, CSV, Shapefile, GeoJSON, or Image")
         attach_btn.clicked.connect(self._attach_dataset_file)
         self._chips_row.addWidget(attach_btn)
 
-        folder_btn = QPushButton("📁 Folder", host)
+        folder_btn = QPushButton("Folder", host)
         folder_btn.setObjectName("AutoGISGhostBtn")
         folder_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         folder_btn.setToolTip("Attach Folder")
         folder_btn.clicked.connect(self._attach_folder)
         self._chips_row.addWidget(folder_btn)
-
-        self._data_btn = QPushButton("🌍 Data", host)
-        self._data_btn.setObjectName("AutoGISGhostBtn")
-        self._data_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._data_btn.setToolTip("Live OSM, Boundary, STAC DEM/Satellite, Routing")
-        self._data_btn.clicked.connect(self._show_live_data_menu)
-        self._chips_row.addWidget(self._data_btn)
 
         self._chips_row.addStretch(1)
         col.addLayout(self._chips_row)
@@ -207,9 +201,8 @@ class AutoGISPanel(QWidget):
         self._chips_label.setStyleSheet("font-size: 10.5px; color: #2563EB; font-weight: 600;")
         ci_layout.addWidget(self._chips_label, 1)
 
-        self._clear_chips_btn = QPushButton("✕", self._chips_info_row)
+        self._clear_chips_btn = QPushButton("Clear", self._chips_info_row)
         self._clear_chips_btn.setObjectName("AutoGISGhostBtn")
-        self._clear_chips_btn.setFixedWidth(22)
         self._clear_chips_btn.clicked.connect(self._clear_chips)
         ci_layout.addWidget(self._clear_chips_btn)
         self._chips_info_row.hide()
@@ -233,17 +226,20 @@ class AutoGISPanel(QWidget):
 
         self._model_combo = QComboBox(box)
         self._model_combo.setObjectName("AutoGISCombo")
-        self._model_combo.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
-        self._model_combo.setMinimumWidth(80)
+        self._model_combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self._model_combo.setMinimumWidth(90)
+        self._model_combo.setMaxVisibleItems(14)
+        if self._model_combo.view() is not None:
+            self._model_combo.view().setMinimumWidth(240)
         self._sync_model_combo()
-        self._model_combo.currentIndexChanged.connect(self._on_quick_model_changed)
+        self._model_combo.activated.connect(self._on_quick_model_changed)
         ctrl.addWidget(self._model_combo, 1)
 
         self._mode_combo = QComboBox(box)
         self._mode_combo.setObjectName("AutoGISCombo")
-        self._mode_combo.addItem("⚡ Auto", "autopilot")
-        self._mode_combo.addItem("🛡️ Ask", "ask_write")
-        self._mode_combo.addItem("💬 Chat", "chat_only")
+        self._mode_combo.addItem("Auto", "autopilot")
+        self._mode_combo.addItem("Ask", "ask_write")
+        self._mode_combo.addItem("Chat", "chat_only")
         self._sync_mode_combo()
         self._mode_combo.currentIndexChanged.connect(self._on_quick_mode_changed)
         ctrl.addWidget(self._mode_combo)
@@ -283,17 +279,21 @@ class AutoGISPanel(QWidget):
         self._model_combo.blockSignals(True)
         self._model_combo.clear()
         curr = self._config.model.strip()
+        ordered = self._config.get_ordered_models()
         found = False
-        for mid, mlabel in CURATED_MODELS:
+        for mid, mlabel in ordered:
             self._model_combo.addItem(mlabel, mid)
             if mid == curr:
                 self._model_combo.setCurrentIndex(self._model_combo.count() - 1)
                 found = True
         if not found and curr:
-            self._model_combo.addItem(curr.split("/")[-1], curr)
-            self._model_combo.setCurrentIndex(self._model_combo.count() - 1)
+            short_lbl = curr.split("/")[-1] if "/" in curr else curr
+            self._model_combo.insertItem(1, short_lbl, curr)
+            self._model_combo.setCurrentIndex(1)
         elif not curr:
             self._model_combo.setCurrentIndex(0)
+        self._model_combo.addItem("Custom Model ID...", "__custom__")
+        self._model_combo.setToolTip(curr or "Select AI Model")
         self._model_combo.blockSignals(False)
 
     def _sync_mode_combo(self) -> None:
@@ -306,9 +306,22 @@ class AutoGISPanel(QWidget):
         self._mode_combo.blockSignals(False)
 
     def _on_quick_model_changed(self, idx: int) -> None:
-        if idx >= 0:
-            mid = self._model_combo.itemData(idx)
-            self._config.model = str(mid or "")
+        if idx < 0:
+            return
+        mid = str(self._model_combo.itemData(idx) or "")
+        if mid == "__custom__":
+            text, ok = QInputDialog.getText(
+                self,
+                "Custom Model ID",
+                "Enter Model ID (e.g. google/gemini-2.5-flash, gpt-4o-mini, deepseek-chat):",
+                text=self._config.model,
+            )
+            if ok and text.strip():
+                self._config.model = text.strip()
+            self._sync_model_combo()
+            return
+        self._config.model = mid
+        self._model_combo.setToolTip(mid or "Select AI Model")
 
     def _on_quick_mode_changed(self, idx: int) -> None:
         if idx >= 0:
@@ -381,37 +394,13 @@ class AutoGISPanel(QWidget):
         for p in self._attached_files:
             base = os.path.basename(p.rstrip("\\/")) or p
             if os.path.isdir(p):
-                parts.append(f"📁 {base}")
+                parts.append(f"[Folder] {base}")
             elif p.lower().endswith(".pdf"):
-                parts.append(f"📄 {base}")
+                parts.append(f"[PDF] {base}")
             else:
-                parts.append(f"📎 {base}")
+                parts.append(f"[File] {base}")
         self._chips_label.setText("  ".join(parts))
         self._chips_info_row.setVisible(bool(parts))
-
-    def _show_live_data_menu(self) -> None:
-        menu = QMenu(self)
-        presets = [
-            ("🏛️ Place Boundary", "Download the polygon boundary for Jaipur, India"),
-            ("🏗️ OSM Buildings", "Download live OpenStreetMap buildings for Connaught Place, New Delhi"),
-            ("🛣️ OSM Roads", "Download live OpenStreetMap roads for Connaught Place, New Delhi"),
-            ("💧 OSM Rivers & Water", "Download live OpenStreetMap rivers and water bodies for Udaipur, India"),
-            ("🚗 Road Route (OSRM)", "Calculate driving road route from India Gate, Delhi to Qutub Minar, Delhi"),
-            ("🏔️ 30m DEM (STAC)", "Stream Copernicus 30m Elevation DEM from STAC for Dehradun, India"),
-            ("🛰️ Sentinel-2 Imagery", "Stream Sentinel-2 10m optical imagery from STAC for Jaipur, India"),
-            ("🌿 10m Land Cover (LULC)", "Stream Esri 10m Land Cover raster from STAC for Jaipur, India"),
-        ]
-        for label, prompt_tpl in presets:
-            act = menu.addAction(label)
-            act.triggered.connect(lambda _=False, p=prompt_tpl: self._fill_prompt(p))
-        menu.exec(self._data_btn.mapToGlobal(self._data_btn.rect().topLeft()))
-
-    def _fill_prompt(self, text: str) -> None:
-        self._input.setPlainText(text)
-        self._input.setFocus()
-        cursor = self._input.textCursor()
-        cursor.movePosition(cursor.MoveOperation.End)
-        self._input.setTextCursor(cursor)
 
     def _send_quick_prompt(self, prompt_text: str) -> None:
         self._input.setPlainText(prompt_text)
@@ -581,7 +570,7 @@ class AutoGISPanel(QWidget):
                 msg_count = len(th.get("ui_log") or [])
                 if msg_count == 0 and tid == self._current_thread_id:
                     continue
-                act = menu.addAction(f"💬 {title}")
+                act = menu.addAction(title)
                 act.triggered.connect(lambda _=False, t=tid: self._load_thread(t))
             menu.addSeparator()
             clear_act = menu.addAction("Clear History")

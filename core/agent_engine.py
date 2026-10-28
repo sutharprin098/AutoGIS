@@ -102,34 +102,41 @@ class AutoGISEngine(QObject):
 
     def _build_system_prompt(self) -> str:
         try:
-            overview = _tool_get_project_overview(self._iface, {})
-            ctx_json = json.dumps(overview, ensure_ascii=False, indent=2)
+            ov = _tool_get_project_overview(self._iface, {})
+            # Token-efficient compact serialization (saves ~65% tokens on large projects)
+            lyrs = ov.get("layers") or []
+            compact_lyrs = []
+            for l in lyrs[:40]:
+                tag = f"{l.get('name')}[{l.get('geometry')},{l.get('crs')},{l.get('units')}]"
+                if "feature_count" in l:
+                    tag += f"({l['feature_count']} feats"
+                    if l.get("fields"):
+                        tag += f", fields:{','.join(l['fields'][:6])}"
+                    tag += ")"
+                compact_lyrs.append(tag)
+            ctx_summary = (
+                f"Project: {ov.get('project_file')} | CRS: {ov.get('crs')} ({ov.get('crs_units')}) | "
+                f"Active: {ov.get('active_layer')} | Layers ({ov.get('layer_count')}): "
+                + "; ".join(compact_lyrs)
+            )
+            if ov.get("crs_mismatches"):
+                ctx_summary += f" | CRS Mismatches: {', '.join(ov['crs_mismatches'][:8])}"
         except Exception as exc:
-            ctx_json = f'{{"note": "Could not read project context: {exc}"}}'
+            ctx_summary = f"Project context unavailable: {exc}"
 
         custom = self._config.custom_instructions.strip()
-        custom_block = f"\nUser Custom Preferences:\n{custom}\n" if custom else ""
+        custom_block = f"\nUser Preferences: {custom}\n" if custom else ""
 
         return (
-            "You are **AutoGIS**, an elite Autonomous Geospatial AI Agent and Spatial Analysis Studio built directly into QGIS.\n"
-            "You have 34+ native GIS, Live Earth Data, and Document/PDF tools to download real-world boundaries, OpenStreetMap vectors, OSRM routes, "
-            "STAC satellite/DEM rasters, read large PDFs/documents/folders, style layers, run QGIS Processing algorithms, and execute PyQGIS code.\n\n"
-            f"### Live QGIS Project State:\n```json\n{ctx_json}\n```\n"
-            f"{custom_block}\n"
-            "### Autonomous GIS Agent Capabilities & Rules:\n"
-            "1. **Live Data Connectors (No external files needed)**:\n"
-            "   - **Place / Admin Boundaries**: Use `fetch_place_boundary(place='...')` to geocode and load exact polygon boundaries for any city, district, state, or country.\n"
-            "   - **OpenStreetMap Vectors**: Use `fetch_osm_features(category=..., place=...)` to download live `buildings`, `roads`, `rivers`, `water`, `railways`, `landuse`, `parks`, `hospitals`, `schools`, `power`, or `boundary` directly into QGIS.\n"
-            "   - **Road Routing**: Use `compute_road_route(origin=..., destination=..., profile='driving'|'walking'|'cycling')` for real OSRM shortest paths.\n"
-            "   - **Earth Observation & Terrain Rasters (STAC)**: Use `fetch_stac_earth_data(dataset='dem'|'sentinel2'|'lulc', place=...)` to stream 30m Copernicus Elevation DEM, 10m Sentinel-2 True Color imagery, or 10m Esri Land Cover.\n"
-            "   - **Saved QGIS Servers**: Use `list_saved_qgis_connections` and `load_saved_qgis_connection` for user's saved XYZ, WMS (Bhuvan), or WFS servers.\n"
-            "   - **Uploaded PDFs, Documents & Folders**: Use `read_uploaded_file_or_pdf` to read, paginate, or search inside large PDFs, Word docs, Excel sheets, CSVs, or folders.\n"
-            "2. **Large-Task Decomposition & Step-by-Step Execution (CRITICAL)**:\n"
-            "   - Whenever the user gives a large, multi-layer, or complex workflow (2+ actions, suitability modeling, batch processing, or multi-dataset analysis), **ALWAYS divide the work into clear sequential parts/phases**.\n"
-            "   - First call `update_agent_plan` to display all steps (`pending` / `in_progress` / `completed`) in the UI checklist.\n"
-            "   - Execute **step by step (1 to 2 tool calls per turn)** instead of firing many heavy tools at once. After each phase completes, verify the result, update `update_agent_plan`, and proceed to the next part until 100% of the user's request is finished.\n"
-            "3. **Self-Healing & Zero-Error Recovery**: If any tool returns an error (e.g. missing field name, CRS mismatch, or invalid parameter), inspect the layer (`inspect_layer`) or algorithm help (`get_algorithm_help`) and automatically retry with corrected parameters or `execute_pyqgis` instead of stopping.\n"
-            "4. **Visual Polish**: When loading new layers or finishing a spatial analysis, add a basemap (`add_basemap`) if none is loaded, apply clean cartographic styling (`style_vector_layer`), and summarize key findings clearly in Markdown."
+            "You are **AutoGIS**, an Autonomous Geospatial AI Agent built into QGIS.\n"
+            f"Live QGIS State: {ctx_summary}\n"
+            f"{custom_block}"
+            "Core Rules:\n"
+            "1. **CRS Intelligence (CRITICAL)**: Always check project and layer CRS (`EPSG`, projected meters vs geographic degrees). "
+            "`spatial_buffer` and `spatial_overlay` automatically reproject/align CRSs to metric UTM/Project CRS, and for custom `run_processing_algorithm` or `execute_pyqgis` always verify CRS alignment (`native:reprojectlayer`) before distance/area calculations.\n"
+            "2. **Step-by-Step Decomposition**: For large or multi-step workflows (2+ actions), call `update_agent_plan` first to break the work into sequential phases (`pending`/`in_progress`/`completed`), execute 1-2 tools per turn, and update the plan after each step.\n"
+            "3. **Live Data & Docs**: Use `fetch_place_boundary`, `fetch_osm_features`, `compute_road_route`, `fetch_stac_earth_data` (`dem`/`sentinel2`/`lulc`), `read_uploaded_file_or_pdf`, and `inspect_layer`.\n"
+            "4. **Concise & Token-Efficient**: Keep responses clear, professional, and without emojis."
         )
 
     def start_user_turn(self, user_text: str, attachments: list[str] | None = None,
@@ -140,7 +147,7 @@ class AutoGISEngine(QObject):
             self.run_started.emit(run_id, "Select Model")
             self.token_chunk.emit(
                 run_id,
-                "ℹ️ **No AI Model Selected**\n\nPlease select your preferred AI Model from the **Model dropdown** at the bottom (or in **⚙ Settings**) before sending a message.",
+                "**No AI Model Selected**\n\nPlease select your preferred AI Model from the **Model dropdown** at the bottom (or in **Settings**) before sending a message.",
             )
             self.run_finished.emit(run_id, "failed", "No AI Model selected")
             return run_id
@@ -150,7 +157,7 @@ class AutoGISEngine(QObject):
             self.run_started.emit(run_id, selected_model)
             self.token_chunk.emit(
                 run_id,
-                "⚠️ **API Key Required**\n\nPlease click the **⚙ Settings** button in the top bar and enter your API Key (**Gemini**, **ChatGPT**, **Claude**, **DeepSeek**, or **Gateway Key**).",
+                "**API Key Required**\n\nPlease click the **Settings** button in the top bar and enter your API Key (**Gemini**, **ChatGPT**, **Claude**, **DeepSeek**, or **OpenRouter**).",
             )
             self.run_finished.emit(run_id, "failed", "Missing API Key")
             return run_id
@@ -181,18 +188,18 @@ class AutoGISEngine(QObject):
 
     @staticmethod
     def _compact_messages_for_llm(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        """Keep older tool outputs compact during long multi-step workflows to prevent context bloat."""
+        """Keep older tool outputs compact during long multi-step workflows to save user tokens."""
         tool_indices = [i for i, m in enumerate(messages) if m.get("role") == "tool"]
-        if len(tool_indices) <= 6:
+        if len(tool_indices) <= 4:
             return messages
-        older_set = set(tool_indices[:-6])
+        older_set = set(tool_indices[:-4])
         compacted: list[dict[str, Any]] = []
         for idx, msg in enumerate(messages):
             if idx in older_set:
                 content = str(msg.get("content") or "")
-                if len(content) > 1500:
+                if len(content) > 700:
                     m_copy = dict(msg)
-                    m_copy["content"] = content[:1500] + "\n...[completed step output summarized]"
+                    m_copy["content"] = content[:700] + "\n...[step output summarized]"
                     compacted.append(m_copy)
                     continue
             compacted.append(msg)
@@ -363,7 +370,7 @@ class AutoGISEngine(QObject):
                             continue
 
                 if not recovered:
-                    self._post("token", run_id, f"\n\n⚠️ **AI Provider Error ({he.code}):** {err_msg}")
+                    self._post("token", run_id, f"\n\n**AI Provider Error ({he.code}):** {err_msg}")
                     self._post("run_finished", run_id, "failed", err_msg)
                     return
 
@@ -411,7 +418,7 @@ class AutoGISEngine(QObject):
 
         except Exception as exc:
             log_warn(f"AutoGIS Engine worker error: {exc}")
-            self._post("token", run_id, f"\n\n⚠️ **Connection Error:** {exc}")
+            self._post("token", run_id, f"\n\n**Connection Error:** {exc}")
             self._post("run_finished", run_id, "failed", str(exc))
         finally:
             with self._lock:
@@ -534,8 +541,8 @@ class AutoGISEngine(QObject):
             res_str = json.dumps(res, ensure_ascii=False, default=str)
         except Exception:
             res_str = str(res)
-        if len(res_str) > 16000:
-            res_str = res_str[:16000] + "\n...[truncated]"
+        if len(res_str) > 8000:
+            res_str = res_str[:8000] + "\n...[truncated]"
 
         with self._lock:
             self._messages.append({

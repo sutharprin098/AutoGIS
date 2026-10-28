@@ -136,7 +136,7 @@ class AssistantMessageCard(QFrame):
         cb = QApplication.clipboard()
         if cb:
             cb.setText(self._raw_text)
-            self._copy_btn.setText("✓")
+            self._copy_btn.setText("Copied")
             QTimer.singleShot(1200, lambda: self._copy_btn.setText("Copy"))
 
 
@@ -160,8 +160,11 @@ class ToolExecutionCard(QFrame):
         row.setContentsMargins(0, 0, 0, 0)
         row.setSpacing(6)
 
-        self._status_icon = QLabel("⏳", self)
-        self._status_icon.setStyleSheet("font-size: 12px; background: transparent; border: none;")
+        self._status_icon = QLabel("RUN", self)
+        self._status_icon.setStyleSheet(
+            "font-size: 9.5px; font-weight: 700; color: #2563EB; background: #EFF6FF; "
+            "border-radius: 4px; padding: 1px 5px;"
+        )
         row.addWidget(self._status_icon)
 
         self._title_lbl = QLabel(f"<b>{tool_name}</b>", self)
@@ -172,7 +175,7 @@ class ToolExecutionCard(QFrame):
         self._badge_lbl.setStyleSheet("font-size: 10.5px; color: #2563EB; font-weight: 600; background: transparent; border: none;")
         row.addWidget(self._badge_lbl)
 
-        self._toggle_btn = QPushButton("▸", self)
+        self._toggle_btn = QPushButton("+", self)
         self._toggle_btn.setObjectName("AutoGISGhostBtn")
         self._toggle_btn.setFixedWidth(24)
         self._toggle_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -196,11 +199,19 @@ class ToolExecutionCard(QFrame):
         self._result = result
         sec = f"{elapsed_ms / 1000.0:.1f}s"
         if is_error:
-            self._status_icon.setText("⚠️")
+            self._status_icon.setText("ERR")
+            self._status_icon.setStyleSheet(
+                "font-size: 9.5px; font-weight: 700; color: #DC2626; background: #FEF2F2; "
+                "border-radius: 4px; padding: 1px 5px;"
+            )
             self._badge_lbl.setText(sec)
             self._badge_lbl.setStyleSheet("font-size: 10.5px; color: #DC2626; font-weight: 600; background: transparent; border: none;")
         else:
-            self._status_icon.setText("✅")
+            self._status_icon.setText("OK")
+            self._status_icon.setStyleSheet(
+                "font-size: 9.5px; font-weight: 700; color: #16A34A; background: #F0FDF4; "
+                "border-radius: 4px; padding: 1px 5px;"
+            )
             self._badge_lbl.setText(sec)
             self._badge_lbl.setStyleSheet("font-size: 10.5px; color: #16A34A; font-weight: 600; background: transparent; border: none;")
         self._update_details_text()
@@ -224,7 +235,7 @@ class ToolExecutionCard(QFrame):
     def _toggle_details(self) -> None:
         vis = not self._details_lbl.isVisible()
         self._details_lbl.setVisible(vis)
-        self._toggle_btn.setText("▾" if vis else "▸")
+        self._toggle_btn.setText("-" if vis else "+")
 
 
 class PermissionPromptCard(QFrame):
@@ -285,7 +296,7 @@ class InlineMapCard(QFrame):
         hdr.addWidget(lbl)
         hdr.addStretch(1)
 
-        open_btn = QPushButton("Open ↗", self)
+        open_btn = QPushButton("Open", self)
         open_btn.setObjectName("AutoGISGhostBtn")
         open_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         open_btn.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(self._path)))
@@ -315,7 +326,7 @@ class LiveStatusBanner(QFrame):
         row.setSpacing(8)
 
         # Timer Badge on the LEFT
-        self._time_lbl = QLabel("⚡ 0.0s", self)
+        self._time_lbl = QLabel("0.0s", self)
         self._time_lbl.setStyleSheet(
             "font-size: 11px; font-weight: 700; color: #2563EB; "
             "background: #EFF6FF; border-radius: 5px; padding: 2px 7px; font-family: Consolas, monospace;"
@@ -351,7 +362,7 @@ class LiveStatusBanner(QFrame):
         if self._t0 <= 0:
             return
         elapsed = time.monotonic() - self._t0
-        self._time_lbl.setText(f"⚡ {elapsed:.1f}s")
+        self._time_lbl.setText(f"{elapsed:.1f}s")
 
 
 class PlanChecklistCard(QFrame):
@@ -384,7 +395,7 @@ class PlanChecklistCard(QFrame):
         self.update_plan(title, steps or [])
 
     def update_plan(self, title: str, steps: list[dict]) -> None:
-        self._title_lbl.setText(f"🧭 {title}")
+        self._title_lbl.setText(title)
         done_count = 0
         lines = []
         for idx, item in enumerate(steps, 1):
@@ -392,12 +403,12 @@ class PlanChecklistCard(QFrame):
             txt = str(item.get("step") or f"Step {idx}")
             if st == "completed":
                 done_count += 1
-                icon, style = "✅", "color: #16A34A;"
+                tag, style = "[DONE]", "color: #16A34A;"
             elif st == "in_progress":
-                icon, style = "🔄", "color: #2563EB; font-weight: 600;"
+                tag, style = "[ACTIVE]", "color: #2563EB; font-weight: 600;"
             else:
-                icon, style = "⏳", "color: #64748B;"
-            lines.append(f"<div style='margin: 2px 0; {style}'>{icon} {txt}</div>")
+                tag, style = "[WAIT]", "color: #64748B;"
+            lines.append(f"<div style='margin: 2px 0; {style}'><b>{tag}</b> {txt}</div>")
         self._prog_lbl.setText(f"{done_count}/{len(steps)}" if steps else "")
         self._steps_lbl.setText("".join(lines))
 
@@ -408,10 +419,10 @@ class WelcomeStarterCard(QFrame):
     prompt_selected = pyqtSignal(str)
 
     STARTERS = [
-        ("🗺️ Inspect", "Give me an overview of my current QGIS project and layers."),
-        ("🏛️ Boundary", "Download the administrative polygon boundary for Jaipur, India."),
-        ("🏗️ OSM Data", "Download live OpenStreetMap buildings and roads for Connaught Place, New Delhi."),
-        ("🎨 Style Map", "Inspect the active vector layer and apply a clean cartographic style."),
+        ("Inspect Project", "Give me an overview of my current QGIS project, CRS, and layers."),
+        ("Place Boundary", "Download the administrative polygon boundary for Jaipur, India."),
+        ("OSM Vectors", "Download live OpenStreetMap buildings and roads for Connaught Place, New Delhi."),
+        ("Style Layer", "Inspect the active vector layer and apply a clean cartographic style."),
     ]
 
     def __init__(self, parent=None) -> None:

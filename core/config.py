@@ -30,25 +30,59 @@ FALLBACK_CHAIN: list[str] = [
     "nvidia/nemotron-3-ultra-550b-a55b:free",
 ]
 
+PROVIDER_MODELS: dict[str, list[tuple[str, str]]] = {
+    "gemini": [
+        ("google/gemini-2.5-flash", "Gemini 2.5 Flash"),
+        ("google/gemini-2.5-pro", "Gemini 2.5 Pro"),
+        ("google/gemini-2.0-flash", "Gemini 2.0 Flash"),
+    ],
+    "openai": [
+        ("openai/gpt-4o-mini", "GPT-4o Mini"),
+        ("openai/gpt-4o", "GPT-4o"),
+        ("openai/o3-mini", "OpenAI o3-mini"),
+    ],
+    "anthropic": [
+        ("anthropic/claude-sonnet-4.5", "Claude Sonnet 4.5"),
+        ("anthropic/claude-haiku-4.5", "Claude Haiku 4.5"),
+        ("anthropic/claude-3.5-sonnet", "Claude 3.5 Sonnet"),
+    ],
+    "deepseek": [
+        ("deepseek/deepseek-chat", "DeepSeek V3"),
+        ("deepseek/deepseek-reasoner", "DeepSeek R1"),
+    ],
+    "openrouter": [
+        ("nvidia/nemotron-3-ultra-550b-a55b:free", "Nemotron 3 Ultra (Free)"),
+        ("nvidia/nemotron-3.5-lightning:free", "Nemotron 3.5 Fast (Free)"),
+        ("google/gemma-4-31b-it:free", "Gemma 4 31B (Free)"),
+        ("deepseek/deepseek-chat-v3-0324:free", "DeepSeek V3 (Free)"),
+        ("meta-llama/llama-3.3-70b-instruct:free", "Llama 3.3 70B (Free)"),
+        ("google/gemini-2.5-flash", "Gemini 2.5 Flash"),
+        ("openai/gpt-4o-mini", "GPT-4o Mini"),
+        ("anthropic/claude-sonnet-4.5", "Claude Sonnet 4.5"),
+        ("deepseek/deepseek-chat", "DeepSeek V3"),
+        ("qwen/qwen-2.5-72b-instruct", "Qwen 2.5 72B"),
+    ],
+}
+
 CURATED_MODELS: list[tuple[str, str]] = [
     ("", "Select Model"),
-    # Google Gemini
     ("google/gemini-2.5-flash", "Gemini 2.5 Flash"),
     ("google/gemini-2.5-pro", "Gemini 2.5 Pro"),
-    # OpenAI ChatGPT
-    ("openai/gpt-4o-mini", "ChatGPT-4o Mini"),
-    ("openai/gpt-4o", "ChatGPT-4o"),
-    # Anthropic Claude
+    ("google/gemini-2.0-flash", "Gemini 2.0 Flash"),
+    ("openai/gpt-4o-mini", "GPT-4o Mini"),
+    ("openai/gpt-4o", "GPT-4o"),
+    ("openai/o3-mini", "OpenAI o3-mini"),
     ("anthropic/claude-sonnet-4.5", "Claude Sonnet 4.5"),
     ("anthropic/claude-haiku-4.5", "Claude Haiku 4.5"),
-    # DeepSeek & Open Models
     ("deepseek/deepseek-chat", "DeepSeek V3"),
+    ("deepseek/deepseek-reasoner", "DeepSeek R1"),
     ("qwen/qwen-2.5-72b-instruct", "Qwen 2.5 72B"),
     ("meta-llama/llama-3.3-70b-instruct", "Llama 3.3 70B"),
-    # Free Models
+    ("nvidia/nemotron-3-ultra-550b-a55b:free", "Nemotron 3 Ultra (Free)"),
     ("nvidia/nemotron-3.5-lightning:free", "Nemotron 3.5 Fast (Free)"),
     ("google/gemma-4-31b-it:free", "Gemma 4 31B (Free)"),
-    ("nvidia/nemotron-3-ultra-550b-a55b:free", "Nemotron 3 Ultra (Free)"),
+    ("deepseek/deepseek-chat-v3-0324:free", "DeepSeek V3 (Free)"),
+    ("meta-llama/llama-3.3-70b-instruct:free", "Llama 3.3 70B (Free)"),
 ]
 
 _MEM_CACHE: dict[str, Any] = {}
@@ -227,6 +261,21 @@ class AutoGISConfig:
     def deepseek_key(self, value: str) -> None:
         self.set_str("deepseek_key", value)
 
+    def get_ordered_models(self) -> list[tuple[str, str]]:
+        """Return model list prioritizing the user's active provider first."""
+        out: list[tuple[str, str]] = [("", "Select Model")]
+        seen: set[str] = {""}
+        active = self.active_provider
+        for mid, mlabel in PROVIDER_MODELS.get(active, []):
+            if mid not in seen:
+                out.append((mid, mlabel))
+                seen.add(mid)
+        for mid, mlabel in CURATED_MODELS:
+            if mid not in seen:
+                out.append((mid, mlabel))
+                seen.add(mid)
+        return out
+
     def resolve_connection(self, model_id: str | None = None) -> tuple[str, str, str, str]:
         """Return (provider_type, api_key, base_url, api_model_name)."""
         m = (model_id if model_id is not None else self.model).strip()
@@ -245,11 +294,15 @@ class AutoGISConfig:
                 or_key = k
                 break
 
+        # If active provider is openrouter and we have an openrouter key, route directly via openrouter
+        if self.active_provider == "openrouter" and or_key:
+            return ("openrouter", or_key, PROVIDER_ENDPOINTS["openrouter"], m)
+
         if (m.startswith("google/gemini") or m.startswith("gemini-")) and gem_key and not gem_key.startswith("sk-or-"):
             clean_m = m.split("/", 1)[1] if "/" in m else m
             return ("gemini", gem_key, PROVIDER_ENDPOINTS["gemini"], clean_m)
 
-        if (m.startswith("openai/") or m.startswith("gpt-")) and oai_key and not oai_key.startswith("sk-or-"):
+        if (m.startswith("openai/") or m.startswith("gpt-") or m.startswith("o1") or m.startswith("o3")) and oai_key and not oai_key.startswith("sk-or-"):
             clean_m = m.split("/", 1)[1] if "/" in m else m
             return ("openai", oai_key, PROVIDER_ENDPOINTS["openai"], clean_m)
 
@@ -265,16 +318,16 @@ class AutoGISConfig:
             return ("openrouter", or_key, PROVIDER_ENDPOINTS["openrouter"], m)
 
         if gem_key:
-            clean_m = m.split("/", 1)[1] if "/" in m else m
+            clean_m = m.split("/", 1)[1] if (m.startswith("google/gemini") or m.startswith("gemini-")) else "gemini-2.5-flash"
             return ("gemini", gem_key, PROVIDER_ENDPOINTS["gemini"], clean_m)
         if oai_key:
-            clean_m = m.split("/", 1)[1] if "/" in m else m
+            clean_m = m.split("/", 1)[1] if (m.startswith("openai/") or m.startswith("gpt-")) else "gpt-4o-mini"
             return ("openai", oai_key, PROVIDER_ENDPOINTS["openai"], clean_m)
         if ant_key:
-            clean_m = m.split("/", 1)[1] if "/" in m else m
+            clean_m = m.split("/", 1)[1] if (m.startswith("anthropic/") or m.startswith("claude-")) else "claude-haiku-4-5"
             return ("anthropic", ant_key, PROVIDER_ENDPOINTS["anthropic"], clean_m)
         if ds_key:
-            clean_m = m.split("/", 1)[1] if "/" in m else m
+            clean_m = m.split("/", 1)[1] if m.startswith("deepseek/") else "deepseek-chat"
             return ("deepseek", ds_key, PROVIDER_ENDPOINTS["deepseek"], clean_m)
 
         return (self.active_provider, "", PROVIDER_ENDPOINTS.get(self.active_provider, DEFAULT_BASE_URL), m)
@@ -323,7 +376,7 @@ class AutoGISConfig:
 
     @property
     def max_tokens(self) -> int:
-        val = self.get_int("max_tokens", 2048)
+        val = self.get_int("max_tokens", 1536)
         return max(256, min(val, 16384))
 
     @max_tokens.setter

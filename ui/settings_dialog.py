@@ -22,7 +22,7 @@ from qgis.PyQt.QtWidgets import (
     QWidget,
 )
 
-from ..core.config import PROVIDER_ENDPOINTS, PROVIDERS, AutoGISConfig
+from ..core.config import PROVIDER_ENDPOINTS, PROVIDER_MODELS, PROVIDERS, AutoGISConfig
 from .theme import create_autogis_icon, create_autogis_pixmap, get_studio_stylesheet, set_custom_logo_path
 
 
@@ -106,7 +106,7 @@ class AutoGISSettingsDialog(QDialog):
         self._show_btn.clicked.connect(self._toggle_echo)
         key_row.addWidget(self._show_btn)
 
-        self._test_btn = QPushButton("⚡ Test", key_host)
+        self._test_btn = QPushButton("Test", key_host)
         self._test_btn.setObjectName("AutoGISGhostBtn")
         self._test_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._test_btn.clicked.connect(self._test_connection_fast)
@@ -119,6 +119,16 @@ class AutoGISSettingsDialog(QDialog):
         self._status_lbl.setWordWrap(True)
         self._status_lbl.setStyleSheet("font-size: 11px; color: #64748B;")
         form.addRow(QLabel(""), self._status_lbl)
+
+        # 3. Default Model Selector (Synced with Provider & Editable)
+        self._model_combo = QComboBox(card)
+        self._model_combo.setObjectName("AutoGISCombo")
+        self._model_combo.setEditable(True)
+        self._model_combo.setMinimumHeight(30)
+        if self._model_combo.lineEdit():
+            self._model_combo.lineEdit().setPlaceholderText("Select or type Model ID...")
+        self._populate_provider_models(self._current_pid, self._config.model)
+        form.addRow(QLabel("<b>AI Model:</b>"), self._model_combo)
 
         # 3. Custom Logo (Optional)
         logo_host = QWidget(card)
@@ -170,6 +180,24 @@ class AutoGISSettingsDialog(QDialog):
 
         root.addLayout(footer)
 
+    def _populate_provider_models(self, pid: str, selected_model: str = "") -> None:
+        self._model_combo.blockSignals(True)
+        self._model_combo.clear()
+        self._model_combo.addItem("Select Model", "")
+        models = PROVIDER_MODELS.get(pid, PROVIDER_MODELS["openrouter"])
+        matched_idx = 0
+        for mid, mlabel in models:
+            self._model_combo.addItem(f"{mlabel} ({mid})", mid)
+            if selected_model and (mid == selected_model or mid.split("/")[-1] == selected_model):
+                matched_idx = self._model_combo.count() - 1
+        if selected_model and matched_idx == 0:
+            self._model_combo.addItem(selected_model, selected_model)
+            matched_idx = self._model_combo.count() - 1
+        self._model_combo.setCurrentIndex(matched_idx)
+        if matched_idx == 0 and not selected_model and self._model_combo.lineEdit():
+            self._model_combo.lineEdit().clear()
+        self._model_combo.blockSignals(False)
+
     def _on_provider_changed(self, idx: int) -> None:
         if idx < 0:
             return
@@ -177,6 +205,7 @@ class AutoGISSettingsDialog(QDialog):
         new_pid = str(self._prov_combo.itemData(idx) or "gemini")
         self._current_pid = new_pid
         self._key_edit.setText(self._keys.get(new_pid, ""))
+        self._populate_provider_models(new_pid, "")
         self._status_lbl.setText("")
 
     def _on_key_edited(self, text: str) -> None:
@@ -204,6 +233,7 @@ class AutoGISSettingsDialog(QDialog):
         self._logo_edit.clear()
         self._custom_edit.clear()
         self._config.reset_all()
+        self._populate_provider_models(self._current_pid, "")
         self._status_lbl.setStyleSheet("color: #2563EB; font-weight: 600;")
         self._status_lbl.setText("Cleared all saved keys and model selection.")
 
@@ -212,7 +242,7 @@ class AutoGISSettingsDialog(QDialog):
         key = self._key_edit.text().strip()
         if not key:
             self._status_lbl.setStyleSheet("color: #DC2626; font-weight: 600;")
-            self._status_lbl.setText("❌ Please paste an API Key first.")
+            self._status_lbl.setText("Please paste an API Key first.")
             return
 
         pid = self._current_pid
@@ -230,7 +260,7 @@ class AutoGISSettingsDialog(QDialog):
                 if pid == "openrouter" or key.startswith("sk-or-"):
                     req = urllib.request.Request(
                         "https://openrouter.ai/api/v1/auth/key",
-                        headers={"Authorization": f"Bearer {key}", "User-Agent": "AutoGIS/2.0"},
+                        headers={"Authorization": f"Bearer {key}", "User-Agent": "AutoGIS/1.0"},
                     )
                 else:
                     req = urllib.request.Request(
@@ -239,17 +269,17 @@ class AutoGISSettingsDialog(QDialog):
                             "Authorization": f"Bearer {key}",
                             "x-api-key": key,
                             "anthropic-version": "2023-06-01",
-                            "User-Agent": "AutoGIS/2.0",
+                            "User-Agent": "AutoGIS/1.0",
                         },
                     )
                 with urllib.request.urlopen(req, timeout=2.5) as resp:
                     _ = resp.read(512)
                 ms = int((time.monotonic() - t0) * 1000)
-                self._test_result_signal.emit(True, f"✅ Connected ({ms}ms)")
+                self._test_result_signal.emit(True, f"Connected ({ms}ms)")
             except urllib.error.HTTPError as he:
-                self._test_result_signal.emit(False, f"❌ Invalid Key or HTTP {he.code}")
+                self._test_result_signal.emit(False, f"Invalid Key or HTTP {he.code}")
             except Exception as exc:
-                self._test_result_signal.emit(False, f"❌ {str(exc)[:60]}")
+                self._test_result_signal.emit(False, f"Error: {str(exc)[:60]}")
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -263,6 +293,22 @@ class AutoGISSettingsDialog(QDialog):
         self._config.active_provider = self._current_pid
         for pid, k_val in self._keys.items():
             self._config.set_provider_key(pid, k_val)
+
+        idx = self._model_combo.currentIndex()
+        chosen_model = ""
+        if idx >= 0:
+            data_val = self._model_combo.itemData(idx)
+            if data_val is not None and self._model_combo.currentText() == self._model_combo.itemText(idx):
+                chosen_model = str(data_val).strip()
+            else:
+                raw_txt = self._model_combo.currentText().strip()
+                if "(" in raw_txt and raw_txt.endswith(")"):
+                    chosen_model = raw_txt.rsplit("(", 1)[-1][:-1].strip()
+                elif raw_txt != "Select Model":
+                    chosen_model = raw_txt
+        if chosen_model:
+            self._config.model = chosen_model
+
         self._config.custom_logo_path = self._logo_edit.text().strip()
         set_custom_logo_path(self._config.custom_logo_path)
         self._config.custom_instructions = self._custom_edit.toPlainText().strip()
