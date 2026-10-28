@@ -107,7 +107,6 @@
       <nav class="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
         <a href="#features" class="transition hover:text-sky-600">Capabilities</a>
         <a href="#setup" class="transition hover:text-sky-600">Installation &amp; Setup</a>
-        <a href="#architecture" class="transition hover:text-sky-600">Architecture</a>
         <a href="#tools" class="transition hover:text-sky-600">Documentation</a>
       </nav>
 
@@ -127,8 +126,6 @@
   <!-- Hero Section -->
   <section class="mx-auto max-w-6xl px-6 pt-16 pb-14 text-center">
     <div class="reveal visible inline-flex items-center gap-2.5 rounded-full border border-sky-200 bg-white px-4 py-1.5 text-xs font-semibold text-sky-700 shadow-sm">
-      <span>100% Pure Python / PyQGIS</span>
-      <span class="text-slate-300">|</span>
       <span>QGIS 3.22 — 3.40+</span>
       <span class="text-slate-300">|</span>
       <span>Open-Source MIT</span>
@@ -330,41 +327,6 @@
             <div class="text-[11px] text-slate-500">Q&amp;A &amp; PyQGIS code</div>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Python Architecture Section -->
-  <section id="architecture" class="mx-auto max-w-6xl px-6 py-14">
-    <div class="reveal text-center">
-      <span class="font-mono text-xs font-bold tracking-widest text-teal-600 uppercase">100% Pure Python Codebase</span>
-      <h2 class="mt-2 text-3xl font-extrabold text-slate-900">Clean-Room Modular Architecture</h2>
-    </div>
-
-    <div class="reveal mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <div class="saas-card rounded-xl p-5">
-        <div class="font-mono text-xs font-bold text-sky-700">__init__.py &amp; plugin.py</div>
-        <p class="mt-1.5 text-xs text-slate-600 leading-relaxed">Exposes <code class="font-mono">classFactory(iface)</code>, manages QGIS toolbar/menu actions, binds <code class="font-mono">Ctrl+Shift+G</code>, and stops all timers on unload.</p>
-      </div>
-      <div class="saas-card rounded-xl p-5">
-        <div class="font-mono text-xs font-bold text-sky-700">core/config.py</div>
-        <p class="mt-1.5 text-xs text-slate-600 leading-relaxed">Persists settings in <code class="font-mono">QgsSettings</code>, orders models by active provider, and handles automatic model fallback chains.</p>
-      </div>
-      <div class="saas-card rounded-xl p-5">
-        <div class="font-mono text-xs font-bold text-sky-700">core/agent_engine.py</div>
-        <p class="mt-1.5 text-xs text-slate-600 leading-relaxed">Runs the 30-step ReAct loop, compact project state serializer, history compaction, and 35ms main-thread tool dispatcher.</p>
-      </div>
-      <div class="saas-card rounded-xl p-5">
-        <div class="font-mono text-xs font-bold text-teal-700">core/gis_tools.py</div>
-        <p class="mt-1.5 text-xs text-slate-600 leading-relaxed">18 native PyQGIS tools with automatic metric UTM CRS reprojection, overlay CRS alignment, raster band stats, and Processing runner.</p>
-      </div>
-      <div class="saas-card rounded-xl p-5">
-        <div class="font-mono text-xs font-bold text-teal-700">core/live_data_tools.py</div>
-        <p class="mt-1.5 text-xs text-slate-600 leading-relaxed">Connectors for OSM Overpass (multi-mirror failover), Nominatim boundaries, OSRM road routes, and Planetary Computer STAC COGs.</p>
-      </div>
-      <div class="saas-card rounded-xl p-5">
-        <div class="font-mono text-xs font-bold text-teal-700">core/document_tools.py &amp; ui/*</div>
-        <p class="mt-1.5 text-xs text-slate-600 leading-relaxed">Large PDF/GeoPDF/DOCX/XLSX/folder reader plus High-DPI 512x512 vector logo renderer, left-timer banner, and compact dock UI.</p>
       </div>
     </div>
   </section>

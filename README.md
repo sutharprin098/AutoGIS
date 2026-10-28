@@ -4,11 +4,10 @@
 
 # AutoGIS Studio (`v1.0.0`)
 
-**Autonomous Geospatial AI Agent & Spatial Analysis Studio for QGIS (100% Pure Python / PyQGIS)**
+**Autonomous Geospatial AI Agent & Spatial Analysis Studio for QGIS**
 
 [![Download ZIP for QGIS](https://img.shields.io/badge/Download_Plugin_ZIP-AutoGIS.zip_(v1.0.0)-0284C7?style=for-the-badge&logo=qgis&logoColor=white)](https://github.com/sutharprin098/AutoGIS/releases/latest/download/AutoGIS.zip)
 [![QGIS 3.22 - 3.40+](https://img.shields.io/badge/QGIS-3.22%20--%203.40%2B-589632?style=for-the-badge&logo=qgis&logoColor=white)](https://qgis.org)
-[![100% Python](https://img.shields.io/badge/100%25_Python-PyQGIS_%2B_PyQt5-2563EB?style=for-the-badge&logo=python&logoColor=white)](https://github.com/sutharprin098/AutoGIS)
 [![License: MIT](https://img.shields.io/badge/License-MIT-0D9488?style=for-the-badge)](LICENSE)
 
 </div>
@@ -26,7 +25,7 @@
 
 ## Overview
 
-**AutoGIS Studio (`v1.0.0`)** is a 100% original, open-source **Autonomous Geospatial AI Agent** built natively in **Python (`PyQGIS + PyQt5`)** for **QGIS Desktop**.
+**AutoGIS Studio (`v1.0.0`)** is an open-source **Autonomous Geospatial AI Agent** built natively for **QGIS Desktop**.
 
 It connects your choice of frontier AI models (**Google Gemini, OpenAI ChatGPT, Anthropic Claude, DeepSeek, or OpenRouter**) directly to your live QGIS map canvas, Processing toolbox, real-time satellite/OSM spatial APIs, and local documents/PDFs — capable of handling everything from quick map styling to **30+ layer multi-step spatial modeling pipelines** without freezing or crashing QGIS.
 
@@ -83,38 +82,6 @@ By default, **no AI provider or model is pre-selected** so you stay in full cont
 2. **AI Provider:** Select **Google Gemini**, **OpenAI (ChatGPT)**, **Anthropic (Claude)**, **DeepSeek**, or **OpenRouter (All Models)**.
 3. **API Key:** Paste your API key into the unified input box and click **`Test`** to verify in under 2 seconds.
 4. **AI Model:** Select a model from the synced dropdown (or type any custom Model ID) and click **`Save`**.
-
----
-
-## Complete End-to-End Python Architecture (`100% Pure Python`)
-
-AutoGIS Studio is engineered **100% in Python** using native **PyQGIS (`qgis.core`, `qgis.gui`, `processing`)**, **PyQt5 (`qgis.PyQt`)**, and the Python standard library.
-
-```text
-AutoGIS/
-├── __init__.py                 # QGIS entry point: exposes classFactory(iface) -> AutoGISPlugin
-├── metadata.txt                # Official QGIS plugin manifest (v1.0.0, QGIS 3.22 - 4.99)
-├── plugin.py                   # Plugin lifecycle controller (initGui, toolbar, menu, safe unload)
-├── plugins.xml                 # QGIS custom plugin repository feed for 1-click installation
-├── docs/
-│   └── autogis_screenshot.png  # Live QGIS Desktop screenshot (Solar Suitability 37-layer project)
-├── core/
-│   ├── __init__.py
-│   ├── config.py               # QgsSettings manager, provider model catalogs & automatic fallback chains
-│   ├── agent_engine.py         # Multi-step ReAct engine, phase decomposition, token compaction & QTimer bridge
-│   ├── gis_tools.py            # 18 native PyQGIS tools (CRS auto-alignment, raster/vector stats, processing, PyQGIS exec)
-│   ├── live_data_tools.py      # Live geospatial connectors (OSM Overpass, Nominatim, OSRM, STAC COGs, WMS/WFS)
-│   └── document_tools.py       # Universal reader & search engine for large PDFs, GeoPDFs, DOCX, XLSX, CSV & folders
-├── ui/
-│   ├── __init__.py
-│   ├── theme.py                # High-DPI vector logo renderer (512x512) & Light/Dark Qt stylesheet engine
-│   ├── widgets.py              # Chat cards, Left-Timer LiveStatusBanner, PlanChecklistCard & ToolExecutionCard
-│   ├── settings_dialog.py      # Unified 5-provider settings dialog with synced model selector & <2s test
-│   └── dock_panel.py           # Compact resizable QGIS dock panel (min-width 220px), chat composer & attachments
-└── icons/
-    ├── icon.svg                # Crisp light-palette vector cartographic emblem
-    └── icon.png                # High-DPI 512x512 PNG icon
-```
 
 ---
 
