@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F0F7FF"/>
+    </linearGradient>
+    <linearGradient id="mapLeft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E0F2FE"/>
+      <stop offset="100%" stop-color="#BAE6FD"/>
+    </linearGradient>
+    <linearGradient id="mapMid" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F0F9FF"/>
+      <stop offset="100%" stop-color="#E0F2FE"/>
+    </linearGradient>
+    <linearGradient id="pinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#0D9488"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Soft Light Porcelain Squircle Container -->
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="url(#cardBg)" stroke="#CBD5E1" stroke-width="10"/>
+
+  <!-- Minimalist Folded Cartographic Map Panels -->
+  <polygon points="96,156 196,118 196,372 96,410" fill="url(#mapLeft)" stroke="#38BDF8" stroke-width="8" stroke-linejoin="round"/>
+  <polygon points="196,118 316,156 316,410 196,372" fill="url(#mapMid)" stroke="#38BDF8" stroke-width="8" stroke-linejoin="round"/>
+  <polygon points="316,156 416,118 416,372 316,410" fill="url(#mapLeft)" stroke="#38BDF8" stroke-width="8" stroke-linejoin="round"/>
+
+  <!-- Subtle Topographic Contour Curve Across Map -->
+  <path d="M 112 292 Q 200 230 280 278 T 400 232" fill="none" stroke="#0D9488" stroke-width="12" stroke-linecap="round"/>
+
+  <!-- Precision Survey Location Ring & Pin -->
+  <circle cx="256" cy="236" r="68" fill="#FFFFFF" stroke="url(#pinGrad)" stroke-width="16"/>
+  <polygon points="256,184 278,236 256,222 234,236" fill="#2563EB"/>
+  <polygon points="256,288 278,236 256,250 234,236" fill="#0D9488"/>
+  <circle cx="256" cy="236" r="10" fill="#1E293B"/>
+</svg>
