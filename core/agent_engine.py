@@ -9,7 +9,7 @@ import urllib.request
 import uuid
 from typing import Any
 
-from qgis.PyQt.QtCore import QCoreApplication, QObject, QTimer, pyqtSignal
+from qgis.PyQt.QtCore import QObject, QTimer, pyqtSignal
 
 from .config import DEFAULT_BASE_URL, DEFAULT_MODEL, FALLBACK_CHAIN, AutoGISConfig, log_info, log_warn
 from .document_tools import summarize_attached_path
@@ -50,8 +50,10 @@ class AutoGISEngine(QObject):
 
         # Main-thread event dispatch queue
         self._queue: queue.Queue[tuple] = queue.Queue()
+        self._in_drain = False
+        self._executing_tools = False
         self._timer = QTimer(self)
-        self._timer.setInterval(25)
+        self._timer.setInterval(30)
         self._timer.timeout.connect(self._drain_queue)
 
     @property
@@ -73,6 +75,7 @@ class AutoGISEngine(QObject):
             self._awaiting_permission.clear()
 
     def cancel_current_run(self) -> None:
+        self._executing_tools = False
         with self._lock:
             rid = self._active_run_id
             if rid:
@@ -217,6 +220,7 @@ class AutoGISEngine(QObject):
             self._active_workers += 1
 
         provider, api_key, base_url, api_model = self._config.resolve_connection(self._config.model)
+        or_key = self._config.api_key
         max_tokens = self._config.max_tokens
         auto_fallback = self._config.auto_fallback_free
         tools_schema = self._build_tools_schema()
@@ -228,7 +232,7 @@ class AutoGISEngine(QObject):
 
         worker = threading.Thread(
             target=self._http_worker,
-            args=(run_id, provider, api_key, base_url, api_model, max_tokens, auto_fallback, messages_snapshot, tools_schema),
+            args=(run_id, provider, api_key, or_key, base_url, api_model, max_tokens, auto_fallback, messages_snapshot, tools_schema),
             daemon=True,
         )
         worker.start()
@@ -320,7 +324,7 @@ class AutoGISEngine(QObject):
         tool_calls = [tc_map[k] for k in sorted(tc_map.keys()) if tc_map[k].get("name")]
         return text_acc, reasoning_acc, tool_calls
 
-    def _http_worker(self, run_id: str, provider: str, api_key: str, base_url: str, model: str,
+    def _http_worker(self, run_id: str, provider: str, api_key: str, or_key: str, base_url: str, model: str,
                      max_tokens: int, auto_fallback: bool, messages: list[dict], tools: list[dict]) -> None:
         try:
             if run_id in self._cancelled_runs:
@@ -339,7 +343,6 @@ class AutoGISEngine(QObject):
                 except Exception:
                     err_msg = f"HTTP {he.code}: {he.reason}"
 
-                or_key = self._config.api_key
                 recovered = False
 
                 if tools and he.code in (400, 422) and ("tool" in err_msg.lower() or "tool" in body.lower()):
@@ -425,63 +428,82 @@ class AutoGISEngine(QObject):
                 self._active_workers = max(0, self._active_workers - 1)
 
     def _drain_queue(self) -> None:
-        token_buf_run: str | None = None
-        token_buf: list[str] = []
+        if self._in_drain or self._executing_tools:
+            return
+        self._in_drain = True
+        try:
+            token_buf_run: str | None = None
+            token_buf: list[str] = []
 
-        def _flush_tokens() -> None:
-            nonlocal token_buf_run
-            if token_buf_run is not None and token_buf:
-                text = "".join(token_buf)
-                token_buf.clear()
-                rid = token_buf_run
-                token_buf_run = None
-                self.token_chunk.emit(rid, text)
+            def _flush_tokens() -> None:
+                nonlocal token_buf_run
+                if token_buf_run is not None and token_buf:
+                    text = "".join(token_buf)
+                    token_buf.clear()
+                    rid = token_buf_run
+                    token_buf_run = None
+                    self.token_chunk.emit(rid, text)
 
-        count = 0
-        while count < 100:
-            try:
-                kind, payload = self._queue.get_nowait()
-            except queue.Empty:
-                break
-            count += 1
+            pending_tools: tuple[str, list[dict]] | None = None
+            count = 0
+            while count < 80:
+                try:
+                    kind, payload = self._queue.get_nowait()
+                except queue.Empty:
+                    break
+                count += 1
 
-            if kind == "token":
-                rid, chunk = payload
-                if token_buf_run in (None, rid):
+                if kind == "token":
+                    rid, chunk = payload
+                    if token_buf_run in (None, rid):
+                        token_buf_run = rid
+                        token_buf.append(chunk)
+                        continue
+                    _flush_tokens()
                     token_buf_run = rid
                     token_buf.append(chunk)
                     continue
+
                 _flush_tokens()
-                token_buf_run = rid
-                token_buf.append(chunk)
-                continue
+                if kind == "status":
+                    self.status_updated.emit(*payload)
+                elif kind == "reasoning":
+                    self.reasoning_chunk.emit(*payload)
+                elif kind == "assistant_step_done":
+                    self.assistant_step_done.emit(*payload)
+                elif kind == "exec_tools":
+                    pending_tools = payload
+                    break
+                elif kind == "run_finished":
+                    self.status_updated.emit(payload[0], "")
+                    self.run_finished.emit(*payload)
 
             _flush_tokens()
-            if kind == "status":
-                self.status_updated.emit(*payload)
-            elif kind == "reasoning":
-                self.reasoning_chunk.emit(*payload)
-            elif kind == "assistant_step_done":
-                self.assistant_step_done.emit(*payload)
-            elif kind == "exec_tools":
-                rid, calls = payload
-                self._execute_tool_batch_main_thread(rid, calls, 0)
-            elif kind == "run_finished":
-                self.status_updated.emit(payload[0], "")
-                self.run_finished.emit(*payload)
 
-        _flush_tokens()
+            if pending_tools is not None:
+                rid, calls = pending_tools
+                self._timer.stop()
+                self._executing_tools = True
+                QTimer.singleShot(
+                    20,
+                    lambda r=rid, c=calls: self._execute_tool_batch_main_thread(r, c, 0),
+                )
+                return
 
-        with self._lock:
-            workers = self._active_workers
-            awaiting = bool(self._awaiting_permission)
-        if workers <= 0 and not awaiting and self._queue.empty():
-            self._timer.stop()
+            with self._lock:
+                workers = self._active_workers
+                awaiting = bool(self._awaiting_permission)
+            if workers <= 0 and not awaiting and self._queue.empty():
+                self._timer.stop()
+        finally:
+            self._in_drain = False
 
     def _execute_tool_batch_main_thread(self, run_id: str, calls: list[dict], start_idx: int) -> None:
         if run_id in self._cancelled_runs:
+            self._executing_tools = False
             return
         if start_idx >= len(calls):
+            self._executing_tools = False
             self._launch_step(run_id)
             return
 
@@ -494,6 +516,7 @@ class AutoGISEngine(QObject):
 
         # Check if write permission is needed
         if mode == "ask_write" and spec is not None and spec.risk == "write" and not tc.get("_approved"):
+            self._executing_tools = False
             with self._lock:
                 self._awaiting_permission[cid] = (run_id, calls, start_idx)
             self.status_updated.emit(run_id, f"Waiting for approval: {cname}")
@@ -505,17 +528,21 @@ class AutoGISEngine(QObject):
         self.status_updated.emit(run_id, f"{step_prefix}Running {cname}...")
         self.tool_call_started.emit(run_id, cid, cname, cargs)
 
-        try:
-            QCoreApplication.processEvents()
-        except Exception:
-            pass
-
         t0 = time.monotonic()
         is_err = False
+        canvas = self._iface.mapCanvas() if (self._iface and hasattr(self._iface, "mapCanvas")) else None
+        freeze_canvas = canvas is not None and cname != "capture_map_canvas"
+
         if spec is None:
             res = {"error": f"Unknown tool '{cname}'."}
             is_err = True
         else:
+            if freeze_canvas:
+                try:
+                    canvas.stopRendering()
+                    canvas.freeze(True)
+                except Exception:
+                    pass
             try:
                 res = spec.handler(self._iface, cargs)
                 if isinstance(res, dict) and "error" in res:
@@ -523,6 +550,13 @@ class AutoGISEngine(QObject):
             except Exception as exc:
                 res = {"error": str(exc)}
                 is_err = True
+            finally:
+                if freeze_canvas:
+                    try:
+                        canvas.freeze(False)
+                        canvas.refresh()
+                    except Exception:
+                        pass
 
         elapsed_ms = int((time.monotonic() - t0) * 1000)
         self.tool_call_finished.emit(run_id, cid, cname, res, elapsed_ms, is_err)
@@ -551,19 +585,15 @@ class AutoGISEngine(QObject):
                 "content": res_str,
             })
 
-        try:
-            QCoreApplication.processEvents()
-        except Exception:
-            pass
-
-        # Yield 35ms back to the Qt event loop before the next tool in the batch so QGIS never freezes!
+        # Yield 80ms back to the Qt event loop before the next tool in the batch so QGIS renders cleanly!
         if start_idx + 1 < len(calls):
             QTimer.singleShot(
-                35,
+                80,
                 lambda r=run_id, c=calls, nxt=start_idx + 1: self._execute_tool_batch_main_thread(r, c, nxt),
             )
         else:
-            self._launch_step(run_id)
+            self._executing_tools = False
+            QTimer.singleShot(60, lambda r=run_id: self._launch_step(r))
 
     def resolve_permission(self, call_id: str, approved: bool) -> None:
         with self._lock:

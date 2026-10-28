@@ -76,6 +76,11 @@ class AutoGISPanel(QWidget):
         self._pinned_layers: list[str] = []
         self._is_running = False
 
+        self._scroll_timer = QTimer(self)
+        self._scroll_timer.setSingleShot(True)
+        self._scroll_timer.setInterval(50)
+        self._scroll_timer.timeout.connect(self._do_scroll_to_bottom)
+
         self.setObjectName("AutoGISRoot")
         self.setAcceptDrops(True)
         self.setMinimumWidth(200)
@@ -338,7 +343,13 @@ class AutoGISPanel(QWidget):
         self._scroll_to_bottom()
 
     def _scroll_to_bottom(self) -> None:
-        QTimer.singleShot(15, lambda: self._scroll.verticalScrollBar().setValue(self._scroll.verticalScrollBar().maximum()))
+        if not self._scroll_timer.isActive():
+            self._scroll_timer.start()
+
+    def _do_scroll_to_bottom(self) -> None:
+        sb = self._scroll.verticalScrollBar()
+        if sb is not None:
+            sb.setValue(sb.maximum())
 
     def _pin_active_layer(self) -> None:
         lyr = self._iface.activeLayer() if self._iface else None
@@ -482,10 +493,14 @@ class AutoGISPanel(QWidget):
         self._scroll_to_bottom()
 
     def _on_assistant_step_done(self, run_id: str, step_text: str) -> None:
+        if self._active_assistant_card is not None:
+            self._active_assistant_card.flush_text()
         self._active_assistant_card = None
         self._pending_reasoning = ""
 
     def _on_tool_call_started(self, run_id: str, call_id: str, name: str, args: object) -> None:
+        if self._active_assistant_card is not None:
+            self._active_assistant_card.flush_text()
         self._active_assistant_card = None
         args_dict = args if isinstance(args, dict) else {}
         tcard = ToolExecutionCard(call_id, name, args_dict, self._stream_host)
@@ -513,6 +528,8 @@ class AutoGISPanel(QWidget):
         self._insert_stream_widget(mcard)
 
     def _on_permission_requested(self, run_id: str, call_id: str, name: str, args: object) -> None:
+        if self._active_assistant_card is not None:
+            self._active_assistant_card.flush_text()
         self._active_assistant_card = None
         args_dict = args if isinstance(args, dict) else {}
         pcard = PermissionPromptCard(call_id, name, args_dict, self._stream_host)
@@ -524,6 +541,8 @@ class AutoGISPanel(QWidget):
         self._stop_btn.hide()
         self._send_btn.show()
         self._status_banner.stop_status()
+        if self._active_assistant_card is not None:
+            self._active_assistant_card.flush_text()
         self._active_assistant_card = None
         self._pending_reasoning = ""
 

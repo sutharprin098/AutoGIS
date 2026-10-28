@@ -103,6 +103,12 @@ class AssistantMessageCard(QFrame):
         self._content_lbl.setStyleSheet("background: transparent; border: none;")
         layout.addWidget(self._content_lbl)
 
+        self._last_render_ts = 0.0
+        self._render_timer = QTimer(self)
+        self._render_timer.setSingleShot(True)
+        self._render_timer.setInterval(110)
+        self._render_timer.timeout.connect(self.flush_text)
+
     def append_reasoning(self, chunk: str) -> None:
         self._reasoning_text += chunk
         if self._reasoning_text.strip() and self._reason_btn.isHidden():
@@ -112,11 +118,21 @@ class AssistantMessageCard(QFrame):
 
     def append_text(self, chunk: str) -> None:
         self._raw_text += chunk
+        now = time.monotonic()
+        if (now - self._last_render_ts) >= 0.11:
+            self.flush_text()
+        elif not self._render_timer.isActive():
+            self._render_timer.start()
+
+    def flush_text(self) -> None:
+        if self._render_timer.isActive():
+            self._render_timer.stop()
+        self._last_render_ts = time.monotonic()
         self._content_lbl.setText(markdown_to_html(self._raw_text))
 
     def set_full_text(self, text: str) -> None:
         self._raw_text = text
-        self._content_lbl.setText(markdown_to_html(self._raw_text))
+        self.flush_text()
 
     @property
     def text(self) -> str:

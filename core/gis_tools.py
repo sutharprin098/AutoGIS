@@ -53,6 +53,9 @@ _NO_GEOM_FLAG = getattr(
     getattr(getattr(QgsFeatureRequest, "Flag", None), "NoGeometry", 2),
 )
 
+# Keep references to Processing temporary layers/stores so Python GC never deletes C++ QgsMapLayer* objects owned by QgsProject
+_PROCESSING_LAYER_REFS: list[Any] = []
+
 
 @dataclass
 class GISToolSpec:
@@ -319,20 +322,21 @@ def _tool_inspect_layer(iface, args: dict) -> dict:
         res["bands"] = [lyr.bandName(b) for b in range(1, lyr.bandCount() + 1)]
         band_stats = []
         try:
-            from qgis.core import QgsRasterBandStats
-            dp = lyr.dataProvider()
-            if dp is not None:
-                stats_flag = getattr(QgsRasterBandStats, "All", getattr(getattr(QgsRasterBandStats, "Stats", None), "All", 15))
-                for b in range(1, min(lyr.bandCount(), 8) + 1):
-                    st = dp.bandStatistics(b, stats_flag, lyr.extent(), 250000)
-                    band_stats.append({
-                        "band": b,
-                        "name": lyr.bandName(b),
-                        "min": round(float(st.minimumValue), 4) if not math.isnan(st.minimumValue) else None,
-                        "max": round(float(st.maximumValue), 4) if not math.isnan(st.maximumValue) else None,
-                        "mean": round(float(st.mean), 4) if not math.isnan(st.mean) else None,
-                        "std_dev": round(float(st.stdDev), 4) if not math.isnan(st.stdDev) else None,
-                    })
+            if hasattr(lyr, "providerType") and lyr.providerType() == "gdal":
+                from qgis.core import QgsRasterBandStats
+                dp = lyr.dataProvider()
+                if dp is not None:
+                    stats_flag = getattr(QgsRasterBandStats, "All", getattr(getattr(QgsRasterBandStats, "Stats", None), "All", 15))
+                    for b in range(1, min(lyr.bandCount(), 6) + 1):
+                        st = dp.bandStatistics(b, stats_flag, lyr.extent(), 50000)
+                        band_stats.append({
+                            "band": b,
+                            "name": lyr.bandName(b),
+                            "min": round(float(st.minimumValue), 4) if not math.isnan(st.minimumValue) else None,
+                            "max": round(float(st.maximumValue), 4) if not math.isnan(st.maximumValue) else None,
+                            "mean": round(float(st.mean), 4) if not math.isnan(st.mean) else None,
+                            "std_dev": round(float(st.stdDev), 4) if not math.isnan(st.stdDev) else None,
+                        })
         except Exception:
             pass
         if band_stats:
@@ -1035,12 +1039,57 @@ def _tool_run_processing_algorithm(iface, args: dict) -> dict:
     out_summary: dict[str, Any] = {}
     for k, val in (result or {}).items():
         if isinstance(val, QgsMapLayer):
+            # CRITICAL: Transfer ownership out of QgsProcessingContext.temporaryLayerStore()
+            # so ~QgsProcessingContext() never deletes the C++ QgsMapLayer* added to QgsProject!
+            try:
+                if ctx is not None and hasattr(ctx, "temporaryLayerStore") and ctx.temporaryLayerStore() is not None:
+                    taken = ctx.temporaryLayerStore().takeMapLayer(val)
+                    if taken is not None:
+                        val = taken
+            except Exception:
+                pass
+            _PROCESSING_LAYER_REFS.append(val)
             if output_name and k == "OUTPUT":
                 val.setName(output_name)
             if load_output and QgsProject.instance().mapLayer(val.id()) is None:
                 QgsProject.instance().addMapLayer(val)
                 loaded_layers.append({"id": val.id(), "name": val.name(), "features": val.featureCount() if isinstance(val, QgsVectorLayer) else None})
             out_summary[k] = f"<Layer: {val.name()} ({val.id()})>"
+        elif isinstance(val, str) and load_output and k == "OUTPUT":
+            # Also check if ctx.takeResultLayer(val) holds a temporary layer by ID
+            taken_lyr = None
+            try:
+                if ctx is not None and hasattr(ctx, "takeResultLayer"):
+                    taken_lyr = ctx.takeResultLayer(val)
+            except Exception:
+                taken_lyr = None
+            if isinstance(taken_lyr, QgsMapLayer) and taken_lyr.isValid():
+                _PROCESSING_LAYER_REFS.append(taken_lyr)
+                if output_name:
+                    taken_lyr.setName(output_name)
+                QgsProject.instance().addMapLayer(taken_lyr)
+                loaded_layers.append({
+                    "id": taken_lyr.id(),
+                    "name": taken_lyr.name(),
+                    "features": taken_lyr.featureCount() if isinstance(taken_lyr, QgsVectorLayer) else None,
+                })
+                out_summary[k] = f"<Layer: {taken_lyr.name()} ({taken_lyr.id()})>"
+            elif os.path.exists(val):
+                lname = output_name or os.path.splitext(os.path.basename(val))[0]
+                ext = os.path.splitext(val)[1].lower()
+                if ext in (".tif", ".tiff", ".img", ".asc", ".dem", ".vrt"):
+                    rlyr = QgsRasterLayer(val, lname)
+                    if rlyr.isValid():
+                        QgsProject.instance().addMapLayer(rlyr)
+                        loaded_layers.append({"id": rlyr.id(), "name": rlyr.name(), "type": "raster"})
+                else:
+                    vlyr = QgsVectorLayer(val, lname, "ogr")
+                    if vlyr.isValid():
+                        QgsProject.instance().addMapLayer(vlyr)
+                        loaded_layers.append({"id": vlyr.id(), "name": vlyr.name(), "features": vlyr.featureCount()})
+                out_summary[k] = val
+            else:
+                out_summary[k] = _safe_val(val)
         elif isinstance(val, str) and os.path.exists(val) and load_output:
             lname = output_name or os.path.splitext(os.path.basename(val))[0]
             ext = os.path.splitext(val)[1].lower()
@@ -1113,6 +1162,37 @@ def _tool_get_algorithm_help(iface, args: dict) -> dict:
     }
 
 
+def _safe_reproject_layer(lyr: QgsVectorLayer, target_crs: QgsCoordinateReferenceSystem) -> QgsVectorLayer:
+    """Safely reproject a vector layer and transfer C++ ownership out of QgsProcessingContext."""
+    import processing
+    from qgis.core import QgsProcessingContext, QgsProcessingFeedback
+    ctx = QgsProcessingContext()
+    ctx.setProject(QgsProject.instance())
+    fb = QgsProcessingFeedback()
+    res = processing.run(
+        "native:reprojectlayer",
+        {"INPUT": lyr, "TARGET_CRS": target_crs, "OUTPUT": "TEMPORARY_OUTPUT"},
+        context=ctx,
+        feedback=fb,
+    )
+    out = res.get("OUTPUT")
+    if isinstance(out, QgsMapLayer):
+        try:
+            taken = ctx.temporaryLayerStore().takeMapLayer(out)
+            if taken is not None:
+                out = taken
+        except Exception:
+            pass
+        _PROCESSING_LAYER_REFS.append(out)
+        return out
+    if isinstance(out, str) and hasattr(ctx, "takeResultLayer"):
+        taken = ctx.takeResultLayer(out)
+        if isinstance(taken, QgsVectorLayer):
+            _PROCESSING_LAYER_REFS.append(taken)
+            return taken
+    return lyr
+
+
 def _tool_spatial_buffer(iface, args: dict) -> dict:
     target = args.get("layer") or ""
     distance = float(args.get("distance") or 100.0)
@@ -1126,14 +1206,9 @@ def _tool_spatial_buffer(iface, args: dict) -> dict:
     # Automatic CRS intelligence: if layer is in Geographic degrees (e.g. EPSG:4326) and distance >= 0.5,
     # automatically reproject to metric UTM / Project CRS so distance is buffered accurately in METERS!
     if lyr.crs().isValid() and lyr.crs().isGeographic() and distance >= 0.5:
-        import processing
         metric_crs = _auto_metric_crs_for_layer(lyr)
         try:
-            reproj = processing.run("native:reprojectlayer", {
-                "INPUT": lyr,
-                "TARGET_CRS": metric_crs,
-                "OUTPUT": "TEMPORARY_OUTPUT",
-            })["OUTPUT"]
+            reproj = _safe_reproject_layer(lyr, metric_crs)
             res = _tool_run_processing_algorithm(iface, {
                 "algorithm_id": "native:buffer",
                 "parameters": {
@@ -1191,12 +1266,7 @@ def _tool_spatial_overlay(iface, args: dict) -> dict:
     crs_aligned = False
     if input_lyr.crs().isValid() and overlay_lyr.crs().isValid() and input_lyr.crs() != overlay_lyr.crs():
         try:
-            import processing
-            overlay_lyr = processing.run("native:reprojectlayer", {
-                "INPUT": overlay_lyr,
-                "TARGET_CRS": input_lyr.crs(),
-                "OUTPUT": "TEMPORARY_OUTPUT",
-            })["OUTPUT"]
+            overlay_lyr = _safe_reproject_layer(overlay_lyr, input_lyr.crs())
             crs_aligned = True
         except Exception as exc:
             log_warn(f"Auto-CRS overlay alignment warning: {exc}")
