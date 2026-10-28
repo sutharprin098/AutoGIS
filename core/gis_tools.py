@@ -1566,18 +1566,19 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
         ),
         GISToolSpec(
             name="fetch_stac_earth_data",
-            description="Search and stream live Cloud-Optimized GeoTIFF (COG) Earth Observation rasters from Microsoft Planetary Computer STAC API directly into QGIS: 'dem' (Copernicus 30m Elevation DEM), 'sentinel2' (10m True Color Satellite Imagery), or 'lulc' (Esri 10m Land Use / Land Cover).",
+            description="Search and stream live Cloud-Optimized GeoTIFF (COG) Earth Observation rasters from Microsoft Planetary Computer STAC API directly into QGIS: 'dem' (Copernicus 30m Elevation DEM), 'sentinel2' (10m True Color Satellite RGB), 'sentinel2_ndvi' or 'ndvi' (Sentinel-2 10m Normalized Difference Vegetation Index & NIR/Red bands), 'sentinel2_nir' (10m NIR Band 8), 'sentinel2_red' (10m Red Band 4), 'sentinel2_bands' (full multispectral bands), or 'lulc' (Esri 10m Land Use / Land Cover).",
             risk="write",
             parameters={
                 "type": "object",
                 "properties": {
                     "dataset": {
                         "type": "string",
-                        "enum": ["dem", "sentinel2", "lulc"],
-                        "description": "'dem' for Copernicus 30m DEM, 'sentinel2' for Sentinel-2 L2A 10m True Color, 'lulc' for Esri 10m Land Cover.",
+                        "enum": ["dem", "sentinel2", "sentinel2_ndvi", "ndvi", "sentinel2_nir", "sentinel2_red", "sentinel2_bands", "lulc"],
+                        "description": "'dem' for Copernicus 30m DEM, 'sentinel2' for Sentinel-2 10m True Color RGB, 'ndvi' or 'sentinel2_ndvi' to download NIR (B08) and Red (B04) and automatically calculate 10m NDVI, 'sentinel2_nir' for 10m Band 8, 'sentinel2_red' for 10m Band 4, 'sentinel2_bands' for all multispectral bands, 'lulc' for Esri 10m Land Cover.",
                     },
-                    "place": {"type": "string", "description": "Optional place name (e.g. 'Dehradun', 'Shimla'). If omitted, uses bbox or current canvas extent."},
+                    "place": {"type": "string", "description": "Optional place name (e.g. 'Udaipur', 'Dehradun'). If omitted, uses bbox or current canvas extent."},
                     "bbox": {"type": "array", "items": {"type": "number"}, "description": "Optional [xmin, ymin, xmax, ymax] in EPSG:4326."},
+                    "asset_key": {"type": "string", "description": "Optional specific STAC band key (e.g. 'B08', 'B04', 'B03', 'B02', 'B11', 'visual')."},
                     "max_cloud_cover": {"type": "number", "description": "For sentinel2: maximum cloud cover percentage (default 20)."},
                     "layer_name": {"type": "string", "description": "Optional display name for the raster layer."},
                     "zoom": {"type": "boolean", "description": "Zoom to loaded raster (default true)."},

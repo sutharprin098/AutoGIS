@@ -179,7 +179,8 @@ class AutoGISEngine(QObject):
             "1. **CRS Intelligence (CRITICAL)**: Always check project and layer CRS (`EPSG`, projected meters vs geographic degrees). "
             "`spatial_buffer` and `spatial_overlay` automatically reproject/align CRSs to metric UTM/Project CRS, and for custom `run_processing_algorithm` or `execute_pyqgis` always verify CRS alignment (`native:reprojectlayer`) before distance/area calculations.\n"
             "2. **Step-by-Step Decomposition**: For large or multi-step workflows (2+ actions), call `update_agent_plan` first to break the work into sequential phases (`pending`/`in_progress`/`completed`), execute 1-2 tools per turn, and update the plan after each step.\n"
-            "3. **Live Data & Docs**: Use `fetch_place_boundary`, `fetch_osm_features`, `compute_road_route`, `fetch_stac_earth_data` (`dem`/`sentinel2`/`lulc`), `read_uploaded_file_or_pdf`, and `inspect_layer`.\n"
+            "3. **Live Data & STAC Satellite**: Use `fetch_place_boundary`, `fetch_osm_features`, `compute_road_route`, `read_uploaded_file_or_pdf`, and `inspect_layer`. "
+            "For Earth Observation rasters, use `fetch_stac_earth_data`: 'dem' (Copernicus 30m Elevation), 'sentinel2' (10m True Color RGB), 'ndvi' or 'sentinel2_ndvi' (automatically streams B08 NIR + B04 Red and computes 10m NDVI with vegetation color ramp), 'sentinel2_nir' (B08), 'sentinel2_red' (B04), 'sentinel2_bands' (full multispectral), or 'lulc' (Esri 10m Land Cover).\n"
             "4. **Concise & Token-Efficient**: Keep responses clear, professional, and without emojis."
         )
 

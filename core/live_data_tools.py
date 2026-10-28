@@ -878,27 +878,119 @@ def tool_compute_road_route(iface, args: dict, run_on_main=None) -> dict:
 # ============================================================================
 # 4. MICROSOFT PLANETARY COMPUTER STAC (30m DEM, Sentinel-2, Esri LULC)
 # ============================================================================
+# 4. MICROSOFT PLANETARY COMPUTER STAC EARTH OBSERVATION DATA (COGs)
+# ============================================================================
 
 STAC_DATASETS: dict[str, tuple[str, str, str]] = {
     "dem": ("cop-dem-glo-30", "data", "Copernicus 30m DEM Elevation"),
     "elevation": ("cop-dem-glo-30", "data", "Copernicus 30m DEM Elevation"),
     "sentinel2": ("sentinel-2-l2a", "visual", "Sentinel-2 True Color (10m)"),
+    "sentinel2_rgb": ("sentinel-2-l2a", "visual", "Sentinel-2 True Color (10m)"),
+    "sentinel2_nir": ("sentinel-2-l2a", "B08", "Sentinel-2 NIR Band 8 (10m)"),
+    "sentinel2_red": ("sentinel-2-l2a", "B04", "Sentinel-2 Red Band 4 (10m)"),
+    "sentinel2_green": ("sentinel-2-l2a", "B03", "Sentinel-2 Green Band 3 (10m)"),
+    "sentinel2_blue": ("sentinel-2-l2a", "B02", "Sentinel-2 Blue Band 2 (10m)"),
+    "sentinel2_swir": ("sentinel-2-l2a", "B11", "Sentinel-2 SWIR Band 11 (20m)"),
     "lulc": ("io-lulc-annual-v02", "data", "Esri 10m Land Cover (LULC)"),
 }
+
+
+def _sign_planetary_computer_href(raw_href: str) -> str:
+    sign_url = "https://planetarycomputer.microsoft.com/api/sas/v1/sign?" + urllib.parse.urlencode({"href": raw_href})
+    try:
+        signed_data = _http_get_json(sign_url, timeout=15)
+        return str(signed_data.get("href") or raw_href)
+    except Exception:
+        return raw_href
+
+
+def _apply_raster_transparency(rlayer: QgsRasterLayer) -> None:
+    """Make black satellite background (0 values) 100% transparent so black tile borders disappear."""
+    try:
+        for b in range(1, rlayer.bandCount() + 1):
+            rlayer.dataProvider().setNoDataValue(b, 0.0)
+            rlayer.dataProvider().setUseSourceNoDataValue(b, True)
+
+        from qgis.core import (
+            QgsRasterTransparency,
+            QgsRasterTransparencyPixel,
+            QgsRasterTransparencySingleValuePixel,
+        )
+
+        tr = QgsRasterTransparency()
+        if rlayer.bandCount() >= 3 and rlayer.renderer():
+            p = QgsRasterTransparencyPixel()
+            p.red = 0.0
+            p.green = 0.0
+            p.blue = 0.0
+            p.percentTransparent = 100.0
+            tr.setTransparentThreeValuePixelList([p])
+            rlayer.renderer().setRasterTransparency(tr)
+        elif rlayer.bandCount() == 1 and rlayer.renderer():
+            sp = QgsRasterTransparencySingleValuePixel()
+            sp.min = 0.0
+            sp.max = 0.0
+            sp.percentTransparent = 100.0
+            tr.setTransparentSingleValuePixelList([sp])
+            rlayer.renderer().setRasterTransparency(tr)
+        rlayer.triggerRepaint()
+    except Exception:
+        pass
+
+
+def _apply_ndvi_style(layer: QgsRasterLayer) -> None:
+    """Style NDVI single-band raster layer with standard pseudocolor vegetation color ramp (-1 to 1)."""
+    try:
+        from qgis.core import (
+            QgsColorRampShader,
+            QgsRasterShader,
+            QgsSingleBandPseudoColorRenderer,
+        )
+        from qgis.PyQt.QtGui import QColor
+
+        fcn = QgsColorRampShader()
+        fcn.setColorRampType(QgsColorRampShader.Interpolated)
+        items = [
+            QgsColorRampShader.ColorRampItem(-1.0, QColor(0, 0, 255), "Water (-1.0)"),
+            QgsColorRampShader.ColorRampItem(-0.05, QColor(165, 42, 42), "Barren (-0.05)"),
+            QgsColorRampShader.ColorRampItem(0.1, QColor(218, 165, 32), "Soil/Rock (0.1)"),
+            QgsColorRampShader.ColorRampItem(0.25, QColor(255, 255, 0), "Sparse Veg (0.25)"),
+            QgsColorRampShader.ColorRampItem(0.45, QColor(144, 238, 144), "Moderate Veg (0.45)"),
+            QgsColorRampShader.ColorRampItem(0.65, QColor(34, 139, 34), "Dense Veg (0.65)"),
+            QgsColorRampShader.ColorRampItem(1.0, QColor(0, 100, 0), "Very Dense Veg (1.0)"),
+        ]
+        fcn.setColorRampItemList(items)
+        shader = QgsRasterShader()
+        shader.setRasterShaderFunction(fcn)
+        renderer = QgsSingleBandPseudoColorRenderer(layer.dataProvider(), 1, shader)
+        layer.setRenderer(renderer)
+        layer.triggerRepaint()
+    except Exception:
+        pass
 
 
 def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
     dataset_key = str(args.get("dataset") or "dem").strip().lower()
     place = str(args.get("place") or "").strip()
     bbox = args.get("bbox")
-    max_cloud = float(args.get("max_cloud_cover") if args.get("max_cloud_cover") is not None else 15.0)
+    max_cloud = float(args.get("max_cloud_cover") if args.get("max_cloud_cover") is not None else 20.0)
 
-    if dataset_key in STAC_DATASETS:
+    is_ndvi = dataset_key in ("ndvi", "sentinel2_ndvi")
+    is_bands = dataset_key in ("sentinel2_bands", "sentinel2_multispectral", "full_bands")
+
+    if is_ndvi or is_bands or dataset_key.startswith("sentinel2"):
+        collection = "sentinel-2-l2a"
+        asset_key = STAC_DATASETS.get(dataset_key, ("sentinel-2-l2a", "visual", "Sentinel-2"))[1]
+        label_prefix = "Sentinel-2"
+    elif dataset_key in STAC_DATASETS:
         collection, asset_key, label_prefix = STAC_DATASETS[dataset_key]
     else:
         collection = dataset_key
         asset_key = str(args.get("asset_key") or "data")
         label_prefix = f"STAC {collection}"
+
+    if args.get("asset_key"):
+        asset_key = str(args["asset_key"]).strip()
 
     if isinstance(bbox, (list, tuple)) and len(bbox) == 4:
         bbox_4326 = [float(bbox[0]), float(bbox[1]), float(bbox[2]), float(bbox[3])]
@@ -939,29 +1031,143 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
     item_id = item.get("id", "item")
     assets = item.get("properties") or {}
     item_assets = item.get("assets") or {}
+    place_suffix = f" ({place.title()})" if place else ""
+
+    # ========================================================================
+    # CASE A: NDVI COMPUTATION (Loads B08 NIR & B04 Red, then calculates NDVI)
+    # ========================================================================
+    if is_ndvi:
+        b08_obj = item_assets.get("B08")
+        b04_obj = item_assets.get("B04")
+        if not b08_obj or not b04_obj:
+            return {"error": f"STAC item '{item_id}' does not have B08 (NIR) and B04 (Red) assets."}
+
+        signed_nir = _sign_planetary_computer_href(str(b08_obj["href"]))
+        signed_red = _sign_planetary_computer_href(str(b04_obj["href"]))
+
+        def _calc_ndvi_on_main() -> dict:
+            from .gis_tools import _PROCESSING_LAYER_REFS
+
+            nir_name = f"Sentinel-2 NIR B08{place_suffix}"
+            red_name = f"Sentinel-2 Red B04{place_suffix}"
+
+            nir_layer = QgsRasterLayer(f"/vsicurl/{signed_nir}", nir_name, "gdal")
+            red_layer = QgsRasterLayer(f"/vsicurl/{signed_red}", red_name, "gdal")
+
+            if not nir_layer.isValid() or not red_layer.isValid():
+                return {"error": "Could not stream Sentinel-2 NIR/Red raster bands from STAC."}
+
+            _apply_raster_transparency(nir_layer)
+            _apply_raster_transparency(red_layer)
+
+            _PROCESSING_LAYER_REFS.extend([nir_layer, red_layer])
+            QgsProject.instance().addMapLayer(nir_layer)
+            QgsProject.instance().addMapLayer(red_layer)
+
+            ndvi_name = str(args.get("layer_name") or f"Sentinel-2 NDVI (10m){place_suffix}").strip()
+            ndvi_out = os.path.join(data_dir(), f"ndvi_{_safe_slug(place or item_id[:16])}.tif")
+
+            ndvi_layer = None
+            try:
+                import processing
+                calc_res = processing.run(
+                    "qgis:rastercalculator",
+                    {
+                        "EXPRESSION": f'("{nir_name}@1" - "{red_name}@1") / ("{nir_name}@1" + "{red_name}@1")',
+                        "LAYERS": [nir_layer, red_layer],
+                        "OUTPUT": ndvi_out,
+                    },
+                )
+                actual_out = calc_res.get("OUTPUT", ndvi_out)
+                if os.path.exists(actual_out):
+                    ndvi_layer = QgsRasterLayer(actual_out, ndvi_name, "gdal")
+            except Exception:
+                pass
+
+            if ndvi_layer is not None and ndvi_layer.isValid():
+                _apply_raster_transparency(ndvi_layer)
+                _apply_ndvi_style(ndvi_layer)
+                _PROCESSING_LAYER_REFS.append(ndvi_layer)
+                QgsProject.instance().addMapLayer(ndvi_layer)
+                if iface and iface.mapCanvas():
+                    iface.mapCanvas().refresh()
+                return {
+                    "status": "ndvi_calculated_successfully",
+                    "ndvi_layer": ndvi_layer.name(),
+                    "ndvi_layer_id": ndvi_layer.id(),
+                    "nir_band_layer": nir_name,
+                    "red_band_layer": red_name,
+                    "formula": "(NIR - Red) / (NIR + Red)",
+                    "resolution": "10m",
+                    "cloud_cover": assets.get("eo:cloud_cover"),
+                    "datetime": assets.get("datetime"),
+                    "file_path": ndvi_out,
+                }
+            else:
+                if iface and iface.mapCanvas():
+                    iface.mapCanvas().refresh()
+                return {
+                    "status": "multispectral_bands_loaded",
+                    "nir_layer": nir_name,
+                    "red_layer": red_name,
+                    "message": f"Both Sentinel-2 NIR (B08) and Red (B04) 10m bands loaded. Use raster calculator with: ('{nir_name}@1' - '{red_name}@1') / ('{nir_name}@1' + '{red_name}@1').",
+                }
+
+        return run_on_main(_calc_ndvi_on_main) if callable(run_on_main) else _calc_ndvi_on_main()
+
+    # ========================================================================
+    # CASE B: MULTISPECTRAL BANDS (Loads B04, B08, B03, B02 & True Color)
+    # ========================================================================
+    if is_bands:
+        band_keys = [("visual", "True Color RGB"), ("B08", "NIR Band 8"), ("B04", "Red Band 4"), ("B03", "Green Band 3"), ("B02", "Blue Band 2")]
+        loaded_info = []
+
+        def _load_all_bands_on_main() -> dict:
+            from .gis_tools import _PROCESSING_LAYER_REFS
+            for bkey, bdesc in band_keys:
+                b_obj = item_assets.get(bkey)
+                if b_obj and b_obj.get("href"):
+                    shref = _sign_planetary_computer_href(str(b_obj["href"]))
+                    lyr_name = f"Sentinel-2 {bdesc}{place_suffix}"
+                    rlayer = QgsRasterLayer(f"/vsicurl/{shref}", lyr_name, "gdal")
+                    if rlayer.isValid():
+                        _apply_raster_transparency(rlayer)
+                        _PROCESSING_LAYER_REFS.append(rlayer)
+                        QgsProject.instance().addMapLayer(rlayer)
+                        loaded_info.append(lyr_name)
+            if iface and iface.mapCanvas():
+                iface.mapCanvas().refresh()
+            return {
+                "status": "sentinel2_bands_loaded",
+                "bands_loaded": loaded_info,
+                "item_id": item_id,
+                "datetime": assets.get("datetime"),
+            }
+
+        return run_on_main(_load_all_bands_on_main) if callable(run_on_main) else _load_all_bands_on_main()
+
+    # ========================================================================
+    # CASE C: STANDARD SINGLE/RGB RASTER (DEM, LULC, Visual Sentinel-2)
+    # ========================================================================
     asset_obj = item_assets.get(asset_key) or next(
         (v for v in item_assets.values() if "tiff" in str(v.get("type", "")).lower()),
         None,
     )
     if not asset_obj or not asset_obj.get("href"):
-        return {"error": f"No GeoTIFF asset found in STAC item '{item_id}'."}
+        return {"error": f"No GeoTIFF asset '{asset_key}' found in STAC item '{item_id}'."}
 
-    raw_href = str(asset_obj["href"])
-    sign_url = "https://planetarycomputer.microsoft.com/api/sas/v1/sign?" + urllib.parse.urlencode({"href": raw_href})
-    try:
-        signed_data = _http_get_json(sign_url, timeout=15)
-        signed_href = str(signed_data.get("href") or raw_href)
-    except Exception:
-        signed_href = raw_href
-
+    signed_href = _sign_planetary_computer_href(str(asset_obj["href"]))
     vsi_uri = f"/vsicurl/{signed_href}"
-    place_suffix = f" ({place.title()})" if place else ""
     layer_name = str(args.get("layer_name") or f"{label_prefix}{place_suffix} [{item_id[:18]}]").strip()
 
     def _load_cog_on_main() -> dict:
         rlayer = QgsRasterLayer(vsi_uri, layer_name, "gdal")
         if not rlayer.isValid():
             return {"error": f"GDAL could not stream COG raster from '{signed_href[:120]}'."}
+
+        # Apply NoData transparency so outer satellite black border disappears completely!
+        _apply_raster_transparency(rlayer)
+
         from .gis_tools import _PROCESSING_LAYER_REFS
         _PROCESSING_LAYER_REFS.append(rlayer)
         QgsProject.instance().addMapLayer(rlayer)
@@ -971,6 +1177,7 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
             "status": "streamed_cog_loaded",
             "collection": collection,
             "item_id": item_id,
+            "asset_key": asset_key,
             "datetime": assets.get("datetime"),
             "cloud_cover": assets.get("eo:cloud_cover"),
             "layer_id": rlayer.id(),
