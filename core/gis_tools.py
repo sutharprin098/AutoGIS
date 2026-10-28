@@ -1382,6 +1382,11 @@ def _tool_execute_pyqgis(iface, args: dict) -> dict:
     except ImportError:
         processing = None
 
+    try:
+        import numpy as np
+    except ImportError:
+        np = None
+
     env: dict[str, Any] = {
         "__builtins__": __builtins__,
         "iface": iface,
@@ -1389,6 +1394,13 @@ def _tool_execute_pyqgis(iface, args: dict) -> dict:
         "project": QgsProject.instance(),
         "qgis": qgis,
         "processing": processing,
+        "np": np,
+        "numpy": np,
+        "os": os,
+        "sys": sys,
+        "json": json,
+        "math": math,
+        "time": time,
         "QgsVectorLayer": QgsVectorLayer,
         "QgsRasterLayer": QgsRasterLayer,
         "QgsFeature": QgsFeature,

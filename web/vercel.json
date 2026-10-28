@@ -1,14 +1,14 @@
 {
   "version": 2,
   "cleanUrls": true,
-  "headers": [
+  "redirects": [
     {
       "source": "/AutoGIS.zip",
-      "headers": [
-        { "key": "Content-Type", "value": "application/zip" },
-        { "key": "Content-Disposition", "value": "attachment; filename=\"AutoGIS.zip\"" }
-      ]
-    },
+      "destination": "https://github.com/sutharprin098/AutoGIS/releases/latest/download/AutoGIS.zip",
+      "permanent": false
+    }
+  ],
+  "headers": [
     {
       "source": "/plugins.xml",
       "headers": [

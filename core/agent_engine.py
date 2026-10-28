@@ -181,7 +181,13 @@ class AutoGISEngine(QObject):
             "2. **Step-by-Step Decomposition**: For large or multi-step workflows (2+ actions), call `update_agent_plan` first to break the work into sequential phases (`pending`/`in_progress`/`completed`), execute 1-2 tools per turn, and update the plan after each step.\n"
             "3. **Live Data & STAC Satellite**: Use `fetch_place_boundary`, `fetch_osm_features`, `compute_road_route`, `read_uploaded_file_or_pdf`, and `inspect_layer`. "
             "For Earth Observation rasters, use `fetch_stac_earth_data`: 'dem' (Copernicus 30m Elevation), 'sentinel2' (10m True Color RGB), 'ndvi' or 'sentinel2_ndvi' (automatically streams B08 NIR + B04 Red and computes 10m NDVI with vegetation color ramp), 'sentinel2_nir' (B08), 'sentinel2_red' (B04), 'sentinel2_bands' (full multispectral), or 'lulc' (Esri 10m Land Cover).\n"
-            "4. **Concise & Token-Efficient**: Keep responses clear, professional, and without emojis."
+            "4. **Autonomous Silent PyQGIS Execution (DO NOT DUMP CODE)**: "
+            "You have full local Python and PyQGIS execution capability via `execute_pyqgis`. "
+            "Whenever a user asks for any calculation, spatial analysis, NDVI, raster algebra, band manipulation, or workflow that requires custom scripting, "
+            "NEVER explain theoretical Python code in your message, NEVER say 'I cannot proceed', and NEVER tell the user to run scripts manually. "
+            "Immediately write and execute the complete Python script locally using `execute_pyqgis` in the background. "
+            "Run it silently and cleanly, and once executed, simply inform the user of the final result, layers created, and key findings on their map canvas.\n"
+            "5. **Concise & Token-Efficient**: Keep responses clear, professional, direct, and without emojis."
         )
 
     def start_user_turn(self, user_text: str, attachments: list[str] | None = None,

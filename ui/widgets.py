@@ -183,7 +183,8 @@ class ToolExecutionCard(QFrame):
         )
         row.addWidget(self._status_icon)
 
-        self._title_lbl = QLabel(f"<b>{tool_name}</b>", self)
+        display_title = "⚡ PyQGIS Autonomous Script" if tool_name == "execute_pyqgis" else tool_name
+        self._title_lbl = QLabel(f"<b>{display_title}</b>", self)
         self._title_lbl.setStyleSheet("font-size: 11.5px; background: transparent; border: none;")
         row.addWidget(self._title_lbl, 1)
 
