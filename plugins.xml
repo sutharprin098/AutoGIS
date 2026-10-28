@@ -6,10 +6,11 @@
         <version>1.0.0</version>
         <qgis_minimum_version>3.22.0</qgis_minimum_version>
         <qgis_maximum_version>4.99.0</qgis_maximum_version>
-        <homepage>https://github.com/sutharprin098/AutoGIS</homepage>
+        <homepage>https://autogis.princesite.in/</homepage>
         <file_name>AutoGIS.zip</file_name>
         <icon>https://raw.githubusercontent.com/sutharprin098/AutoGIS/main/icons/icon.png</icon>
-        <author_name>AutoGIS Contributors</author_name>
+        <author_name>Prince Suthar</author_name>
+        <author_email>sutharprince098@gmail.com</author_email>
         <download_url>https://github.com/sutharprin098/AutoGIS/releases/latest/download/AutoGIS.zip</download_url>
         <uploaded_by>sutharprin098</uploaded_by>
         <create_date>2026-10-28</create_date>

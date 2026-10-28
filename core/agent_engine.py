@@ -32,6 +32,15 @@ class AutoGISEngine(QObject):
     map_captured = pyqtSignal(str, str)                 # (run_id, image_path)
     permission_requested = pyqtSignal(str, str, str, object)  # (run_id, call_id, name, args)
     run_finished = pyqtSignal(str, str, str)            # (run_id, status, final_text)
+    _main_invoke_sig = pyqtSignal(object)               # internal main-thread trampoline
+    _async_tool_done_sig = pyqtSignal(object)           # internal async tool completion
+
+    ASYNC_NETWORK_TOOLS = frozenset({
+        "fetch_place_boundary",
+        "fetch_osm_features",
+        "compute_road_route",
+        "fetch_stac_earth_data",
+    })
 
     def __init__(self, iface, config: AutoGISConfig, parent=None) -> None:
         super().__init__(parent)
@@ -55,6 +64,38 @@ class AutoGISEngine(QObject):
         self._timer = QTimer(self)
         self._timer.setInterval(30)
         self._timer.timeout.connect(self._drain_queue)
+
+        self._main_invoke_sig.connect(self._on_main_invoke)
+        self._async_tool_done_sig.connect(self._on_async_tool_done)
+
+    def _on_main_invoke(self, pkg: object) -> None:
+        fn, res_q = pkg
+        canvas = self._iface.mapCanvas() if (self._iface and hasattr(self._iface, "mapCanvas")) else None
+        if canvas is not None:
+            try:
+                canvas.stopRendering()
+                canvas.freeze(True)
+            except Exception:
+                pass
+        try:
+            res_q.put(("ok", fn()))
+        except Exception as exc:
+            res_q.put(("err", exc))
+        finally:
+            if canvas is not None:
+                try:
+                    canvas.freeze(False)
+                    canvas.refresh()
+                except Exception:
+                    pass
+
+    def run_on_main_thread(self, fn, timeout: float = 30.0) -> Any:
+        res_q: queue.Queue = queue.Queue()
+        self._main_invoke_sig.emit((fn, res_q))
+        tag, payload = res_q.get(timeout=timeout)
+        if tag == "err":
+            raise payload
+        return payload
 
     @property
     def tools(self) -> dict[str, GISToolSpec]:
@@ -529,6 +570,25 @@ class AutoGISEngine(QObject):
         self.tool_call_started.emit(run_id, cid, cname, cargs)
 
         t0 = time.monotonic()
+
+        # Execute network-heavy download tools on a background worker thread
+        # so the QGIS GUI and live timer never freeze while downloading from Overpass/Nominatim/STAC!
+        if spec is not None and cname in self.ASYNC_NETWORK_TOOLS:
+            def _bg_worker(r=run_id, c=calls, idx=start_idx, call_id=cid, name=cname, args=cargs, s=spec, start_t=t0) -> None:
+                err_flag = False
+                try:
+                    out = s.handler(self._iface, args, run_on_main=self.run_on_main_thread)
+                    if isinstance(out, dict) and "error" in out:
+                        err_flag = True
+                except Exception as exc:
+                    out = {"error": str(exc)}
+                    err_flag = True
+                ms = int((time.monotonic() - start_t) * 1000)
+                self._async_tool_done_sig.emit((r, c, idx, call_id, name, out, ms, err_flag))
+
+            threading.Thread(target=_bg_worker, daemon=True).start()
+            return
+
         is_err = False
         canvas = self._iface.mapCanvas() if (self._iface and hasattr(self._iface, "mapCanvas")) else None
         freeze_canvas = canvas is not None and cname != "capture_map_canvas"
@@ -559,6 +619,18 @@ class AutoGISEngine(QObject):
                         pass
 
         elapsed_ms = int((time.monotonic() - t0) * 1000)
+        self._finish_single_tool_main_thread(run_id, calls, start_idx, cid, cname, res, elapsed_ms, is_err)
+
+    def _on_async_tool_done(self, payload: object) -> None:
+        run_id, calls, start_idx, cid, cname, res, elapsed_ms, is_err = payload
+        self._finish_single_tool_main_thread(run_id, calls, start_idx, cid, cname, res, elapsed_ms, is_err)
+
+    def _finish_single_tool_main_thread(self, run_id: str, calls: list[dict], start_idx: int,
+                                        cid: str, cname: str, res: Any, elapsed_ms: int, is_err: bool) -> None:
+        if run_id in self._cancelled_runs:
+            self._executing_tools = False
+            return
+
         self.tool_call_finished.emit(run_id, cid, cname, res, elapsed_ms, is_err)
 
         if cname == "update_agent_plan" and isinstance(res, dict) and not is_err:

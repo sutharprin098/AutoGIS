@@ -44,7 +44,7 @@ It connects your choice of frontier AI models (**Google Gemini, OpenAI ChatGPT, 
 You can install **AutoGIS Studio (`v1.0.0`)** directly inside QGIS in **under 30 seconds**:
 
 ### [Click Here to Download `AutoGIS.zip` (`v1.0.0`) Directly from GitHub Releases](https://github.com/sutharprin098/AutoGIS/releases/latest/download/AutoGIS.zip)
-*(Official Documentation & Web Portal: [https://autogis-studio.vercel.app](https://autogis-studio.vercel.app))*
+*(Official Documentation & Web Portal: [https://autogis.princesite.in/](https://autogis.princesite.in/) | Contact: [sutharprince098@gmail.com](mailto:sutharprince098@gmail.com))*
 
 ### Method 1: Install from ZIP in QGIS (Recommended)
 1. Download **`AutoGIS.zip`** from the link above to your computer.

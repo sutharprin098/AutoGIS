@@ -1530,8 +1530,8 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
                 "properties": {
                     "category": {
                         "type": "string",
-                        "enum": ["buildings", "roads", "rivers", "water", "railways", "landuse", "parks", "amenities", "hospitals", "schools", "power", "boundary"],
-                        "description": "Category of OSM features to fetch.",
+                        "enum": ["buildings", "roads", "major_roads", "highways", "rivers", "water", "railways", "landuse", "parks", "amenities", "hospitals", "schools", "power", "boundary"],
+                        "description": "Category of OSM features to fetch. Use 'water' for lakes/ponds/reservoirs, 'major_roads' or 'roads' for road networks, 'buildings' for building footprints.",
                     },
                     "place": {"type": "string", "description": "City, district, neighborhood, or area name (e.g. 'Connaught Place, New Delhi', 'Udaipur'). If omitted, uses bbox or current map canvas."},
                     "bbox": {
