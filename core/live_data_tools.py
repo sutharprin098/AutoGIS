@@ -1164,14 +1164,26 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
             calc_layer = None
             try:
                 import processing
+                from qgis.PyQt.QtCore import QCoreApplication
+                QCoreApplication.processEvents()
+
+                # Fast AOI-clipped calculation: compute only for the target city extent
+                # to avoid streaming 120 Megapixels over HTTP which causes lag/crashes!
+                xmin, ymin, xmax, ymax = bbox_4326
+                ext_str = f"{xmin},{xmax},{ymin},{ymax} [EPSG:4326]"
+
                 calc_res = processing.run(
                     "qgis:rastercalculator",
                     {
                         "EXPRESSION": f'("{lh_name}@1" - "{ll_name}@1") / ("{lh_name}@1" + "{ll_name}@1")',
                         "LAYERS": [layer_h, layer_l],
+                        "EXTENT": ext_str,
+                        "CRS": "EPSG:4326",
+                        "CELLSIZE": 0.0001,
                         "OUTPUT": out_file,
                     },
                 )
+                QCoreApplication.processEvents()
                 act_out = calc_res.get("OUTPUT", out_file)
                 if os.path.exists(act_out):
                     calc_layer = QgsRasterLayer(act_out, calc_layer_name, "gdal")
@@ -1229,8 +1241,22 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
             res_layer = None
             try:
                 import processing
+                from qgis.PyQt.QtCore import QCoreApplication
+                QCoreApplication.processEvents()
                 alg = "native:slope" if is_slope else "native:hillshade"
-                p_res = processing.run(alg, {"INPUT": dem_layer, "OUTPUT": target_out})
+                xmin, ymin, xmax, ymax = bbox_4326
+                clipped_dem = os.path.join(data_dir(), f"dem_clip_{_safe_slug(place or item_id[:16])}.tif")
+                clip_res = processing.run(
+                    "gdal:cliprasterbyextent",
+                    {
+                        "INPUT": dem_layer,
+                        "PROJWIN": f"{xmin},{xmax},{ymin},{ymax} [EPSG:4326]",
+                        "OUTPUT": clipped_dem,
+                    },
+                )
+                input_for_alg = clip_res.get("OUTPUT", dem_layer)
+                p_res = processing.run(alg, {"INPUT": input_for_alg, "OUTPUT": target_out})
+                QCoreApplication.processEvents()
                 out_p = p_res.get("OUTPUT", target_out)
                 if os.path.exists(out_p):
                     res_layer = QgsRasterLayer(out_p, f"Copernicus {'Slope (Degrees)' if is_slope else 'Hillshade'}{place_suffix}", "gdal")

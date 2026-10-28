@@ -9,7 +9,7 @@ import urllib.request
 import uuid
 from typing import Any
 
-from qgis.PyQt.QtCore import QObject, QTimer, pyqtSignal
+from qgis.PyQt.QtCore import QCoreApplication, QObject, QTimer, pyqtSignal
 
 from .config import DEFAULT_BASE_URL, DEFAULT_MODEL, FALLBACK_CHAIN, AutoGISConfig, log_info, log_warn
 from .document_tools import summarize_attached_path
@@ -70,26 +70,15 @@ class AutoGISEngine(QObject):
 
     def _on_main_invoke(self, pkg: object) -> None:
         fn, res_q = pkg
-        canvas = self._iface.mapCanvas() if (self._iface and hasattr(self._iface, "mapCanvas")) else None
-        if canvas is not None:
-            try:
-                canvas.stopRendering()
-                canvas.freeze(True)
-            except Exception:
-                pass
         try:
-            res_q.put(("ok", fn()))
+            QCoreApplication.processEvents()
+            res = fn()
+            QCoreApplication.processEvents()
+            res_q.put(("ok", res))
         except Exception as exc:
             res_q.put(("err", exc))
-        finally:
-            if canvas is not None:
-                try:
-                    canvas.freeze(False)
-                    canvas.refresh()
-                except Exception:
-                    pass
 
-    def run_on_main_thread(self, fn, timeout: float = 30.0) -> Any:
+    def run_on_main_thread(self, fn, timeout: float = 300.0) -> Any:
         res_q: queue.Queue = queue.Queue()
         self._main_invoke_sig.emit((fn, res_q))
         tag, payload = res_q.get(timeout=timeout)
@@ -597,33 +586,19 @@ class AutoGISEngine(QObject):
             return
 
         is_err = False
-        canvas = self._iface.mapCanvas() if (self._iface and hasattr(self._iface, "mapCanvas")) else None
-        freeze_canvas = canvas is not None and cname != "capture_map_canvas"
-
         if spec is None:
             res = {"error": f"Unknown tool '{cname}'."}
             is_err = True
         else:
-            if freeze_canvas:
-                try:
-                    canvas.stopRendering()
-                    canvas.freeze(True)
-                except Exception:
-                    pass
             try:
+                QCoreApplication.processEvents()
                 res = spec.handler(self._iface, cargs)
+                QCoreApplication.processEvents()
                 if isinstance(res, dict) and "error" in res:
                     is_err = True
             except Exception as exc:
                 res = {"error": str(exc)}
                 is_err = True
-            finally:
-                if freeze_canvas:
-                    try:
-                        canvas.freeze(False)
-                        canvas.refresh()
-                    except Exception:
-                        pass
 
         elapsed_ms = int((time.monotonic() - t0) * 1000)
         self._finish_single_tool_main_thread(run_id, calls, start_idx, cid, cname, res, elapsed_ms, is_err)
