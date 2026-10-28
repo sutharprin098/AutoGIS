@@ -30,6 +30,7 @@ OVERPASS_ENDPOINTS = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
     "https://overpass.private.coffee/api/interpreter",
+    "https://overpass.osm.ch/api/interpreter",
     "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
 ]
 
@@ -623,12 +624,13 @@ def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
     if south > north:
         south, north = north, south
 
-    # Clamp overly wide district/state bounding boxes to a fast city extent (~25-35km across)
+    # Clamp overly wide district/state bounding boxes to an optimal urban extent (~10-15km)
+    # so free public community Overpass servers never get overloaded with 502/timeouts
     span_lon = abs(east - west)
     span_lat = abs(north - south)
-    max_span = 0.24 if theme in ("buildings", "roads", "amenities") else 0.34
+    max_span = 0.10 if theme in ("buildings", "roads", "major_roads", "amenities") else 0.16
+    cx, cy = (west + east) / 2.0, (south + north) / 2.0
     if span_lon > max_span or span_lat > max_span:
-        cx, cy = (west + east) / 2.0, (south + north) / 2.0
         half_lon = min(span_lon / 2.0, max_span / 2.0)
         half_lat = min(span_lat / 2.0, max_span / 2.0)
         west, south, east, north = cx - half_lon, cy - half_lat, cx + half_lon, cy + half_lat
@@ -647,20 +649,42 @@ def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
             clauses = [f"{flt};" for flt in filters]
         label_stem = theme
 
-    ql = f"[out:json][timeout:28][bbox:{overpass_bbox}];(\n  " + "\n  ".join(clauses) + "\n);out geom;"
+    ql = f"[out:json][timeout:25][bbox:{overpass_bbox}];(\n  " + "\n  ".join(clauses) + "\n);out geom;"
 
     # 3. Query Overpass public mirrors in parallel
-    raw_data, endpoint_used, err_detail = _query_overpass_fast(ql, timeout=28.0)
+    raw_data, endpoint_used, err_detail = _query_overpass_fast(ql, timeout=25.0)
+
+    # If public mirrors are overloaded or gave 502/timeout, auto-retry on central urban core
+    if not raw_data or not raw_data.get("elements"):
+        tight_half = 0.045
+        t_w, t_s, t_e, t_n = cx - tight_half, cy - tight_half, cx + tight_half, cy + tight_half
+        t_bbox = f"{t_s:.6f},{t_w:.6f},{t_n:.6f},{t_e:.6f}"
+        if theme in ("major_roads", "highways", "roads"):
+            retry_clauses = ['way["highway"~"^(motorway|trunk|primary)$"];']
+        else:
+            retry_clauses = clauses
+        ql_tight = f"[out:json][timeout:20][bbox:{t_bbox}];(\n  " + "\n  ".join(retry_clauses) + "\n);out geom;"
+        tight_data, ep_tight, _ = _query_overpass_fast(ql_tight, timeout=20.0)
+        if tight_data and tight_data.get("elements"):
+            raw_data = tight_data
+            endpoint_used = ep_tight
+            west, south, east, north = t_w, t_s, t_e, t_n
 
     # If a custom_tag query returned 0 or failed and a valid category was also provided, fallback to category filters
     if (raw_data is None or not raw_data.get("elements")) and custom_tag and theme in OSM_THEME_FILTERS:
         clauses = [f"{flt};" for flt in OSM_THEME_FILTERS[theme]]
-        ql_fallback = f"[out:json][timeout:28][bbox:{overpass_bbox}];(\n  " + "\n  ".join(clauses) + "\n);out geom;"
-        raw_data, endpoint_used, err_detail = _query_overpass_fast(ql_fallback, timeout=28.0)
+        ql_fallback = f"[out:json][timeout:25][bbox:{overpass_bbox}];(\n  " + "\n  ".join(clauses) + "\n);out geom;"
+        raw_data, endpoint_used, err_detail = _query_overpass_fast(ql_fallback, timeout=25.0)
         label_stem = theme
 
     if not isinstance(raw_data, dict) or "elements" not in raw_data:
-        return {"error": f"Overpass API query failed: {err_detail or 'No response'}"}
+        return {
+            "error": (
+                f"Overpass public servers are temporarily busy ({err_detail or 'timeout'}). "
+                "FREE TIPS for large areas: 1) Zoom your QGIS map canvas to the city center and re-run. "
+                "2) For whole administrative boundaries or districts, use fetch_place_boundary."
+            )
+        }
 
     grouped = _osm_elements_to_geojson(raw_data.get("elements") or [], theme=theme)
     total_found = sum(len(v) for v in grouped.values())
