@@ -23,7 +23,7 @@ from qgis.core import (
 
 from .config import data_dir, log_info, log_warn
 
-USER_AGENT = "AutoGIS-Studio/1.0 (+https://autogis.princesite.in; contact: sutharprince098@gmail.com)"
+USER_AGENT = "AutoGIS-Studio/1.0 (+https://autogis.princesite.in/ - contact: sutharprince098@gmail.com)"
 
 # Global public Overpass API mirrors
 OVERPASS_ENDPOINTS = [
