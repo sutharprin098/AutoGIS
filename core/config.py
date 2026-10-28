@@ -12,46 +12,43 @@ SETTINGS_PREFIX = "AutoGIS"
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_MODEL = ""
 
+PROVIDERS: list[tuple[str, str, str]] = [
+    ("gemini", "Google Gemini", "https://generativelanguage.googleapis.com/v1beta/openai"),
+    ("openai", "OpenAI (ChatGPT)", "https://api.openai.com/v1"),
+    ("anthropic", "Anthropic (Claude)", "https://api.anthropic.com/v1"),
+    ("deepseek", "DeepSeek", "https://api.deepseek.com/v1"),
+    ("openrouter", "OpenRouter (All Models)", "https://openrouter.ai/api/v1"),
+]
+
+PROVIDER_ENDPOINTS: dict[str, str] = {pid: url for pid, _, url in PROVIDERS}
+
 FALLBACK_CHAIN: list[str] = [
     "google/gemini-2.5-flash",
     "openai/gpt-4o-mini",
     "anthropic/claude-haiku-4.5",
     "deepseek/deepseek-chat",
     "nvidia/nemotron-3-ultra-550b-a55b:free",
-    "google/gemma-4-31b-it:free",
 ]
 
-PROVIDER_ENDPOINTS: dict[str, str] = {
-    "openrouter": "https://openrouter.ai/api/v1",
-    "gemini": "https://generativelanguage.googleapis.com/v1beta/openai",
-    "openai": "https://api.openai.com/v1",
-    "anthropic": "https://api.anthropic.com/v1",
-    "deepseek": "https://api.deepseek.com/v1",
-}
-
 CURATED_MODELS: list[tuple[str, str]] = [
-    ("", "— Select AI Model —"),
-    # Google Gemini Family
-    ("google/gemini-2.5-flash", "Google Gemini 2.5 Flash (Fast & Smart GIS)"),
-    ("google/gemini-3.8-flash", "Google Gemini 3.8 Flash"),
-    ("google/gemini-2.5-pro", "Google Gemini 2.5 Pro (Deep Spatial Reasoning)"),
-    # OpenAI ChatGPT Family
-    ("openai/gpt-4o-mini", "OpenAI ChatGPT-4o Mini"),
-    ("openai/gpt-4o", "OpenAI ChatGPT-4o"),
-    # Anthropic Claude Family
-    ("anthropic/claude-sonnet-4.5", "Anthropic Claude Sonnet 4.5"),
-    ("anthropic/claude-haiku-4.5", "Anthropic Claude Haiku 4.5"),
-    ("anthropic/claude-sonnet-5", "Anthropic Claude Sonnet 5"),
-    # DeepSeek & Open Weights
-    ("deepseek/deepseek-chat", "DeepSeek V3 Chat"),
-    ("deepseek/deepseek-v4.1-flash", "DeepSeek V4.1 Flash"),
-    ("qwen/qwen-2.5-72b-instruct", "Qwen 2.5 72B Instruct"),
-    ("meta-llama/llama-3.3-70b-instruct", "Meta Llama 3.3 70B Instruct"),
-    # Free OpenRouter Models
-    ("nvidia/nemotron-3-ultra-550b-a55b:free", "[FREE] NVIDIA Nemotron 3 Ultra 550B"),
-    ("nvidia/nemotron-3.5-lightning:free", "[FREE] NVIDIA Nemotron 3.5 Lightning"),
-    ("google/gemma-4-31b-it:free", "[FREE] Google Gemma 4 31B Instruct"),
-    ("cohere/north-mini-code:free", "[FREE] Cohere North Mini Code"),
+    ("", "Select Model"),
+    # Google Gemini
+    ("google/gemini-2.5-flash", "Gemini 2.5 Flash"),
+    ("google/gemini-2.5-pro", "Gemini 2.5 Pro"),
+    # OpenAI ChatGPT
+    ("openai/gpt-4o-mini", "ChatGPT-4o Mini"),
+    ("openai/gpt-4o", "ChatGPT-4o"),
+    # Anthropic Claude
+    ("anthropic/claude-sonnet-4.5", "Claude Sonnet 4.5"),
+    ("anthropic/claude-haiku-4.5", "Claude Haiku 4.5"),
+    # DeepSeek & Open Models
+    ("deepseek/deepseek-chat", "DeepSeek V3"),
+    ("qwen/qwen-2.5-72b-instruct", "Qwen 2.5 72B"),
+    ("meta-llama/llama-3.3-70b-instruct", "Llama 3.3 70B"),
+    # Free Models
+    ("nvidia/nemotron-3.5-lightning:free", "Nemotron 3.5 Fast (Free)"),
+    ("google/gemma-4-31b-it:free", "Gemma 4 31B (Free)"),
+    ("nvidia/nemotron-3-ultra-550b-a55b:free", "Nemotron 3 Ultra (Free)"),
 ]
 
 _MEM_CACHE: dict[str, Any] = {}
@@ -82,7 +79,7 @@ def data_dir() -> str:
 
 
 class AutoGISConfig:
-    """Central configuration manager for AutoGIS using QgsSettings + in-memory cache."""
+    """Unified, provider-neutral configuration manager for AutoGIS."""
 
     def __init__(self) -> None:
         self._qs = QgsSettings()
@@ -128,7 +125,18 @@ class AutoGISConfig:
 
     def reset_all(self) -> None:
         """Clear all user keys, selected model, and custom logo back to clean defaults."""
-        for k in ("api_key", "gemini_key", "openai_key", "anthropic_key", "deepseek_key", "model", "custom_logo_path", "custom_instructions"):
+        keys = (
+            "active_provider",
+            "api_key",
+            "gemini_key",
+            "openai_key",
+            "anthropic_key",
+            "deepseek_key",
+            "model",
+            "custom_logo_path",
+            "custom_instructions",
+        )
+        for k in keys:
             _MEM_CACHE[k] = ""
             try:
                 self._qs.remove(self._k(k))
@@ -138,6 +146,38 @@ class AutoGISConfig:
             self._qs.sync()
         except Exception:
             pass
+
+    @property
+    def active_provider(self) -> str:
+        p = self.get_str("active_provider", "gemini")
+        return p if p in PROVIDER_ENDPOINTS else "gemini"
+
+    @active_provider.setter
+    def active_provider(self, value: str) -> None:
+        if value in PROVIDER_ENDPOINTS:
+            self.set_str("active_provider", value)
+
+    def get_provider_key(self, provider_id: str) -> str:
+        key_map = {
+            "openrouter": "api_key",
+            "gemini": "gemini_key",
+            "openai": "openai_key",
+            "anthropic": "anthropic_key",
+            "deepseek": "deepseek_key",
+        }
+        k = key_map.get(provider_id, "api_key")
+        return self.get_str(k, "")
+
+    def set_provider_key(self, provider_id: str, value: str) -> None:
+        key_map = {
+            "openrouter": "api_key",
+            "gemini": "gemini_key",
+            "openai": "openai_key",
+            "anthropic": "anthropic_key",
+            "deepseek": "deepseek_key",
+        }
+        k = key_map.get(provider_id, "api_key")
+        self.set_str(k, value)
 
     @property
     def custom_logo_path(self) -> str:
@@ -188,59 +228,56 @@ class AutoGISConfig:
         self.set_str("deepseek_key", value)
 
     def resolve_connection(self, model_id: str | None = None) -> tuple[str, str, str, str]:
-        """Return (provider_type, api_key, base_url, api_model_name).
-        Supports direct keys for Gemini, OpenAI, Anthropic, and DeepSeek when provided,
-        and seamlessly routes through OpenRouter when using an OpenRouter key.
-        """
+        """Return (provider_type, api_key, base_url, api_model_name)."""
         m = (model_id if model_id is not None else self.model).strip()
+        if not m:
+            return ("none", "", self.base_url, "")
+
         or_key = self.api_key
         gem_key = self.gemini_key
         oai_key = self.openai_key
         ant_key = self.anthropic_key
         ds_key = self.deepseek_key
 
-        if not m:
-            return ("none", "", self.base_url, "")
+        # Auto-detect if user pasted an OpenRouter key (sk-or-...) into any provider box
+        for k in (or_key, gem_key, oai_key, ant_key, ds_key):
+            if k.startswith("sk-or-"):
+                or_key = k
+                break
 
-        # 1. Direct Google Gemini if user entered a Gemini key and selected a Gemini model
-        if (m.startswith("google/gemini") or m.startswith("gemini-")) and gem_key:
+        if (m.startswith("google/gemini") or m.startswith("gemini-")) and gem_key and not gem_key.startswith("sk-or-"):
             clean_m = m.split("/", 1)[1] if "/" in m else m
             return ("gemini", gem_key, PROVIDER_ENDPOINTS["gemini"], clean_m)
 
-        # 2. Direct OpenAI if user entered an OpenAI key and selected an OpenAI model
-        if (m.startswith("openai/") or m.startswith("gpt-") or m.startswith("o1") or m.startswith("o3")) and oai_key:
+        if (m.startswith("openai/") or m.startswith("gpt-")) and oai_key and not oai_key.startswith("sk-or-"):
             clean_m = m.split("/", 1)[1] if "/" in m else m
             return ("openai", oai_key, PROVIDER_ENDPOINTS["openai"], clean_m)
 
-        # 3. Direct Anthropic Claude if user entered an Anthropic key and selected a Claude model
-        if (m.startswith("anthropic/") or m.startswith("claude-")) and ant_key:
+        if (m.startswith("anthropic/") or m.startswith("claude-")) and ant_key and not ant_key.startswith("sk-or-"):
             clean_m = m.split("/", 1)[1] if "/" in m else m
             return ("anthropic", ant_key, PROVIDER_ENDPOINTS["anthropic"], clean_m)
 
-        # 4. Direct DeepSeek if user entered a DeepSeek key and selected a DeepSeek model (and no OpenRouter key)
-        if (m.startswith("deepseek/") or m.startswith("deepseek-")) and ds_key and not or_key:
+        if (m.startswith("deepseek/") or m.startswith("deepseek-")) and ds_key and not ds_key.startswith("sk-or-"):
             clean_m = m.split("/", 1)[1] if "/" in m else m
             return ("deepseek", ds_key, PROVIDER_ENDPOINTS["deepseek"], clean_m)
 
-        # 5. Default: Route via OpenRouter
         if or_key:
-            return ("openrouter", or_key, self.base_url, m)
+            return ("openrouter", or_key, PROVIDER_ENDPOINTS["openrouter"], m)
 
-        # 6. If user only provided one of the direct provider keys, use that provider!
         if gem_key:
-            clean_m = m.split("/", 1)[1] if m.startswith("google/gemini") else m
+            clean_m = m.split("/", 1)[1] if "/" in m else m
             return ("gemini", gem_key, PROVIDER_ENDPOINTS["gemini"], clean_m)
         if oai_key:
-            clean_m = m.split("/", 1)[1] if m.startswith("openai/") else m
+            clean_m = m.split("/", 1)[1] if "/" in m else m
             return ("openai", oai_key, PROVIDER_ENDPOINTS["openai"], clean_m)
         if ant_key:
-            clean_m = m.split("/", 1)[1] if m.startswith("anthropic/") else m
+            clean_m = m.split("/", 1)[1] if "/" in m else m
             return ("anthropic", ant_key, PROVIDER_ENDPOINTS["anthropic"], clean_m)
         if ds_key:
-            clean_m = m.split("/", 1)[1] if m.startswith("deepseek/") else m
+            clean_m = m.split("/", 1)[1] if "/" in m else m
             return ("deepseek", ds_key, PROVIDER_ENDPOINTS["deepseek"], clean_m)
 
-        return ("openrouter", "", self.base_url, m)
+        return (self.active_provider, "", PROVIDER_ENDPOINTS.get(self.active_provider, DEFAULT_BASE_URL), m)
 
     @property
     def model(self) -> str:
@@ -260,7 +297,6 @@ class AutoGISConfig:
 
     @property
     def execution_mode(self) -> str:
-        """One of: 'autopilot', 'ask_write', 'chat_only'."""
         m = self.get_str("execution_mode", "autopilot")
         return m if m in ("autopilot", "ask_write", "chat_only") else "autopilot"
 
@@ -287,12 +323,12 @@ class AutoGISConfig:
 
     @property
     def max_tokens(self) -> int:
-        val = self.get_int("max_tokens", 4096)
-        return max(256, min(val, 32768))
+        val = self.get_int("max_tokens", 2048)
+        return max(256, min(val, 16384))
 
     @max_tokens.setter
     def max_tokens(self, value: int) -> None:
-        self.set_int("max_tokens", max(256, min(int(value), 32768)))
+        self.set_int("max_tokens", max(256, min(int(value), 16384)))
 
     @property
     def dock_visible(self) -> bool:
@@ -333,7 +369,7 @@ class ThreadHistoryStore:
         except Exception as exc:
             log_warn(f"Could not save threads.json: {exc}")
 
-    def create_thread(self, title: str = "New GIS Session") -> dict:
+    def create_thread(self, title: str = "New Session") -> dict:
         tid = "th_" + uuid.uuid4().hex[:10]
         now = time.time()
         thread = {
@@ -358,7 +394,7 @@ class ThreadHistoryStore:
         if th is None:
             th = {
                 "id": thread_id,
-                "title": title or "GIS Session",
+                "title": title or "Session",
                 "created_at": time.time(),
                 "updated_at": time.time(),
                 "messages": [],
@@ -368,7 +404,6 @@ class ThreadHistoryStore:
         if title:
             th["title"] = title
         if messages is not None:
-            # Keep last 60 API messages to keep storage compact
             th["messages"] = messages[-60:]
         if ui_entry is not None:
             th.setdefault("ui_log", []).append(ui_entry)

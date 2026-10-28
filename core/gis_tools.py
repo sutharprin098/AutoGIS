@@ -1121,36 +1121,35 @@ def _tool_export_layer(iface, args: dict) -> dict:
 
 
 def _tool_capture_map_canvas(iface, args: dict) -> dict:
-    width = max(320, min(int(args.get("width") or 900), 2400))
-    height = max(240, min(int(args.get("height") or 600), 1800))
     out_dir = os.path.join(data_dir(), "captures")
     os.makedirs(out_dir, exist_ok=True)
     out_path = str(args.get("output_path") or os.path.join(out_dir, f"map_{int(time.time() * 1000)}.png"))
 
     canvas = iface.mapCanvas() if iface else None
     if canvas is not None:
-        settings = QgsMapSettings(canvas.mapSettings())
-    else:
-        settings = QgsMapSettings()
-        layers = list(QgsProject.instance().mapLayers().values())
-        settings.setLayers(layers)
-        if layers:
-            settings.setExtent(layers[0].extent())
-        settings.setDestinationCrs(QgsProject.instance().crs())
+        try:
+            pix = canvas.grab()
+            if not pix.isNull():
+                pix.save(out_path, "PNG")
+                return {
+                    "status": "captured",
+                    "image_path": out_path,
+                    "width": pix.width(),
+                    "height": pix.height(),
+                }
+        except Exception:
+            pass
+        try:
+            canvas.saveAsImage(out_path)
+            if os.path.exists(out_path):
+                return {"status": "captured", "image_path": out_path}
+        except Exception:
+            pass
 
-    settings.setOutputSize(QSize(width, height))
+    width = max(320, min(int(args.get("width") or 800), 1600))
+    height = max(240, min(int(args.get("height") or 500), 1200))
     image = QImage(QSize(width, height), QImage.Format.Format_ARGB32_Premultiplied)
-    image.fill(QColor("#0F172A") if str(args.get("background") or "").lower() == "dark" else QColor("#FFFFFF"))
-
-    painter = QPainter(image)
-    try:
-        job = QgsMapRendererParallelJob(settings)
-        job.start()
-        job.waitForFinished()
-        painter.drawImage(0, 0, job.renderedImage())
-    finally:
-        painter.end()
-
+    image.fill(QColor("#F8FAFC"))
     image.save(out_path, "PNG")
     return {
         "status": "captured",

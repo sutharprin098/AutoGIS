@@ -192,8 +192,7 @@ class AutoGISEngine(QObject):
         auto_fallback = self._config.auto_fallback_free
         tools_schema = self._build_tools_schema()
 
-        short_model = api_model.split("/")[-1] if "/" in api_model else api_model
-        self.status_updated.emit(run_id, f"Thinking with {short_model}...")
+        self.status_updated.emit(run_id, "Thinking...")
 
         if not self._timer.isActive():
             self._timer.start()
@@ -266,7 +265,7 @@ class AutoGISEngine(QObject):
                     now = time.monotonic()
                     if not text_acc and (now - last_status_at) >= 0.7:
                         last_status_at = now
-                        self._post("status", run_id, f"Reasoning with {short_model}...")
+                        self._post("status", run_id, "Reasoning...")
 
                 c_delta = delta.get("content")
                 if c_delta:

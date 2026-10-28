@@ -170,23 +170,8 @@ def extract_pdf_content(
         except Exception:
             continue
 
-    # 3. Pure-Python Streaming Extractor + GDAL PDF Metadata Inspection
-    res = _extract_pdf_builtin_stream(path, max_chars=max_chars, search_query=search_query)
-    try:
-        from osgeo import gdal
-        ds = gdal.Open(path)
-        if ds is not None:
-            res["gdal_geopdf"] = {
-                "width": ds.RasterXSize,
-                "height": ds.RasterYSize,
-                "bands": ds.RasterCount,
-                "projection": ds.GetProjection() or None,
-                "subdatasets": [s[0] for s in (ds.GetSubDatasets() or [])[:10]],
-                "metadata": ds.GetMetadata() or {},
-            }
-    except Exception:
-        pass
-    return res
+    # 3. Pure-Python Streaming Extractor
+    return _extract_pdf_builtin_stream(path, max_chars=max_chars, search_query=search_query)
 
 
 def extract_docx_content(path: str, max_chars: int = 16000) -> dict[str, Any]:

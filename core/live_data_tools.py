@@ -313,12 +313,12 @@ def _osm_elements_to_geojson(elements: list[dict]) -> dict[str, list[dict]]:
 
 
 def tool_fetch_osm_features(iface, args: dict) -> dict:
-    theme = str(args.get("theme") or "buildings").strip().lower()
+    theme = str(args.get("category") or args.get("theme") or "buildings").strip().lower()
     place = str(args.get("place") or "").strip()
     bbox = args.get("bbox")
-    osm_key = str(args.get("osm_key") or "").strip()
+    osm_key = str(args.get("osm_key") or args.get("custom_tag") or "").strip()
     osm_value = str(args.get("osm_value") or "").strip()
-    max_features = max(50, min(int(args.get("max_features") or 5000), 25000))
+    max_features = max(50, min(int(args.get("limit") or args.get("max_features") or 2000), 10000))
 
     # 1. Resolve bounding box [xmin, ymin, xmax, ymax] in EPSG:4326
     resolved_place = ""
@@ -331,16 +331,17 @@ def tool_fetch_osm_features(iface, args: dict) -> dict:
     else:
         bbox_4326 = _canvas_bbox_wgs84(iface)
         if not bbox_4326:
-            return {"error": "Please provide a 'place' name (e.g. 'Jaipur') or 'bbox' [xmin, ymin, xmax, ymax]."}
+            return {"error": "Please provide a 'place' name (e.g. 'Jaipur') or zoom the map to a city."}
+        if abs(bbox_4326[2] - bbox_4326[0]) > 2.0 or abs(bbox_4326[3] - bbox_4326[1]) > 2.0:
+            return {"error": "Current map view is too wide. Please specify a city/area name in 'place' (e.g. 'Jaipur', 'New Delhi') or zoom in closer."}
 
     west, south, east, north = bbox_4326
-    # Guard against excessively huge country-wide Overpass queries that would time out
     span_lon = abs(east - west)
     span_lat = abs(north - south)
-    if span_lon > 0.6 or span_lat > 0.6:
+    if span_lon > 0.45 or span_lat > 0.45:
         cx, cy = (west + east) / 2.0, (south + north) / 2.0
-        half_lon = min(span_lon / 2.0, 0.22)
-        half_lat = min(span_lat / 2.0, 0.22)
+        half_lon = min(span_lon / 2.0, 0.18)
+        half_lat = min(span_lat / 2.0, 0.18)
         west, south, east, north = cx - half_lon, cy - half_lat, cx + half_lon, cy + half_lat
 
     overpass_bbox = f"{south},{west},{north},{east}"
@@ -360,7 +361,7 @@ def tool_fetch_osm_features(iface, args: dict) -> dict:
             clauses = [f"{flt}({overpass_bbox});" for flt in filters]
         label_stem = theme
 
-    ql = f"[out:json][timeout:35];(\n  " + "\n  ".join(clauses) + f"\n);out body geom {max_features};"
+    ql = f"[out:json][timeout:14];(\n  " + "\n  ".join(clauses) + f"\n);out body geom {max_features};"
 
     # 3. Query Overpass mirrors with automatic failover
     raw_data = None
@@ -373,7 +374,7 @@ def tool_fetch_osm_features(iface, args: dict) -> dict:
                 headers={"User-Agent": USER_AGENT, "Content-Type": "application/x-www-form-urlencoded"},
                 method="POST",
             )
-            with urllib.request.urlopen(req, timeout=45) as resp:
+            with urllib.request.urlopen(req, timeout=15) as resp:
                 raw_data = json.loads(resp.read().decode("utf-8", errors="replace"))
             if isinstance(raw_data, dict) and "elements" in raw_data:
                 break
