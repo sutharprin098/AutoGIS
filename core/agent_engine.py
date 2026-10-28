@@ -9,13 +9,13 @@ import urllib.request
 import uuid
 from typing import Any
 
-from qgis.PyQt.QtCore import QObject, QTimer, pyqtSignal
+from qgis.PyQt.QtCore import QCoreApplication, QObject, QTimer, pyqtSignal
 
 from .config import DEFAULT_BASE_URL, DEFAULT_MODEL, FALLBACK_CHAIN, AutoGISConfig, log_info, log_warn
 from .document_tools import summarize_attached_path
 from .gis_tools import GISToolSpec, _tool_get_project_overview, build_autogis_tools
 
-MAX_AUTONOMOUS_STEPS = 14
+MAX_AUTONOMOUS_STEPS = 30
 
 
 class AutoGISEngine(QObject):
@@ -124,8 +124,11 @@ class AutoGISEngine(QObject):
             "   - **Earth Observation & Terrain Rasters (STAC)**: Use `fetch_stac_earth_data(dataset='dem'|'sentinel2'|'lulc', place=...)` to stream 30m Copernicus Elevation DEM, 10m Sentinel-2 True Color imagery, or 10m Esri Land Cover.\n"
             "   - **Saved QGIS Servers**: Use `list_saved_qgis_connections` and `load_saved_qgis_connection` for user's saved XYZ, WMS (Bhuvan), or WFS servers.\n"
             "   - **Uploaded PDFs, Documents & Folders**: Use `read_uploaded_file_or_pdf` to read, paginate, or search inside large PDFs, Word docs, Excel sheets, CSVs, or folders.\n"
-            "2. **Step-by-Step Agent Plan**: For multi-step GIS tasks (2+ actions), call `update_agent_plan` first to show a clear checklist in the UI, and update it as steps complete.\n"
-            "3. **Self-Healing & Zero-Error Recovery**: If any tool returns an error (e.g. missing field name or invalid parameter), inspect the layer or algorithm help and automatically retry with corrected parameters instead of giving up.\n"
+            "2. **Large-Task Decomposition & Step-by-Step Execution (CRITICAL)**:\n"
+            "   - Whenever the user gives a large, multi-layer, or complex workflow (2+ actions, suitability modeling, batch processing, or multi-dataset analysis), **ALWAYS divide the work into clear sequential parts/phases**.\n"
+            "   - First call `update_agent_plan` to display all steps (`pending` / `in_progress` / `completed`) in the UI checklist.\n"
+            "   - Execute **step by step (1 to 2 tool calls per turn)** instead of firing many heavy tools at once. After each phase completes, verify the result, update `update_agent_plan`, and proceed to the next part until 100% of the user's request is finished.\n"
+            "3. **Self-Healing & Zero-Error Recovery**: If any tool returns an error (e.g. missing field name, CRS mismatch, or invalid parameter), inspect the layer (`inspect_layer`) or algorithm help (`get_algorithm_help`) and automatically retry with corrected parameters or `execute_pyqgis` instead of stopping.\n"
             "4. **Visual Polish**: When loading new layers or finishing a spatial analysis, add a basemap (`add_basemap`) if none is loaded, apply clean cartographic styling (`style_vector_layer`), and summarize key findings clearly in Markdown."
         )
 
@@ -176,6 +179,25 @@ class AutoGISEngine(QObject):
         self._launch_step(run_id)
         return run_id
 
+    @staticmethod
+    def _compact_messages_for_llm(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Keep older tool outputs compact during long multi-step workflows to prevent context bloat."""
+        tool_indices = [i for i, m in enumerate(messages) if m.get("role") == "tool"]
+        if len(tool_indices) <= 6:
+            return messages
+        older_set = set(tool_indices[:-6])
+        compacted: list[dict[str, Any]] = []
+        for idx, msg in enumerate(messages):
+            if idx in older_set:
+                content = str(msg.get("content") or "")
+                if len(content) > 1500:
+                    m_copy = dict(msg)
+                    m_copy["content"] = content[:1500] + "\n...[completed step output summarized]"
+                    compacted.append(m_copy)
+                    continue
+            compacted.append(msg)
+        return compacted
+
     def _launch_step(self, run_id: str) -> None:
         with self._lock:
             if run_id in self._cancelled_runs:
@@ -184,7 +206,7 @@ class AutoGISEngine(QObject):
             if self._step_count > MAX_AUTONOMOUS_STEPS:
                 self._post("run_finished", run_id, "done", "Reached maximum autonomous tool steps.")
                 return
-            messages_snapshot = list(self._messages)
+            messages_snapshot = self._compact_messages_for_llm(list(self._messages))
             self._active_workers += 1
 
         provider, api_key, base_url, api_model = self._config.resolve_connection(self._config.model)
@@ -452,69 +474,89 @@ class AutoGISEngine(QObject):
     def _execute_tool_batch_main_thread(self, run_id: str, calls: list[dict], start_idx: int) -> None:
         if run_id in self._cancelled_runs:
             return
+        if start_idx >= len(calls):
+            self._launch_step(run_id)
+            return
+
         mode = self._config.execution_mode
+        tc = calls[start_idx]
+        cid = tc["id"]
+        cname = tc["name"]
+        cargs = tc["args"]
+        spec = self._tools.get(cname)
 
-        for idx in range(start_idx, len(calls)):
-            tc = calls[idx]
-            cid = tc["id"]
-            cname = tc["name"]
-            cargs = tc["args"]
-            spec = self._tools.get(cname)
-
-            # Check if write permission is needed
-            if mode == "ask_write" and spec is not None and spec.risk == "write" and not tc.get("_approved"):
-                with self._lock:
-                    self._awaiting_permission[cid] = (run_id, calls, idx)
-                self.status_updated.emit(run_id, f"Waiting for approval: {cname}")
-                self.permission_requested.emit(run_id, cid, cname, cargs)
-                return
-
-            self.status_updated.emit(run_id, f"Running {cname}...")
-            self.tool_call_started.emit(run_id, cid, cname, cargs)
-
-            t0 = time.monotonic()
-            is_err = False
-            if spec is None:
-                res = {"error": f"Unknown tool '{cname}'."}
-                is_err = True
-            else:
-                try:
-                    res = spec.handler(self._iface, cargs)
-                    if isinstance(res, dict) and "error" in res:
-                        is_err = True
-                except Exception as exc:
-                    res = {"error": str(exc)}
-                    is_err = True
-
-            elapsed_ms = int((time.monotonic() - t0) * 1000)
-            self.tool_call_finished.emit(run_id, cid, cname, res, elapsed_ms, is_err)
-
-            if cname == "update_agent_plan" and isinstance(res, dict) and not is_err:
-                self.plan_updated.emit(
-                    run_id,
-                    str(res.get("plan_title") or "Autonomous GIS Plan"),
-                    list(res.get("steps") or []),
-                )
-
-            if isinstance(res, dict) and res.get("image_path") and not is_err:
-                self.map_captured.emit(run_id, str(res["image_path"]))
-
-            try:
-                res_str = json.dumps(res, ensure_ascii=False, default=str)
-            except Exception:
-                res_str = str(res)
-            if len(res_str) > 20000:
-                res_str = res_str[:20000] + "\n...[truncated]"
-
+        # Check if write permission is needed
+        if mode == "ask_write" and spec is not None and spec.risk == "write" and not tc.get("_approved"):
             with self._lock:
-                self._messages.append({
-                    "role": "tool",
-                    "tool_call_id": cid,
-                    "content": res_str,
-                })
+                self._awaiting_permission[cid] = (run_id, calls, start_idx)
+            self.status_updated.emit(run_id, f"Waiting for approval: {cname}")
+            self.permission_requested.emit(run_id, cid, cname, cargs)
+            return
 
-        # All tools in this batch have completed — continue the autonomous agent loop!
-        self._launch_step(run_id)
+        total_in_batch = len(calls)
+        step_prefix = f"[{start_idx + 1}/{total_in_batch}] " if total_in_batch > 1 else ""
+        self.status_updated.emit(run_id, f"{step_prefix}Running {cname}...")
+        self.tool_call_started.emit(run_id, cid, cname, cargs)
+
+        try:
+            QCoreApplication.processEvents()
+        except Exception:
+            pass
+
+        t0 = time.monotonic()
+        is_err = False
+        if spec is None:
+            res = {"error": f"Unknown tool '{cname}'."}
+            is_err = True
+        else:
+            try:
+                res = spec.handler(self._iface, cargs)
+                if isinstance(res, dict) and "error" in res:
+                    is_err = True
+            except Exception as exc:
+                res = {"error": str(exc)}
+                is_err = True
+
+        elapsed_ms = int((time.monotonic() - t0) * 1000)
+        self.tool_call_finished.emit(run_id, cid, cname, res, elapsed_ms, is_err)
+
+        if cname == "update_agent_plan" and isinstance(res, dict) and not is_err:
+            self.plan_updated.emit(
+                run_id,
+                str(res.get("plan_title") or "Autonomous GIS Plan"),
+                list(res.get("steps") or []),
+            )
+
+        if isinstance(res, dict) and res.get("image_path") and not is_err:
+            self.map_captured.emit(run_id, str(res["image_path"]))
+
+        try:
+            res_str = json.dumps(res, ensure_ascii=False, default=str)
+        except Exception:
+            res_str = str(res)
+        if len(res_str) > 16000:
+            res_str = res_str[:16000] + "\n...[truncated]"
+
+        with self._lock:
+            self._messages.append({
+                "role": "tool",
+                "tool_call_id": cid,
+                "content": res_str,
+            })
+
+        try:
+            QCoreApplication.processEvents()
+        except Exception:
+            pass
+
+        # Yield 35ms back to the Qt event loop before the next tool in the batch so QGIS never freezes!
+        if start_idx + 1 < len(calls):
+            QTimer.singleShot(
+                35,
+                lambda r=run_id, c=calls, nxt=start_idx + 1: self._execute_tool_batch_main_thread(r, c, nxt),
+            )
+        else:
+            self._launch_step(run_id)
 
     def resolve_permission(self, call_id: str, approved: bool) -> None:
         with self._lock:

@@ -51,7 +51,7 @@ class AutoGISPlugin:
             self.iface.addPluginToMenu(MENU_TITLE, self.settings_action)
 
         QTimer.singleShot(150, self._open_on_startup)
-        log_info("AutoGIS Studio v2.0 initialized successfully.")
+        log_info("AutoGIS Studio v1.0.0 initialized successfully.")
 
     def _open_on_startup(self) -> None:
         self._ensure_dock()

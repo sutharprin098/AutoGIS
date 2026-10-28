@@ -280,6 +280,26 @@ def _tool_inspect_layer(iface, args: dict) -> dict:
         res["height"] = lyr.height()
         res["band_count"] = lyr.bandCount()
         res["bands"] = [lyr.bandName(b) for b in range(1, lyr.bandCount() + 1)]
+        band_stats = []
+        try:
+            from qgis.core import QgsRasterBandStats
+            dp = lyr.dataProvider()
+            if dp is not None:
+                stats_flag = getattr(QgsRasterBandStats, "All", getattr(getattr(QgsRasterBandStats, "Stats", None), "All", 15))
+                for b in range(1, min(lyr.bandCount(), 8) + 1):
+                    st = dp.bandStatistics(b, stats_flag, lyr.extent(), 250000)
+                    band_stats.append({
+                        "band": b,
+                        "name": lyr.bandName(b),
+                        "min": round(float(st.minimumValue), 4) if not math.isnan(st.minimumValue) else None,
+                        "max": round(float(st.maximumValue), 4) if not math.isnan(st.maximumValue) else None,
+                        "mean": round(float(st.mean), 4) if not math.isnan(st.mean) else None,
+                        "std_dev": round(float(st.stdDev), 4) if not math.isnan(st.stdDev) else None,
+                    })
+        except Exception:
+            pass
+        if band_stats:
+            res["band_statistics"] = band_stats
     return res
 
 
@@ -944,7 +964,34 @@ def _tool_run_processing_algorithm(iface, args: dict) -> dict:
         params["OUTPUT"] = "TEMPORARY_OUTPUT"
 
     t0 = time.monotonic()
-    result = processing.run(alg_id, params)
+    feedback = None
+    try:
+        from qgis.core import QgsProcessingContext, QgsProcessingFeedback
+        ctx = QgsProcessingContext()
+        ctx.setProject(QgsProject.instance())
+        skip_flag = getattr(
+            QgsFeatureRequest,
+            "GeometrySkipInvalid",
+            getattr(getattr(QgsFeatureRequest, "InvalidGeometryCheck", None), "GeometrySkipInvalid", 1),
+        )
+        try:
+            ctx.setInvalidGeometryCheck(skip_flag)
+        except Exception:
+            pass
+        feedback = QgsProcessingFeedback()
+        result = processing.run(alg_id, params, context=ctx, feedback=feedback)
+    except Exception as exc:
+        fb_log = ""
+        if feedback is not None:
+            try:
+                fb_log = feedback.textLog()[-1200:]
+            except Exception:
+                pass
+        return {
+            "error": f"Processing algorithm '{alg_id}' failed: {exc}",
+            "algorithm_id": alg_id,
+            "feedback_log": fb_log,
+        }
     elapsed_ms = int((time.monotonic() - t0) * 1000)
 
     loaded_layers = []
@@ -959,10 +1006,17 @@ def _tool_run_processing_algorithm(iface, args: dict) -> dict:
             out_summary[k] = f"<Layer: {val.name()} ({val.id()})>"
         elif isinstance(val, str) and os.path.exists(val) and load_output:
             lname = output_name or os.path.splitext(os.path.basename(val))[0]
-            vlyr = QgsVectorLayer(val, lname, "ogr")
-            if vlyr.isValid():
-                QgsProject.instance().addMapLayer(vlyr)
-                loaded_layers.append({"id": vlyr.id(), "name": vlyr.name(), "features": vlyr.featureCount()})
+            ext = os.path.splitext(val)[1].lower()
+            if ext in (".tif", ".tiff", ".img", ".asc", ".dem", ".vrt"):
+                rlyr = QgsRasterLayer(val, lname)
+                if rlyr.isValid():
+                    QgsProject.instance().addMapLayer(rlyr)
+                    loaded_layers.append({"id": rlyr.id(), "name": rlyr.name(), "type": "raster"})
+            else:
+                vlyr = QgsVectorLayer(val, lname, "ogr")
+                if vlyr.isValid():
+                    QgsProject.instance().addMapLayer(vlyr)
+                    loaded_layers.append({"id": vlyr.id(), "name": vlyr.name(), "features": vlyr.featureCount()})
             out_summary[k] = val
         else:
             out_summary[k] = _safe_val(val)
