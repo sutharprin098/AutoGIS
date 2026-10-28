@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoGIS Studio v1.0.0 — Autonomous Geospatial AI Agent for QGIS</title>
+  <meta name="description" content="Official Website & Documentation for AutoGIS Studio v1.0.0 — 100% Pure Python Autonomous Geospatial AI Agent & Spatial Analysis Studio for QGIS Desktop." />
+  <link rel="icon" type="image/svg+xml" href="/assets/icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            },
+            teal: {
+              400: '#2dd4bf',
+              500: '#14b8a6',
+              600: '#0d9488',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #060B19;
+      color: #F8FAFC;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .bg-grid {
+      background-size: 56px 56px;
+      background-image: 
+        linear-gradient(to right, rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(51, 65, 85, 0.75);
+    }
+    .glass-nav {
+      background: rgba(6, 11, 25, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(51, 65, 85, 0.65);
+    }
+    .tab-btn.active {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #38bdf8;
+    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #060B19; }
+    ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+  </style>
+</head>
+<body class="bg-grid antialiased selection:bg-brand-600 selection:text-white">
+
+  <!-- Ambient Top Glow -->
+  <div class="pointer-events-none fixed inset-x-0 top-0 -z-10 overflow-hidden">
+    <div class="mx-auto h-[420px] w-[960px] -translate-y-1/2 rounded-full bg-gradient-to-r from-brand-600/25 via-teal-500/20 to-blue-600/25 blur-[130px]"></div>
+  </div>
+
+  <!-- Top Navigation Header -->
+  <header class="glass-nav sticky top-0 z-50">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <a href="#" class="flex items-center gap-3">
+        <img src="/assets/icon.svg" alt="AutoGIS Emblem" class="h-9 w-9 rounded-lg" />
+        <div class="flex items-center gap-2.5">
+          <span class="text-lg font-extrabold tracking-tight text-white">AutoGIS Studio</span>
+          <span class="rounded-full border border-brand-400/40 bg-brand-600/20 px-2.5 py-0.5 font-mono text-xs font-semibold text-brand-400">v1.0.0</span>
+        </div>
+      </a>
+
+      <nav class="hidden items-center gap-7 text-sm font-medium text-slate-300 md:flex">
+        <a href="#features" class="transition hover:text-white">Architecture</a>
+        <a href="#install" class="transition hover:text-white">Installation</a>
+        <a href="#docs" class="transition hover:text-white">Documentation</a>
+        <a href="#tools" class="transition hover:text-white">25 GIS Tools</a>
+        <a href="#python-codebase" class="transition hover:text-white">Python Codebase</a>
+        <a href="#publish-qgis" class="transition hover:text-brand-400">Publish on QGIS Portal</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" rel="noopener"
+           class="hidden rounded-lg border border-slate-700 bg-slate-800/80 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white sm:inline-flex">
+          GitHub Repository
+        </a>
+        <a href="/AutoGIS.zip" download="AutoGIS.zip"
+           class="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-brand-600/30 transition hover:bg-brand-500">
+          <span>Download AutoGIS.zip (v1.0.0)</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative mx-auto max-w-7xl px-6 pt-16 pb-20 text-center">
+    <div class="mx-auto inline-flex items-center gap-2.5 rounded-full border border-brand-400/30 bg-slate-900/90 px-4 py-1.5 text-xs font-semibold tracking-wide text-brand-400 uppercase">
+      <span>100% Pure Python / PyQGIS</span>
+      <span class="text-slate-600">|</span>
+      <span>QGIS 3.22 — 3.40+</span>
+      <span class="text-slate-600">|</span>
+      <span>MIT Open-Source License</span>
+    </div>
+
+    <h1 class="mx-auto mt-6 max-w-4xl text-4xl font-extrabold tracking-tight text-white sm:text-6xl leading-[1.12]">
+      Autonomous Geospatial AI Agent for <span class="bg-gradient-to-r from-brand-400 to-teal-400 bg-clip-text text-transparent">QGIS Desktop</span>
+    </h1>
+
+    <p class="mx-auto mt-6 max-w-3xl text-base text-slate-300 sm:text-lg leading-relaxed">
+      AutoGIS Studio connects frontier AI models (Google Gemini, OpenAI ChatGPT, Anthropic Claude, DeepSeek, and OpenRouter) directly to your live QGIS canvas, Processing toolbox, STAC satellite rasters, OpenStreetMap vectors, and large PDF reports — decomposing multi-layer workflows into crash-proof sequential phases.
+    </p>
+
+    <!-- Primary CTA Buttons -->
+    <div class="mt-9 flex flex-wrap items-center justify-center gap-4">
+      <a href="/AutoGIS.zip" download="AutoGIS.zip"
+         class="inline-flex items-center gap-3 rounded-xl bg-brand-600 px-7 py-4 text-sm font-bold text-white shadow-xl shadow-brand-600/30 transition hover:bg-brand-500">
+        <span>Download AutoGIS.zip (v1.0.0 — 85 KB)</span>
+      </a>
+      <a href="https://github.com/sutharprin098/AutoGIS/releases/latest/download/AutoGIS.zip"
+         class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/90 px-6 py-4 text-sm font-semibold text-slate-200 transition hover:border-brand-400 hover:text-white">
+        <span>GitHub Release Mirror</span>
+      </a>
+      <a href="#docs"
+         class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/60 px-6 py-4 text-sm font-semibold text-slate-300 transition hover:border-slate-500 hover:text-white">
+        <span>Read Full Documentation</span>
+      </a>
+    </div>
+
+    <!-- Key Engineering Metrics Bar -->
+    <div class="mx-auto mt-12 grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-4">
+      <div class="glass-card rounded-xl p-4 text-center">
+        <div class="text-2xl font-extrabold text-brand-400">25 Tools</div>
+        <div class="mt-1 text-xs text-slate-400">Native PyQGIS, OSM, STAC & PDF</div>
+      </div>
+      <div class="glass-card rounded-xl p-4 text-center">
+        <div class="text-2xl font-extrabold text-teal-400">Auto CRS</div>
+        <div class="mt-1 text-xs text-slate-400">EPSG & Metric UTM Alignment</div>
+      </div>
+      <div class="glass-card rounded-xl p-4 text-center">
+        <div class="text-2xl font-extrabold text-brand-400">-65% Tokens</div>
+        <div class="mt-1 text-xs text-slate-400">Compact Context & History Engine</div>
+      </div>
+      <div class="glass-card rounded-xl p-4 text-center">
+        <div class="text-2xl font-extrabold text-teal-400">35ms Pacing</div>
+        <div class="mt-1 text-xs text-slate-400">Non-Blocking Step-by-Step UI</div>
+      </div>
+    </div>
+
+    <!-- Live QGIS Desktop Window Preview -->
+    <div class="mx-auto mt-14 max-w-6xl overflow-hidden rounded-2xl border border-brand-500/40 bg-slate-950 shadow-2xl shadow-brand-600/15">
+      <div class="flex items-center justify-between border-b border-slate-800 bg-slate-900/90 px-4 py-3">
+        <div class="flex items-center gap-2">
+          <span class="h-3 w-3 rounded-full bg-red-500/80"></span>
+          <span class="h-3 w-3 rounded-full bg-amber-500/80"></span>
+          <span class="h-3 w-3 rounded-full bg-emerald-500/80"></span>
+        </div>
+        <div class="font-mono text-xs font-medium text-slate-400">
+          QGIS Desktop 3.x — Dipka Solar Suitability Project (37 Layers in EPSG:32644) — AutoGIS Studio v1.0.0
+        </div>
+        <div class="text-xs font-semibold text-brand-400">Live Workspace</div>
+      </div>
+      <img src="/assets/autogis_screenshot.png" alt="AutoGIS Studio v1.0.0 Live in QGIS Desktop" class="w-full object-cover" />
+    </div>
+  </section>
+
+  <!-- Core Engineering Architecture Section -->
+  <section id="features" class="mx-auto max-w-7xl px-6 py-16">
+    <div class="text-center">
+      <span class="font-mono text-xs font-bold tracking-widest text-brand-400 uppercase">Enterprise Geospatial Engineering</span>
+      <h2 class="mt-2 text-3xl font-extrabold text-white sm:text-4xl">Built to Handle Massive GIS Projects Without Crashing</h2>
+      <p class="mx-auto mt-3 max-w-2xl text-sm text-slate-400">
+        Designed from the ground up in pure Python (PyQGIS + PyQt5) to solve the four hardest challenges in desktop GeoAI: multi-step execution stability, CRS mismatches, token costs, and live spatial data ingestion.
+      </p>
+    </div>
+
+    <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div class="glass-card rounded-2xl p-6">
+        <div class="inline-block rounded-lg bg-brand-600/20 px-3 py-1 font-mono text-xs font-bold text-brand-400">01 / PHASE DECOMPOSITION</div>
+        <h3 class="mt-4 text-lg font-bold text-white">Step-by-Step Large Task Engine</h3>
+        <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+          Automatically divides complex 30+ layer workflows into sequential phases (<code class="font-mono text-xs text-brand-400">update_agent_plan</code>). Executes 1–2 tools per turn with a <code class="font-mono text-xs text-brand-400">35ms</code> non-blocking <code class="font-mono text-xs text-brand-400">QTimer</code> breathing interval between tools so the QGIS GUI never freezes.
+        </p>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6">
+        <div class="inline-block rounded-lg bg-teal-600/20 px-3 py-1 font-mono text-xs font-bold text-teal-400">02 / CRS INTELLIGENCE</div>
+        <h3 class="mt-4 text-lg font-bold text-white">Automatic Metric UTM & CRS Alignment</h3>
+        <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+          Audits Project CRS vs. Layer CRS (<code class="font-mono text-xs text-teal-400">meters</code> vs. <code class="font-mono text-xs text-teal-400">degrees</code>). Automatically reprojects <code class="font-mono text-xs text-teal-400">EPSG:4326</code> layers to their exact local UTM Zone during metric buffer operations and aligns mismatched layer CRSs prior to spatial overlays.
+        </p>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6">
+        <div class="inline-block rounded-lg bg-brand-600/20 px-3 py-1 font-mono text-xs font-bold text-brand-400">03 / TOKEN EFFICIENCY</div>
+        <h3 class="mt-4 text-lg font-bold text-white">65% Lower API Token Consumption</h3>
+        <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+          Encodes project state in a compact single-line format per layer and applies sliding-window history compaction (<code class="font-mono text-xs text-brand-400">_compact_messages_for_llm</code>) so earlier completed tool outputs are summarized automatically.
+        </p>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6">
+        <div class="inline-block rounded-lg bg-teal-600/20 px-3 py-1 font-mono text-xs font-bold text-teal-400">04 / LIVE EARTH DATA</div>
+        <h3 class="mt-4 text-lg font-bold text-white">Zero-File Live Spatial Connectors</h3>
+        <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+          Stream administrative boundaries (Nominatim/Photon), live OpenStreetMap vectors (Overpass API with mirror failover), OSRM road routes, and Planetary Computer STAC COGs (30m Copernicus DEM, 10m Sentinel-2, 10m LULC).
+        </p>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6">
+        <div class="inline-block rounded-lg bg-brand-600/20 px-3 py-1 font-mono text-xs font-bold text-brand-400">05 / DOCUMENT & PDF ENGINE</div>
+        <h3 class="mt-4 text-lg font-bold text-white">Large PDF, GeoPDF & Folder Reader</h3>
+        <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+          Attach 200+ page PDF reports, GeoPDF maps, Word (<code class="font-mono text-xs text-brand-400">.docx</code>), Excel (<code class="font-mono text-xs text-brand-400">.xlsx</code>), CSVs, or entire folders. Supports page-range pagination and full-PDF keyword search.
+        </p>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6">
+        <div class="inline-block rounded-lg bg-teal-600/20 px-3 py-1 font-mono text-xs font-bold text-teal-400">06 / MULTI-MODEL GATEWAY</div>
+        <h3 class="mt-4 text-lg font-bold text-white">5 AI Providers + &lt;2s Connection Test</h3>
+        <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+          Connect Google Gemini, OpenAI (ChatGPT), Anthropic (Claude), DeepSeek, or OpenRouter in one unified dialog with synced model dropdowns, thread-safe <code class="font-mono text-xs text-teal-400">pyqtSignal</code> verification, and automatic rate-limit fallback.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Installation Hub Section -->
+  <section id="install" class="mx-auto max-w-7xl px-6 py-16">
+    <div class="glass-card rounded-3xl p-8 sm:p-10">
+      <div class="flex flex-col justify-between gap-6 border-b border-slate-800 pb-8 lg:flex-row lg:items-center">
+        <div>
+          <span class="font-mono text-xs font-bold tracking-widest text-brand-400 uppercase">Quick Start Guide</span>
+          <h2 class="mt-2 text-2xl font-extrabold text-white sm:text-3xl">Install AutoGIS Studio in QGIS Desktop</h2>
+          <p class="mt-2 text-sm text-slate-400">Choose any of the 3 installation methods below — takes less than 30 seconds.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="switchInstallTab('zip')" id="tab-btn-zip" class="tab-btn active rounded-lg border border-slate-700 px-4 py-2 text-xs font-bold transition">
+            Method 1: Install from ZIP (Fastest)
+          </button>
+          <button onclick="switchInstallTab('repo')" id="tab-btn-repo" class="tab-btn rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-bold text-slate-300 transition">
+            Method 2: Search in QGIS Repository
+          </button>
+          <button onclick="switchInstallTab('manual')" id="tab-btn-manual" class="tab-btn rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-bold text-slate-300 transition">
+            Method 3: Manual Plugin Folder
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab 1: Install from ZIP -->
+      <div id="tab-content-zip" class="mt-8 grid gap-8 lg:grid-cols-2">
+        <div class="space-y-4">
+          <div class="flex items-start gap-4">
+            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 font-mono text-xs font-bold text-white">1</span>
+            <div>
+              <h4 class="font-bold text-white">Download the Official Plugin Package</h4>
+              <p class="mt-1 text-sm text-slate-400">Click the download button to save <code class="font-mono text-xs text-brand-400">AutoGIS.zip</code> (<code class="font-mono text-xs">v1.0.0</code>) to your computer.</p>
+              <a href="/AutoGIS.zip" download="AutoGIS.zip" class="mt-3 inline-flex items-center rounded-lg bg-brand-600 px-4 py-2 text-xs font-bold text-white hover:bg-brand-500">
+                Download AutoGIS.zip (v1.0.0)
+              </a>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 font-mono text-xs font-bold text-white">2</span>
+            <div>
+              <h4 class="font-bold text-white">Open QGIS Plugin Manager</h4>
+              <p class="mt-1 text-sm text-slate-400">In QGIS Desktop top menu bar, navigate to <strong class="text-slate-200">Plugins -&gt; Manage and Install Plugins...</strong></p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 font-mono text-xs font-bold text-white">3</span>
+            <div>
+              <h4 class="font-bold text-white">Select "Install from ZIP"</h4>
+              <p class="mt-1 text-sm text-slate-400">Click <strong class="text-slate-200">Install from ZIP</strong> in the left sidebar, browse to <code class="font-mono text-xs text-brand-400">AutoGIS.zip</code>, and click <strong class="text-slate-200">Install Plugin</strong>. Press <code class="font-mono text-xs text-teal-400">Ctrl+Shift+G</code> to open AutoGIS Studio.</p>
+            </div>
+          </div>
+        </div>
+        <div class="rounded-2xl border border-slate-800 bg-slate-950 p-6 font-mono text-xs text-slate-300">
+          <div class="text-slate-500"># Package Verification Details</div>
+          <div class="mt-2"><span class="text-brand-400">Package Name:</span> AutoGIS.zip</div>
+          <div class="mt-1"><span class="text-brand-400">Version:</span> 1.0.0</div>
+          <div class="mt-1"><span class="text-brand-400">QGIS Compatibility:</span> 3.22.0 — 4.99.0 (LTR &amp; Latest)</div>
+          <div class="mt-1"><span class="text-brand-400">Root Directory Inside ZIP:</span> AutoGIS/</div>
+          <div class="mt-1"><span class="text-brand-400">External Dependencies:</span> Zero (100% Native PyQGIS + PyQt5)</div>
+          <div class="mt-4 text-slate-500"># Included Modules (19 Files)</div>
+          <div class="mt-1 text-emerald-400">AutoGIS/__init__.py, metadata.txt, plugin.py, LICENSE, README.md</div>
+          <div class="mt-1 text-emerald-400">AutoGIS/core/ (config.py, agent_engine.py, gis_tools.py, live_data_tools.py, document_tools.py)</div>
+          <div class="mt-1 text-emerald-400">AutoGIS/ui/ (theme.py, widgets.py, settings_dialog.py, dock_panel.py)</div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Custom Repository URL -->
+      <div id="tab-content-repo" class="mt-8 hidden space-y-5">
+        <p class="text-sm text-slate-300">
+          Add our live XML Repository feed inside QGIS so you can search and update <strong>AutoGIS</strong> directly from the QGIS Plugin Manager:
+        </p>
+        <ol class="list-decimal space-y-2 pl-5 text-sm text-slate-300">
+          <li>Open QGIS -&gt; <strong>Plugins -&gt; Manage and Install Plugins... -&gt; Settings</strong> tab.</li>
+          <li>Under <em>Plugin Repositories</em>, click <strong>Add...</strong></li>
+          <li>Set Name to <code class="font-mono text-brand-400">AutoGIS Official Repository</code> and paste the Repository URL below:</li>
+        </ol>
+        <div class="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 font-mono text-xs text-brand-400">
+          <span id="repo-xml-url">https://raw.githubusercontent.com/sutharprin098/AutoGIS/main/plugins.xml</span>
+          <button onclick="copyText('repo-xml-url', this)" class="rounded bg-slate-800 px-3 py-1 text-xs font-semibold text-white hover:bg-slate-700">Copy URL</button>
+        </div>
+        <p class="text-xs text-slate-400">Once added, switch to the <strong>All</strong> tab in QGIS Plugin Manager, type <strong>AutoGIS</strong> in the search box, and click <strong>Install Plugin</strong>.</p>
+      </div>
+
+      <!-- Tab 3: Manual Folder Copy -->
+      <div id="tab-content-manual" class="mt-8 hidden space-y-4">
+        <p class="text-sm text-slate-300">Extract or clone the <code class="font-mono text-brand-400">AutoGIS</code> folder directly into your operating system's QGIS Python plugins directory:</p>
+        <div class="grid gap-4 md:grid-cols-3">
+          <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+            <div class="text-xs font-bold text-brand-400 uppercase">Windows</div>
+            <code class="mt-2 block break-all font-mono text-xs text-slate-300">%APPDATA%\QGIS\QGIS3\profiles\default\python\plugins\AutoGIS</code>
+          </div>
+          <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+            <div class="text-xs font-bold text-teal-400 uppercase">Linux</div>
+            <code class="mt-2 block break-all font-mono text-xs text-slate-300">~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/AutoGIS</code>
+          </div>
+          <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+            <div class="text-xs font-bold text-brand-400 uppercase">macOS</div>
+            <code class="mt-2 block break-all font-mono text-xs text-slate-300">~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/AutoGIS</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comprehensive Documentation Section -->
+  <section id="docs" class="mx-auto max-w-7xl px-6 py-16">
+    <div class="mb-10">
+      <span class="font-mono text-xs font-bold tracking-widest text-teal-400 uppercase">Complete Technical Documentation</span>
+      <h2 class="mt-2 text-3xl font-extrabold text-white sm:text-4xl">Configuration, CRS Engine &amp; Workflows</h2>
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-3">
+      <!-- Doc Card 1: AI Provider Setup -->
+      <div class="glass-card rounded-2xl p-6">
+        <h3 class="text-lg font-bold text-white">1. Unified 5-Provider Setup</h3>
+        <p class="mt-2 text-xs text-slate-400 leading-relaxed">
+          By default, no provider or model is pre-selected. Open <strong>Settings</strong> in the AutoGIS header to configure your preferred gateway:
+        </p>
+        <ul class="mt-4 space-y-2.5 text-xs text-slate-300">
+          <li><strong class="text-brand-400">Google Gemini:</strong> Direct API (<code class="font-mono">gemini-2.5-flash</code>, <code class="font-mono">gemini-2.5-pro</code>, <code class="font-mono">gemini-2.0-flash</code>)</li>
+          <li><strong class="text-brand-400">OpenAI (ChatGPT):</strong> Direct API (<code class="font-mono">gpt-4o-mini</code>, <code class="font-mono">gpt-4o</code>, <code class="font-mono">o3-mini</code>)</li>
+          <li><strong class="text-brand-400">Anthropic (Claude):</strong> Direct API (<code class="font-mono">claude-sonnet-4.5</code>, <code class="font-mono">claude-haiku-4.5</code>)</li>
+          <li><strong class="text-brand-400">DeepSeek:</strong> Direct API (<code class="font-mono">deepseek-chat</code> V3, <code class="font-mono">deepseek-reasoner</code> R1)</li>
+          <li><strong class="text-brand-400">OpenRouter Gateway:</strong> Access all paid &amp; free models (<code class="font-mono">nemotron-3-ultra:free</code>, <code class="font-mono">gemma-4-31b:free</code>) with automatic fallback on HTTP 429.</li>
+        </ul>
+      </div>
+
+      <!-- Doc Card 2: Automatic CRS Engine -->
+      <div class="glass-card rounded-2xl p-6">
+        <h3 class="text-lg font-bold text-white">2. Automatic CRS Intelligence</h3>
+        <p class="mt-2 text-xs text-slate-400 leading-relaxed">
+          AutoGIS prevents the most common GIS error — running metric buffers or overlays on unaligned Geographic (<code class="font-mono">EPSG:4326</code>) layers:
+        </p>
+        <ul class="mt-4 space-y-2.5 text-xs text-slate-300">
+          <li><strong class="text-teal-400">Project CRS Audit:</strong> <code class="font-mono">get_project_overview</code> reports every layer's CRS, unit (<code class="font-mono">meters</code> vs <code class="font-mono">degrees</code>), and flags any <code class="font-mono">crs_mismatches</code>.</li>
+          <li><strong class="text-teal-400">Smart Metric Buffering:</strong> When <code class="font-mono">spatial_buffer</code> is called on an <code class="font-mono">EPSG:4326</code> layer with <code class="font-mono">distance &gt;= 0.5</code>, AutoGIS computes the exact local UTM Zone (<code class="font-mono">EPSG:326XX</code> / <code class="font-mono">327XX</code>) from the layer centroid, reprojects in-memory, and buffers accurately in meters.</li>
+          <li><strong class="text-teal-400">Overlay Auto-Alignment:</strong> <code class="font-mono">spatial_overlay</code> automatically reprojects the overlay layer to match the input layer's CRS before running <code class="font-mono">clip</code>, <code class="font-mono">intersection</code>, <code class="font-mono">difference</code>, or <code class="font-mono">union</code>.</li>
+        </ul>
+      </div>
+
+      <!-- Doc Card 3: Execution Modes & Token Saving -->
+      <div class="glass-card rounded-2xl p-6">
+        <h3 class="text-lg font-bold text-white">3. Execution Modes &amp; Token Saver</h3>
+        <p class="mt-2 text-xs text-slate-400 leading-relaxed">
+          Switch execution modes anytime from the bottom composer bar while keeping token usage minimal:
+        </p>
+        <ul class="mt-4 space-y-2.5 text-xs text-slate-300">
+          <li><strong class="text-brand-400">Auto (Autopilot):</strong> Executes read and write GIS tools autonomously up to 30 steps per turn, decomposed into clear phases.</li>
+          <li><strong class="text-brand-400">Ask (Write Approval):</strong> Runs read/inspection tools automatically and prompts for confirmation before modifying or creating layers.</li>
+          <li><strong class="text-brand-400">Chat Only:</strong> Pure geospatial Q&amp;A and PyQGIS code generation without tool execution.</li>
+          <li><strong class="text-teal-400">Context Compaction:</strong> Summarizes older tool outputs (<code class="font-mono">&gt;4 steps ago</code>) to 700 chars so multi-phase runs stay fast and economical.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive 25-Tool Reference Section -->
+  <section id="tools" class="mx-auto max-w-7xl px-6 py-16">
+    <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+      <div>
+        <span class="font-mono text-xs font-bold tracking-widest text-brand-400 uppercase">Complete Tool Registry</span>
+        <h2 class="mt-2 text-3xl font-extrabold text-white">All 25 Autonomous GIS Tools</h2>
+      </div>
+      <div>
+        <input type="text" id="tool-search" oninput="filterTools()" placeholder="Filter tools (e.g. osm, stac, buffer, pdf, crs)..."
+               class="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-brand-400 focus:outline-none sm:w-80" />
+      </div>
+    </div>
+
+    <div class="mt-8 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/90">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="border-b border-slate-800 bg-slate-900/90 font-mono text-[11px] uppercase text-slate-400">
+            <tr>
+              <th class="px-5 py-3.5">Tool Name</th>
+              <th class="px-5 py-3.5">Category</th>
+              <th class="px-5 py-3.5">Key Parameters</th>
+              <th class="px-5 py-3.5">Description &amp; Capabilities</th>
+            </tr>
+          </thead>
+          <tbody id="tools-tbody" class="divide-y divide-slate-800/70 text-slate-300">
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">fetch_place_boundary</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono">place, layer_name, zoom</td><td class="px-5 py-3">Geocode any city, district, state, or country via OSM Nominatim/Photon and load its exact polygon boundary into QGIS.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">fetch_osm_features</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono">category, place, bbox, custom_tag</td><td class="px-5 py-3">Download live OpenStreetMap vectors (buildings, roads, rivers, water, railways, landuse, parks, hospitals, schools, power, boundary) via Overpass API.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">compute_road_route</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono">origin, destination, profile</td><td class="px-5 py-3">Calculate shortest road route (driving, walking, cycling) via OSRM with distance (km) and duration (min).</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">fetch_stac_earth_data</td><td class="px-5 py-3">Live Earth Raster</td><td class="px-5 py-3 font-mono">dataset (dem | sentinel2 | lulc), place</td><td class="px-5 py-3">Stream Cloud-Optimized GeoTIFFs (Copernicus 30m DEM, Sentinel-2 L2A 10m True Color, Esri 10m LULC) from Planetary Computer STAC.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">list_saved_qgis_connections</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono">(none)</td><td class="px-5 py-3">List all saved XYZ Tile, WMS/WMTS (e.g. ISRO Bhuvan), WFS, and PostGIS connections in the user's QGIS profile.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">load_saved_qgis_connection</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono">connection_type, name, typename</td><td class="px-5 py-3">Load a layer from the user's saved QGIS XYZ, WMS, or WFS connections.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-teal-400">read_uploaded_file_or_pdf</td><td class="px-5 py-3">Documents &amp; PDF</td><td class="px-5 py-3 font-mono">path, start_page, end_page, search_query</td><td class="px-5 py-3">Paginate or keyword-search across large PDFs, load GeoPDFs to canvas, or parse DOCX, XLSX, CSV, GeoJSON, and project folders.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-teal-400">update_agent_plan</td><td class="px-5 py-3">Planning</td><td class="px-5 py-3 font-mono">title, steps[]</td><td class="px-5 py-3">Create and update the live step-by-step phase execution checklist in the AutoGIS dock panel.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">get_project_overview</td><td class="px-5 py-3">Inspection &amp; CRS</td><td class="px-5 py-3 font-mono">(none)</td><td class="px-5 py-3">Inspect project CRS, units (meters vs degrees), map canvas extent, active layer, all loaded layers, and CRS mismatches.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">list_layers</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono">(none)</td><td class="px-5 py-3">List all vector and raster layers with IDs, geometry types, CRS, feature counts, band counts, and extents.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">inspect_layer</td><td class="px-5 py-3">Inspection &amp; Stats</td><td class="px-5 py-3 font-mono">layer, sample_limit</td><td class="px-5 py-3">Detailed inspection: vector field schemas &amp; sample rows, or full Raster Band Statistics (min, max, mean, std_dev).</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">query_features</td><td class="px-5 py-3">Analysis</td><td class="px-5 py-3 font-mono">layer, filter_expression, fields, limit</td><td class="px-5 py-3">Query features from a vector layer using a QGIS filter expression and optional WKT geometry output.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">compute_field_stats</td><td class="px-5 py-3">Analysis</td><td class="px-5 py-3 font-mono">layer, field</td><td class="px-5 py-3">Compute count, min, max, sum, mean, median, std_dev, null count, and top unique values for an attribute field.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">evaluate_expression</td><td class="px-5 py-3">Analysis</td><td class="px-5 py-3 font-mono">expression, layer</td><td class="px-5 py-3">Evaluate any QGIS expression string against the project or a target vector layer.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">select_features</td><td class="px-5 py-3">Selection</td><td class="px-5 py-3 font-mono">layer, expression, zoom_to_selection</td><td class="px-5 py-3">Select vector features matching a QGIS expression and optionally zoom the canvas to the selection.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-teal-400">spatial_buffer</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono">layer, distance, dissolve, output_name</td><td class="px-5 py-3">Create buffer zones with automatic metric UTM CRS reprojection when the input layer is in geographic degrees (EPSG:4326).</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-teal-400">spatial_overlay</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono">operation, input_layer, overlay_layer</td><td class="px-5 py-3">Run clip, intersection, difference, union, or dissolve with automatic CRS alignment between input and overlay layers.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-teal-400">run_processing_algorithm</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono">algorithm_id, parameters, output_layer_name</td><td class="px-5 py-3">Run any QGIS Processing algorithm with invalid-geometry protection (GeometrySkipInvalid) and auto-load vector/raster outputs.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-teal-400">search_processing_algorithms</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono">query, limit</td><td class="px-5 py-3">Search the QGIS Processing registry by keyword to discover native, GDAL, GRASS, or SAGA algorithm IDs.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-teal-400">get_algorithm_help</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono">algorithm_id</td><td class="px-5 py-3">Inspect parameter names, types, default values, and documentation for any Processing algorithm ID.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">style_vector_layer</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono">layer, style_type, field, palette, classes</td><td class="px-5 py-3">Apply single, categorized, graduated choropleth, or point heatmap symbology using curated color palettes.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">configure_labels</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono">layer, enabled, field, font_size, halo</td><td class="px-5 py-3">Configure text labels with custom font size, color, and halo buffers on vector layers.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">add_basemap / load_dataset</td><td class="px-5 py-3">Layer I/O</td><td class="px-5 py-3 font-mono">basemap / path, name, crs</td><td class="px-5 py-3">Add XYZ web basemaps (OSM, Google Satellite, Esri, Carto, OpenTopoMap) or load local vector/raster/CSV datasets.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-brand-400">create_memory_layer / add_features</td><td class="px-5 py-3">Editing &amp; Export</td><td class="px-5 py-3 font-mono">name, geometry_type, fields, features</td><td class="px-5 py-3">Create new layers, add WKT features, compute fields (calculate_or_add_field), delete features, manage layer tree, or export layers.</td></tr>
+            <tr><td class="px-5 py-3 font-mono font-bold text-teal-400">execute_pyqgis / capture_map_canvas</td><td class="px-5 py-3">Automation</td><td class="px-5 py-3 font-mono">code / width, height</td><td class="px-5 py-3">Execute custom PyQGIS Python code on the main thread or capture a live PNG snapshot of the QGIS map canvas.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Python Codebase Architecture Section -->
+  <section id="python-codebase" class="mx-auto max-w-7xl px-6 py-16">
+    <span class="font-mono text-xs font-bold tracking-widest text-teal-400 uppercase">100% Pure Python Architecture</span>
+    <h2 class="mt-2 text-3xl font-extrabold text-white">Module-by-Module Python Breakdown</h2>
+    <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="glass-card rounded-xl p-5"><div class="font-mono text-xs font-bold text-brand-400">__init__.py &amp; plugin.py</div><p class="mt-2 text-xs text-slate-300">Exposes <code class="font-mono">classFactory(iface)</code>, registers toolbar/menu actions, binds <code class="font-mono">Ctrl+Shift+G</code>, and stops all timers cleanly on plugin unload.</p></div>
+      <div class="glass-card rounded-xl p-5"><div class="font-mono text-xs font-bold text-brand-400">core/config.py</div><p class="mt-2 text-xs text-slate-300">Manages <code class="font-mono">QgsSettings</code> persistence, 5 AI provider endpoints, provider-ordered model catalogs, and automatic rate-limit fallback chains.</p></div>
+      <div class="glass-card rounded-xl p-5"><div class="font-mono text-xs font-bold text-brand-400">core/agent_engine.py</div><p class="mt-2 text-xs text-slate-300">Implements the 30-step autonomous ReAct loop, compact project prompt builder, history compaction, and 35ms non-blocking main-thread tool dispatcher.</p></div>
+      <div class="glass-card rounded-xl p-5"><div class="font-mono text-xs font-bold text-teal-400">core/gis_tools.py</div><p class="mt-2 text-xs text-slate-300">18 native PyQGIS tools including automatic metric UTM CRS reprojection, overlay CRS alignment, raster band statistics, symbology, and Processing runner.</p></div>
+      <div class="glass-card rounded-xl p-5"><div class="font-mono text-xs font-bold text-teal-400">core/live_data_tools.py</div><p class="mt-2 text-xs text-slate-300">Live spatial connectors for OSM Overpass (multi-mirror), Nominatim/Photon boundaries, OSRM routing, STAC COGs, and saved QGIS servers.</p></div>
+      <div class="glass-card rounded-xl p-5"><div class="font-mono text-xs font-bold text-teal-400">core/document_tools.py &amp; ui/*</div><p class="mt-2 text-xs text-slate-300">Universal large PDF/GeoPDF/DOCX/XLSX/folder reader plus High-DPI 512x512 logo renderer, left-timer banner, and compact dock UI.</p></div>
+    </div>
+  </section>
+
+  <!-- How to Publish on Official QGIS Plugin Portal Section -->
+  <section id="publish-qgis" class="mx-auto max-w-7xl px-6 py-16">
+    <div class="glass-card rounded-3xl border-brand-500/40 p-8 sm:p-10">
+      <span class="font-mono text-xs font-bold tracking-widest text-brand-400 uppercase">Official QGIS Directory Guide</span>
+      <h2 class="mt-2 text-2xl font-extrabold text-white sm:text-3xl">How to Publish AutoGIS on plugins.qgis.org (Global Search)</h2>
+      <p class="mt-2 max-w-3xl text-sm text-slate-300">
+        Your <code class="font-mono text-brand-400">AutoGIS.zip</code> package is already pre-validated against all strict OSGeo / QGIS Plugin Repository rules (PEP8 folder structure, <code class="font-mono">classFactory</code> entry point, required <code class="font-mono">metadata.txt</code> fields, and MIT <code class="font-mono">LICENSE</code>). Follow these 4 steps to list it globally on the official QGIS Plugin Portal:
+      </p>
+
+      <div class="mt-8 grid gap-6 md:grid-cols-4">
+        <div class="rounded-2xl border border-slate-800 bg-slate-950 p-5">
+          <div class="font-mono text-xs font-bold text-brand-400">STEP 01</div>
+          <h4 class="mt-2 font-bold text-white">Create OSGeo Account</h4>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">
+            Register a free OSGeo User ID at <a href="https://id.osgeo.org/" target="_blank" class="text-brand-400 underline">id.osgeo.org</a> and sign in at <a href="https://plugins.qgis.org/" target="_blank" class="text-brand-400 underline">plugins.qgis.org</a>.
+          </p>
+        </div>
+        <div class="rounded-2xl border border-slate-800 bg-slate-950 p-5">
+          <div class="font-mono text-xs font-bold text-brand-400">STEP 02</div>
+          <h4 class="mt-2 font-bold text-white">Open Upload Portal</h4>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">
+            Go to <a href="https://plugins.qgis.org/plugins/add/" target="_blank" class="text-brand-400 underline">plugins.qgis.org/plugins/add/</a> (Share a Plugin).
+          </p>
+        </div>
+        <div class="rounded-2xl border border-slate-800 bg-slate-950 p-5">
+          <div class="font-mono text-xs font-bold text-brand-400">STEP 03</div>
+          <h4 class="mt-2 font-bold text-white">Upload AutoGIS.zip</h4>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">
+            Select <code class="font-mono text-slate-200">AutoGIS.zip</code> (<code class="font-mono">v1.0.0</code>) and click <strong>Upload</strong>. The portal automatically reads <code class="font-mono">metadata.txt</code>, <code class="font-mono">LICENSE</code>, and <code class="font-mono">icons/icon.png</code>.
+          </p>
+        </div>
+        <div class="rounded-2xl border border-slate-800 bg-slate-950 p-5">
+          <div class="font-mono text-xs font-bold text-teal-400">STEP 04</div>
+          <h4 class="mt-2 font-bold text-white">Live in QGIS Search</h4>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">
+            Once approved, every QGIS user worldwide can simply search <strong>AutoGIS</strong> under <em>Plugins -&gt; Manage and Install Plugins</em> and install in 1 click.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-slate-950 py-12 text-center text-xs text-slate-500">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
+      <div class="flex items-center gap-3">
+        <img src="/assets/icon.svg" alt="AutoGIS" class="h-6 w-6" />
+        <span class="font-bold text-slate-300">AutoGIS Studio v1.0.0</span>
+        <span>— Open-Source MIT License</span>
+      </div>
+      <div class="flex gap-6">
+        <a href="/AutoGIS.zip" download="AutoGIS.zip" class="text-brand-400 hover:underline">Download AutoGIS.zip</a>
+        <a href="/plugins.xml" target="_blank" class="text-slate-400 hover:text-white">QGIS plugins.xml</a>
+        <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="text-slate-400 hover:text-white">GitHub Repository</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function switchInstallTab(tab) {
+      ['zip', 'repo', 'manual'].forEach(function(id) {
+        document.getElementById('tab-content-' + id).classList.toggle('hidden', id !== tab);
+        var btn = document.getElementById('tab-btn-' + id);
+        if (id === tab) {
+          btn.classList.add('active');
+          btn.classList.remove('bg-slate-900', 'text-slate-300');
+        } else {
+          btn.classList.remove('active');
+          btn.classList.add('bg-slate-900', 'text-slate-300');
+        }
+      });
+    }
+
+    function copyText(elemId, btn) {
+      var txt = document.getElementById(elemId).innerText;
+      navigator.clipboard.writeText(txt);
+      var orig = btn.innerText;
+      btn.innerText = 'Copied';
+      setTimeout(function() { btn.innerText = orig; }, 1400);
+    }
+
+    function filterTools() {
+      var q = document.getElementById('tool-search').value.toLowerCase();
+      var rows = document.querySelectorAll('#tools-tbody tr');
+      rows.forEach(function(r) {
+        r.style.display = r.innerText.toLowerCase().indexOf(q) > -1 ? '' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>
