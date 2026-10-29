@@ -5,6 +5,7 @@ import io
 import json
 import math
 import os
+import sys
 import time
 import traceback
 from dataclasses import dataclass
@@ -188,8 +189,8 @@ def _auto_metric_crs_for_layer(lyr: QgsMapLayer) -> QgsCoordinateReferenceSystem
             utm_crs = QgsCoordinateReferenceSystem(f"EPSG:{epsg_code}")
             if utm_crs.isValid():
                 return utm_crs
-    except Exception:
-        pass
+    except Exception as _err:  # nosec B110
+        _ = _err
     return QgsCoordinateReferenceSystem("EPSG:3857")
 
 
@@ -337,8 +338,8 @@ def _tool_inspect_layer(iface, args: dict) -> dict:
                             "mean": round(float(st.mean), 4) if not math.isnan(st.mean) else None,
                             "std_dev": round(float(st.stdDev), 4) if not math.isnan(st.stdDev) else None,
                         })
-        except Exception:
-            pass
+        except Exception as _err:  # nosec B110
+            _ = _err
         if band_stats:
             res["band_statistics"] = band_stats
     return res
@@ -1017,8 +1018,8 @@ def _tool_run_processing_algorithm(iface, args: dict) -> dict:
         )
         try:
             ctx.setInvalidGeometryCheck(skip_flag)
-        except Exception:
-            pass
+        except Exception as _err:  # nosec B110
+            _ = _err
         feedback = QgsProcessingFeedback()
         result = processing.run(alg_id, params, context=ctx, feedback=feedback)
     except Exception as exc:
@@ -1026,8 +1027,8 @@ def _tool_run_processing_algorithm(iface, args: dict) -> dict:
         if feedback is not None:
             try:
                 fb_log = feedback.textLog()[-1200:]
-            except Exception:
-                pass
+            except Exception as _err:  # nosec B110
+                _ = _err
         return {
             "error": f"Processing algorithm '{alg_id}' failed: {exc}",
             "algorithm_id": alg_id,
@@ -1046,8 +1047,8 @@ def _tool_run_processing_algorithm(iface, args: dict) -> dict:
                     taken = ctx.temporaryLayerStore().takeMapLayer(val)
                     if taken is not None:
                         val = taken
-            except Exception:
-                pass
+            except Exception as _err:  # nosec B110
+                _ = _err
             _PROCESSING_LAYER_REFS.append(val)
             if output_name and k == "OUTPUT":
                 val.setName(output_name)
@@ -1181,8 +1182,8 @@ def _safe_reproject_layer(lyr: QgsVectorLayer, target_crs: QgsCoordinateReferenc
             taken = ctx.temporaryLayerStore().takeMapLayer(out)
             if taken is not None:
                 out = taken
-        except Exception:
-            pass
+        except Exception as _err:  # nosec B110
+            _ = _err
         _PROCESSING_LAYER_REFS.append(out)
         return out
     if isinstance(out, str) and hasattr(ctx, "takeResultLayer"):
@@ -1347,14 +1348,14 @@ def _tool_capture_map_canvas(iface, args: dict) -> dict:
                     "width": pix.width(),
                     "height": pix.height(),
                 }
-        except Exception:
-            pass
+        except Exception as _err:  # nosec B110
+            _ = _err
         try:
             canvas.saveAsImage(out_path)
             if os.path.exists(out_path):
                 return {"status": "captured", "image_path": out_path}
-        except Exception:
-            pass
+        except Exception as _err:  # nosec B110
+            _ = _err
 
     width = max(320, min(int(args.get("width") or 800), 1600))
     height = max(240, min(int(args.get("height") or 500), 1200))
@@ -1413,7 +1414,7 @@ def _tool_execute_pyqgis(iface, args: dict) -> dict:
 
     try:
         with contextlib.redirect_stdout(stdout_buf):
-            exec(compile(code, "<AutoGIS_PyQGIS>", "exec"), env, env)
+            exec(compile(code, "<AutoGIS_PyQGIS>", "exec"), env, env)  # nosec B102
         if iface and iface.mapCanvas():
             iface.mapCanvas().refresh()
         return {

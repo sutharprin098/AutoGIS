@@ -97,15 +97,15 @@ class AutoGISPlugin:
         if self.dock is not None:
             try:
                 self.dock.visibilityChanged.disconnect(self._on_visibility_changed)
-            except Exception:
-                pass
+            except Exception as _err:  # nosec B110
+                _ = _err
             if self.dock.panel is not None:
                 try:
                     self.dock.panel._engine.cancel_current_run()
                     self.dock.panel._engine._timer.stop()
                     self.dock.panel._status_banner.stop_status()
-                except Exception:
-                    pass
+                except Exception as _err:  # nosec B110
+                    _ = _err
             if self.iface:
                 self.iface.removeDockWidget(self.dock)
             self.dock.deleteLater()

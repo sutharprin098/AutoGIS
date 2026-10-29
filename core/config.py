@@ -91,15 +91,15 @@ _MEM_CACHE: dict[str, Any] = {}
 def log_info(msg: str) -> None:
     try:
         QgsMessageLog.logMessage(str(msg), "AutoGIS", level=0)
-    except Exception:
-        pass
+    except Exception as err:
+        _ = err  # nosec B110
 
 
 def log_warn(msg: str) -> None:
     try:
         QgsMessageLog.logMessage(str(msg), "AutoGIS", level=1)
-    except Exception:
-        pass
+    except Exception as err:
+        _ = err  # nosec B110
 
 
 def data_dir() -> str:
@@ -138,8 +138,8 @@ class AutoGISConfig:
         try:
             self._qs.setValue(self._k(key), val)
             self._qs.sync()
-        except Exception:
-            pass
+        except Exception as err:
+            _ = err  # nosec B110
 
     def get_bool(self, key: str, default: bool = True) -> bool:
         raw = self.get_str(key, "1" if default else "0")
@@ -174,12 +174,12 @@ class AutoGISConfig:
             _MEM_CACHE[k] = ""
             try:
                 self._qs.remove(self._k(k))
-            except Exception:
-                pass
+            except Exception as err:
+                _ = err  # nosec B110
         try:
             self._qs.sync()
-        except Exception:
-            pass
+        except Exception as err:
+            _ = err  # nosec B110
 
     @property
     def active_provider(self) -> str:

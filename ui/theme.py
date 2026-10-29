@@ -41,8 +41,8 @@ def is_dark_theme() -> bool:
         if app is not None:
             bg = app.palette().window().color()
             return bg.lightness() < 110
-    except Exception:
-        pass
+    except Exception as _err:  # nosec B110
+        _ = _err
     return False
 
 

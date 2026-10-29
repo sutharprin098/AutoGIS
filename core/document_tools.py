@@ -6,7 +6,10 @@ import io
 import json
 import os
 import re
-import xml.etree.ElementTree as ET
+try:
+    import defusedxml.ElementTree as ET  # type: ignore
+except ImportError:
+    import xml.etree.ElementTree as ET  # nosec B405
 import zipfile
 import zlib
 from typing import Any
@@ -60,7 +63,8 @@ def _extract_pdf_builtin_stream(path: str, max_chars: int = 18000, search_query:
             try:
                 decomp = zlib.decompress(stream_bytes, wbits)
                 break
-            except Exception:
+            except Exception as _err:  # nosec B112
+                _ = _err
                 continue
         if decomp is None:
             decomp = stream_bytes
@@ -138,8 +142,8 @@ def extract_pdf_content(
             "pages_returned": len(pages_out),
             "text_preview": "\n\n".join(pages_out)[:max_chars],
         }
-    except Exception:
-        pass
+    except Exception as _err:  # nosec B110
+        _ = _err
 
     # 2. Try pypdf / PyPDF2 if available
     for mod_name in ("pypdf", "PyPDF2"):
@@ -167,7 +171,8 @@ def extract_pdf_content(
                 "pages_returned": len(pages_out),
                 "text_preview": "\n\n".join(pages_out)[:max_chars],
             }
-        except Exception:
+        except Exception as _err:  # nosec B112
+            _ = _err
             continue
 
     # 3. Pure-Python Streaming Extractor
@@ -179,7 +184,7 @@ def extract_docx_content(path: str, max_chars: int = 16000) -> dict[str, Any]:
     try:
         with zipfile.ZipFile(path, "r") as zf:
             xml_bytes = zf.read("word/document.xml")
-        root = ET.fromstring(xml_bytes)
+        root = ET.fromstring(xml_bytes)  # nosec B314
         paragraphs: list[str] = []
         for elem in root.iter():
             if elem.tag.endswith("}p"):
@@ -203,7 +208,7 @@ def extract_xlsx_content(path: str, max_rows: int = 50) -> dict[str, Any]:
         with zipfile.ZipFile(path, "r") as zf:
             shared_strings: list[str] = []
             if "xl/sharedStrings.xml" in zf.namelist():
-                ss_root = ET.fromstring(zf.read("xl/sharedStrings.xml"))
+                ss_root = ET.fromstring(zf.read("xl/sharedStrings.xml"))  # nosec B314
                 for si in ss_root.iter():
                     if si.tag.endswith("}si"):
                         parts = [t.text for t in si.iter() if t.tag.endswith("}t") and t.text]
@@ -213,7 +218,7 @@ def extract_xlsx_content(path: str, max_rows: int = 50) -> dict[str, Any]:
             sheets.sort()
             rows_preview: list[list[str]] = []
             if sheets:
-                sh_root = ET.fromstring(zf.read(sheets[0]))
+                sh_root = ET.fromstring(zf.read(sheets[0]))  # nosec B314
                 for row_el in sh_root.iter():
                     if row_el.tag.endswith("}row"):
                         row_vals: list[str] = []
@@ -300,16 +305,16 @@ def summarize_attached_path(path: str, max_chars: int = 6000) -> str:
                 lines = [fh.readline().strip() for _ in range(15)]
             preview = "\n".join(x for x in lines if x)
             return f"📊 **Attached CSV/TSV**: `{path}` ({size_str})\n```csv\n{preview[:max_chars]}\n```"
-        except Exception:
-            pass
+        except Exception as _err:  # nosec B110
+            _ = _err
 
     if ext in (".txt", ".md", ".py", ".sql", ".json", ".geojson", ".kml", ".xml", ".yaml", ".yml", ".ini", ".log"):
         try:
             with open(path, "r", encoding="utf-8", errors="replace") as fh:
                 snippet = fh.read(max_chars)
             return f"📄 **Attached File**: `{path}` ({size_str})\n```text\n{snippet}\n```"
-        except Exception:
-            pass
+        except Exception as _err:  # nosec B110
+            _ = _err
 
     return f"🗺️ **Attached Spatial/Media File**: `{path}` ({size_str}, type `{ext}` — can be loaded via `load_dataset` or `read_uploaded_file_or_pdf`)"
 

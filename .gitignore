@@ -15,3 +15,5 @@ Thumbs.db
 
 releases/
 *.zip
+.vercel/
+web/.vercel/

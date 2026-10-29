@@ -139,12 +139,12 @@ class AutoGISEngine(QObject):
             # Token-efficient compact serialization (saves ~65% tokens on large projects)
             lyrs = ov.get("layers") or []
             compact_lyrs = []
-            for l in lyrs[:40]:
-                tag = f"{l.get('name')}[{l.get('geometry')},{l.get('crs')},{l.get('units')}]"
-                if "feature_count" in l:
-                    tag += f"({l['feature_count']} feats"
-                    if l.get("fields"):
-                        tag += f", fields:{','.join(l['fields'][:6])}"
+            for layer_item in lyrs[:40]:
+                tag = f"{layer_item.get('name')}[{layer_item.get('geometry')},{layer_item.get('crs')},{layer_item.get('units')}]"
+                if "feature_count" in layer_item:
+                    tag += f"({layer_item['feature_count']} feats"
+                    if layer_item.get("fields"):
+                        tag += f", fields:{','.join(layer_item['fields'][:6])}"
                     tag += ")"
                 compact_lyrs.append(tag)
             ctx_summary = (
@@ -303,7 +303,11 @@ class AutoGISEngine(QObject):
         short_model = model.split("/")[-1] if "/" in model else model
         last_status_at = time.monotonic()
 
-        with urllib.request.urlopen(req, timeout=120) as resp:
+        if hasattr(req, "full_url"):
+            _parsed_req_url = urllib.parse.urlparse(req.full_url)
+            if _parsed_req_url.scheme not in ("http", "https"):
+                raise ValueError(f"Disallowed URL scheme: {_parsed_req_url.scheme}")
+        with urllib.request.urlopen(req, timeout=120) as resp:  # nosec B310
             for raw_line in resp:
                 if run_id in self._cancelled_runs:
                     break

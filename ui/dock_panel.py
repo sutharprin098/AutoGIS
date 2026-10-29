@@ -428,7 +428,7 @@ class AutoGISPanel(QWidget):
 
         display_text = text
         if self._pinned_layers:
-            display_text += "\nLayers: " + ", ".join(f"@{l}" for l in self._pinned_layers)
+            display_text += "\nLayers: " + ", ".join(f"@{lyr_name}" for lyr_name in self._pinned_layers)
         if self._attached_files:
             display_text += "\nFiles: " + ", ".join(os.path.basename(f.rstrip("\\/")) for f in self._attached_files)
 

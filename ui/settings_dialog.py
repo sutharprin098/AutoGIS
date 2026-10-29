@@ -272,7 +272,11 @@ class AutoGISSettingsDialog(QDialog):
                             "User-Agent": "AutoGIS/1.0",
                         },
                     )
-                with urllib.request.urlopen(req, timeout=2.5) as resp:
+                if hasattr(req, "full_url"):
+                    _parsed = urllib.parse.urlparse(req.full_url)
+                    if _parsed.scheme not in ("http", "https"):
+                        raise ValueError(f"Invalid URL scheme: {_parsed.scheme}")
+                with urllib.request.urlopen(req, timeout=2.5) as resp:  # nosec B310
                     _ = resp.read(512)
                 ms = int((time.monotonic() - t0) * 1000)
                 self._test_result_signal.emit(True, f"Connected ({ms}ms)")
