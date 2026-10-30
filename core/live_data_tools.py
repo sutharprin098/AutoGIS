@@ -1144,60 +1144,104 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
 
         def _calc_index_on_main() -> dict:
             from .gis_tools import _PROCESSING_LAYER_REFS
+            from qgis.core import QgsProject, QgsRasterLayer, QgsVectorLayer
+            from qgis.PyQt.QtCore import QCoreApplication
+            import processing
+            import tempfile
+            import shutil
 
-            lh_name = f"Sentinel-2 {b_high_key}{place_suffix}"
-            ll_name = f"Sentinel-2 {b_low_key}{place_suffix}"
-
-            layer_h = QgsRasterLayer(f"/vsicurl/{signed_h}", lh_name, "gdal")
-            layer_l = QgsRasterLayer(f"/vsicurl/{signed_l}", ll_name, "gdal")
-
-            if not layer_h.isValid() or not layer_l.isValid():
-                return {"error": f"Could not stream Sentinel-2 {b_high_key}/{b_low_key} bands from STAC."}
-
-            _apply_raster_transparency(layer_h)
-            _apply_raster_transparency(layer_l)
-
-            _PROCESSING_LAYER_REFS.extend([layer_h, layer_l])
-            QgsProject.instance().addMapLayer(layer_h)
-            QgsProject.instance().addMapLayer(layer_l)
-
+            project = QgsProject.instance()
             calc_layer_name = str(args.get("layer_name") or f"Sentinel-2 {idx_name} (10m){place_suffix}").strip()
             out_file = os.path.join(data_dir(), f"{idx_name.lower()}_{_safe_slug(place or item_id[:16])}.tif")
+            work_dir = tempfile.mkdtemp(prefix=f"autogis_{idx_name.lower()}_")
+            temp_files = []
+            layer_h = QgsRasterLayer(f"/vsicurl/{signed_h}", f"_tmp_{b_high_key}", "gdal")
+            layer_l = QgsRasterLayer(f"/vsicurl/{signed_l}", f"_tmp_{b_low_key}", "gdal")
 
-            calc_layer = None
             try:
-                import processing
-                from qgis.PyQt.QtCore import QCoreApplication
-                QCoreApplication.processEvents()
+                if not layer_h.isValid() or not layer_l.isValid():
+                    return {"error": f"Could not open Sentinel-2 {b_high_key}/{b_low_key} source rasters. No output layer was added."}
 
-                # Fast AOI-clipped calculation: compute only for the target city extent
-                # to avoid streaming 120 Megapixels over HTTP which causes lag/crashes!
+                # Materialize only the AOI extent locally before calculating. This avoids
+                # asking the raster calculator to process the full remote Sentinel-2 tile.
                 xmin, ymin, xmax, ymax = bbox_4326
                 ext_str = f"{xmin},{xmax},{ymin},{ymax} [EPSG:4326]"
+                clip_h = os.path.join(work_dir, "red_or_nir_clip.tif")
+                clip_l = os.path.join(work_dir, "other_band_clip.tif")
+                temp_files.extend([clip_h, clip_l])
+                processing.run("gdal:cliprasterbyextent", {
+                    "INPUT": layer_h, "PROJWIN": ext_str, "NODATA": None,
+                    "OPTIONS": "", "DATA_TYPE": 0, "EXTRA": "", "OUTPUT": clip_h,
+                })
+                processing.run("gdal:cliprasterbyextent", {
+                    "INPUT": layer_l, "PROJWIN": ext_str, "NODATA": None,
+                    "OPTIONS": "", "DATA_TYPE": 0, "EXTRA": "", "OUTPUT": clip_l,
+                })
+                if not os.path.isfile(clip_h) or not os.path.isfile(clip_l):
+                    raise RuntimeError("Could not clip the source bands to the requested area.")
 
-                calc_res = processing.run(
-                    "qgis:rastercalculator",
-                    {
-                        "EXPRESSION": f'("{lh_name}@1" - "{ll_name}@1") / ("{lh_name}@1" + "{ll_name}@1")',
-                        "LAYERS": [layer_h, layer_l],
-                        "EXTENT": ext_str,
-                        "CRS": "EPSG:4326",
-                        "CELLSIZE": 0.0001,
-                        "OUTPUT": out_file,
-                    },
-                )
-                QCoreApplication.processEvents()
-                act_out = calc_res.get("OUTPUT", out_file)
-                if os.path.exists(act_out):
-                    calc_layer = QgsRasterLayer(act_out, calc_layer_name, "gdal")
-            except Exception as _err:  # nosec B110
-                _ = _err
+                # Calculate normalized difference using matching, locally clipped rasters.
+                raw_index = os.path.join(work_dir, "index_unmasked.tif")
+                temp_files.append(raw_index)
+                processing.run("gdal:rastercalculator", {
+                    "INPUT_A": clip_h, "BAND_A": 1,
+                    "INPUT_B": clip_l, "BAND_B": 1,
+                    "FORMULA": "(A-B)/(A+B)",
+                    "NO_DATA": None, "RTYPE": 5, "OPTIONS": "", "EXTRA": "",
+                    "OUTPUT": raw_index,
+                })
+                if not os.path.isfile(raw_index) or os.path.getsize(raw_index) < 100:
+                    raise RuntimeError("NDVI raster calculation returned no valid output.")
 
-            if calc_layer is not None and calc_layer.isValid():
+                # Prefer a real administrative polygon already loaded in the QGIS project.
+                # If none exists, keep the requested AOI bbox and disclose that limitation.
+                boundary = None
+                place_key = place.split(",")[0].strip().lower()
+                for candidate in project.mapLayers().values():
+                    if (isinstance(candidate, QgsVectorLayer) and candidate.isValid()
+                            and candidate.geometryType() == 2
+                            and "boundary" in candidate.name().lower()
+                            and (not place_key or place_key in candidate.name().lower())):
+                        boundary = candidate
+                        break
+
+                final_path = out_file
+                if boundary is not None:
+                    # Clip to the actual city polygon, not merely its rectangular extent.
+                    processing.run("gdal:cliprasterbymasklayer", {
+                        "INPUT": raw_index, "MASK": boundary,
+                        "SOURCE_CRS": None, "TARGET_CRS": None,
+                        "NODATA": -9999, "ALPHA_BAND": False,
+                        "CROP_TO_CUTLINE": True, "KEEP_RESOLUTION": True,
+                        "SET_RESOLUTION": False, "X_RESOLUTION": None, "Y_RESOLUTION": None,
+                        "MULTITHREADING": True, "OPTIONS": "", "EXTRA": "",
+                        "OUTPUT": final_path,
+                    })
+                else:
+                    shutil.copy2(raw_index, final_path)
+
+                if not os.path.isfile(final_path) or os.path.getsize(final_path) < 100:
+                    raise RuntimeError("Clipped index GeoTIFF is missing or empty.")
+
+                # Remove old generated output/intermediate layers from earlier runs only.
+                stale_names = {
+                    f"Sentinel-2 {b_high_key}{place_suffix}".lower(),
+                    f"Sentinel-2 {b_low_key}{place_suffix}".lower(),
+                    calc_layer_name.lower(),
+                }
+                for old_layer in list(project.mapLayers().values()):
+                    if old_layer.name().lower() in stale_names:
+                        project.removeMapLayer(old_layer.id())
+
+                calc_layer = QgsRasterLayer(final_path, calc_layer_name, "gdal")
+                if not calc_layer.isValid():
+                    raise RuntimeError("The generated NDVI GeoTIFF is not a valid QGIS raster.")
+
+                # Make NoData transparent and apply an NDVI-specific legend.
                 _apply_raster_transparency(calc_layer)
                 style_fn(calc_layer)
                 _PROCESSING_LAYER_REFS.append(calc_layer)
-                QgsProject.instance().addMapLayer(calc_layer)
+                project.addMapLayer(calc_layer)
                 _zoom_canvas_to_aoi()
                 return {
                     "status": f"{idx_name.lower()}_calculated_successfully",
@@ -1205,19 +1249,23 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
                     "layer_name": calc_layer.name(),
                     "layer_id": calc_layer.id(),
                     "formula": formula,
-                    "resolution": "10m",
+                    "resolution": "10m (source resolution; output grid follows clipped source)",
                     "cloud_cover": assets.get("eo:cloud_cover"),
                     "datetime": assets.get("datetime"),
-                    "file_path": out_file,
+                    "file_path": final_path,
+                    "clipped_to_boundary": boundary is not None,
+                    "boundary_layer": boundary.name() if boundary is not None else None,
+                    "note": None if boundary is not None else "No matching polygon boundary was found; output is clipped to the AOI bounding box only.",
                 }
-            else:
-                _zoom_canvas_to_aoi()
-                return {
-                    "status": "bands_loaded",
-                    "band1": lh_name,
-                    "band2": ll_name,
-                    "message": f"Loaded both Sentinel-2 {b_high_key} and {b_low_key} layers for {idx_name}. Formula: ('{lh_name}@1' - '{ll_name}@1') / ('{lh_name}@1' + '{ll_name}@1').",
-                }
+            except Exception as exc:
+                log_warn(f"{idx_name} calculation failed for {place or item_id}: {exc}")
+                return {"error": f"{idx_name} processing failed: {exc}. No success was reported; check the AutoGIS log for details."}
+            finally:
+                try:
+                    shutil.rmtree(work_dir, ignore_errors=True)
+                except Exception:
+                    pass
+
 
         return run_on_main(_calc_index_on_main) if callable(run_on_main) else _calc_index_on_main()
 
