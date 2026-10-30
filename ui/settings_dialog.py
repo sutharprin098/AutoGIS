@@ -46,8 +46,8 @@ class AutoGISSettingsDialog(QDialog):
         self.setObjectName("AutoGISRoot")
         self.setWindowTitle("AutoGIS — Settings")
         self.setWindowIcon(create_autogis_icon())
-        self.setMinimumSize(440, 320)
-        self.resize(460, 340)
+        self.setMinimumSize(500, 520)
+        self.resize(560, 620)
         self.setStyleSheet(get_studio_stylesheet())
 
         root = QVBoxLayout(self)
@@ -129,6 +129,35 @@ class AutoGISSettingsDialog(QDialog):
             self._model_combo.lineEdit().setPlaceholderText("Select or type Model ID...")
         self._populate_provider_models(self._current_pid, self._config.model)
         form.addRow(QLabel("<b>AI Model:</b>"), self._model_combo)
+
+        # Earth Engine configuration (local QGIS profile only)
+        gee_title = QLabel("<b>Google Earth Engine</b>", card)
+        form.addRow(gee_title)
+
+        self._gee_project_edit = QLineEdit(self._config.gee_project_id, card)
+        self._gee_project_edit.setPlaceholderText("Google Cloud Project ID")
+        form.addRow(QLabel("Cloud Project ID:"), self._gee_project_edit)
+
+        self._gee_account_edit = QLineEdit(self._config.gee_service_account, card)
+        self._gee_account_edit.setPlaceholderText("service-account@project.iam.gserviceaccount.com (optional)")
+        form.addRow(QLabel("Service account:"), self._gee_account_edit)
+
+        gee_key_host = QWidget(card)
+        gee_key_row = QHBoxLayout(gee_key_host)
+        gee_key_row.setContentsMargins(0, 0, 0, 0)
+        self._gee_key_edit = QLineEdit(self._config.gee_key_file, gee_key_host)
+        self._gee_key_edit.setPlaceholderText("Optional service-account JSON key file path")
+        gee_key_row.addWidget(self._gee_key_edit, 1)
+        gee_browse = QPushButton("Browse", gee_key_host)
+        gee_browse.setObjectName("AutoGISGhostBtn")
+        gee_browse.clicked.connect(self._browse_gee_key)
+        gee_key_row.addWidget(gee_browse)
+        form.addRow(QLabel("Service-account key:"), gee_key_host)
+
+        gee_note = QLabel("Credentials stay in your local QGIS profile. Never upload the JSON key to GitHub.", card)
+        gee_note.setWordWrap(True)
+        gee_note.setStyleSheet("font-size: 10px; color: #64748B;")
+        form.addRow(QLabel(""), gee_note)
 
         # 3. Custom Logo (Optional)
         logo_host = QWidget(card)
@@ -215,6 +244,14 @@ class AutoGISSettingsDialog(QDialog):
         is_pw = self._key_edit.echoMode() == QLineEdit.EchoMode.Password
         self._key_edit.setEchoMode(QLineEdit.EchoMode.Normal if is_pw else QLineEdit.EchoMode.Password)
         self._show_btn.setText("Hide" if is_pw else "Show")
+
+    def _browse_gee_key(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Select Earth Engine Service-account JSON", "",
+            "JSON files (*.json);;All Files (*.*)",
+        )
+        if path:
+            self._gee_key_edit.setText(path)
 
     def _browse_logo(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
@@ -313,6 +350,9 @@ class AutoGISSettingsDialog(QDialog):
         if chosen_model:
             self._config.model = chosen_model
 
+        self._config.gee_project_id = self._gee_project_edit.text().strip()
+        self._config.gee_service_account = self._gee_account_edit.text().strip()
+        self._config.gee_key_file = self._gee_key_edit.text().strip()
         self._config.custom_logo_path = self._logo_edit.text().strip()
         set_custom_logo_path(self._config.custom_logo_path)
         self._config.custom_instructions = self._custom_edit.toPlainText().strip()
