@@ -268,36 +268,6 @@ class AutoGISSettingsDialog(QDialog):
             self._status_lbl.setStyleSheet("color: #DC2626; font-weight: 600;")
             self._status_lbl.setText(f"Earth Engine configuration error: {exc}")
 
-    def _test_gee(self) -> None:
-        try:
-            save_gee_config(
-                self._gee_project_edit.text().strip(),
-                self._gee_account_edit.text().strip(),
-                self._gee_key_edit.text().strip(),
-            )
-            ok, message = initialize_earth_engine()
-            color = "#16A34A" if ok else "#DC2626"
-            self._status_lbl.setStyleSheet(f"color: {color}; font-weight: 600;")
-            self._status_lbl.setText(message)
-        except Exception as exc:
-            self._status_lbl.setStyleSheet("color: #DC2626; font-weight: 600;")
-            self._status_lbl.setText(f"Earth Engine configuration error: {exc}")
-
-    def _test_gee(self) -> None:
-        try:
-            save_gee_config(
-                self._gee_project_edit.text().strip(),
-                self._gee_account_edit.text().strip(),
-                self._gee_key_edit.text().strip(),
-            )
-            ok, message = initialize_earth_engine()
-            color = "#16A34A" if ok else "#DC2626"
-            self._status_lbl.setStyleSheet(f"color: {color}; font-weight: 600;")
-            self._status_lbl.setText(message)
-        except Exception as exc:
-            self._status_lbl.setStyleSheet("color: #DC2626; font-weight: 600;")
-            self._status_lbl.setText(f"Earth Engine configuration error: {exc}")
-
     def _browse_gee_key(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
             self, "Select Earth Engine Service-account JSON", "",
