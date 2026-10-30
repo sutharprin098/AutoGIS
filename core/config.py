@@ -169,6 +169,9 @@ class AutoGISConfig:
             "model",
             "custom_logo_path",
             "custom_instructions",
+            "gee_project_id",
+            "gee_service_account",
+            "gee_key_file",
         )
         for k in keys:
             _MEM_CACHE[k] = ""
@@ -212,6 +215,31 @@ class AutoGISConfig:
         }
         k = key_map.get(provider_id, "api_key")
         self.set_str(k, value)
+
+
+    @property
+    def gee_project_id(self) -> str:
+        return self.get_str("gee_project_id", "")
+
+    @gee_project_id.setter
+    def gee_project_id(self, value: str) -> None:
+        self.set_str("gee_project_id", value)
+
+    @property
+    def gee_service_account(self) -> str:
+        return self.get_str("gee_service_account", "")
+
+    @gee_service_account.setter
+    def gee_service_account(self, value: str) -> None:
+        self.set_str("gee_service_account", value)
+
+    @property
+    def gee_key_file(self) -> str:
+        return self.get_str("gee_key_file", "")
+
+    @gee_key_file.setter
+    def gee_key_file(self, value: str) -> None:
+        self.set_str("gee_key_file", value)
 
     @property
     def custom_logo_path(self) -> str:
