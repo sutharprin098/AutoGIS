@@ -40,6 +40,8 @@ class AutoGISEngine(QObject):
         "fetch_osm_features",
         "compute_road_route",
         "fetch_stac_earth_data",
+        "gee_download_dem", "gee_export_image", "gee_compute_index",
+        "gee_image_collection", "gee_image_preview",
     })
 
     def __init__(self, iface, config: AutoGISConfig, parent=None) -> None:
@@ -169,6 +171,7 @@ class AutoGISEngine(QObject):
             "`spatial_buffer` and `spatial_overlay` automatically reproject/align CRSs to metric UTM/Project CRS, and for custom `run_processing_algorithm` or `execute_pyqgis` always verify CRS alignment (`native:reprojectlayer`) before distance/area calculations.\n"
             "2. **Step-by-Step Decomposition**: For large or multi-step workflows (2+ actions), call `update_agent_plan` first to break the work into sequential phases (`pending`/`in_progress`/`completed`), execute 1-2 tools per turn, and update the plan after each step.\n"
             "3. **Live Data & STAC Satellite**: Use `fetch_place_boundary`, `fetch_osm_features`, `compute_road_route`, `read_uploaded_file_or_pdf`, and `inspect_layer`. "
+            "For explicit Google Earth Engine requests, use the registered `gee_download_dem`, `gee_export_image`, `gee_compute_index`, `gee_image_collection` and `gee_image_preview` tools. For 'Delhi ka DEM', call `gee_download_dem` with place='Delhi, India' immediately; do not just describe steps. Verify the downloaded GeoTIFF and QGIS layer before claiming success. Use STAC only as a disclosed fallback if GEE is unavailable. "
             "For Earth Observation rasters, use `fetch_stac_earth_data`: 'dem' (Copernicus 30m Elevation), 'slope' (degrees), 'hillshade' (relief), 'sentinel2' (10m True Color RGB), 'ndvi' (10m vegetation index), 'ndwi' (10m water index), 'ndbi' (10m built-up index), 'sentinel2_bands' (full multispectral), 'sar' / 'sentinel1' (10m cloud-penetrating radar), 'landsat' (30m optical/thermal), or 'lulc' (Esri 10m Land Cover).\n"
             "4. **Autonomous Silent PyQGIS Execution (DO NOT DUMP CODE)**: "
             "You have full local Python and PyQGIS execution capability via `execute_pyqgis`. "
