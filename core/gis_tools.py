@@ -1931,7 +1931,7 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
         ),
         GISToolSpec(
             name="run_processing_algorithm",
-            description="Execute any QGIS Processing algorithm (e.g. 'native:buffer', 'native:clip', 'native:intersection', 'native:dissolve', 'native:centroids', 'native:reprojectlayer') and load the result into QGIS.",
+            description="Generic execution engine for any installed QGIS Processing algorithm. Discover algorithms and inspect parameters first; pass the exact algorithm ID and parameters. Prefer clipping outputs to the actual AOI, meaningful output names, and keeping temporary/intermediate outputs out of the visible project. This is the general workflow tool, not a task-specific implementation.",
             risk="write",
             parameters={
                 "type": "object",
@@ -2037,7 +2037,7 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
         ),
         GISToolSpec(
             name="execute_pyqgis",
-            description="Execute custom PyQGIS Python code on the QGIS main thread with `iface`, `QgsProject`, `project`, `processing`, and `qgis.core` pre-imported. Assign to `result` or `print()` to return data.",
+            description="Generic fallback for geospatial operations that cannot be expressed through installed QGIS Processing algorithms. Use only after inspecting project inputs and available algorithms. Execute a complete task-specific script generated at runtime by the AI; do not add one-off hardcoded implementations to the plugin for individual analyses. Preserve user layers, keep intermediate layers out of the project, clip to the actual AOI where possible, style final outputs, and verify the result.",
             risk="write",
             parameters={
                 "type": "object",
