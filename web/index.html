@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoGIS Studio v1.0.0 — Autonomous Geospatial AI Agent for QGIS</title>
-  <meta name="description" content="AutoGIS Studio v1.0.0 — Open-Source Autonomous Geospatial AI Agent and Spatial Analysis Studio for QGIS Desktop." />
+  <title>AutoGIS Studio v1.0.3 — Autonomous Geospatial AI Agent with Google Earth Engine for QGIS</title>
+  <meta name="description" content="AutoGIS Studio v1.0.3 — Open-Source Autonomous Geospatial AI Agent with Google Earth Engine (GEE) Integration and 39 Spatial Analysis Tools for QGIS Desktop." />
   <link rel="icon" type="image/svg+xml" href="/assets/icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -58,144 +58,182 @@
                   border-color 0.28s ease;
     }
     .saas-card:hover {
-      transform: translateY(-4px);
-      border-color: #BAE6FD;
-      box-shadow: 0 16px 36px -8px rgba(2, 132, 199, 0.12);
-    }
-    @keyframes floatSlow {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-7px); }
-    }
-    .animate-float {
-      animation: floatSlow 6s ease-in-out infinite;
-    }
-    .reveal {
-      opacity: 0;
-      transform: translateY(22px);
-      transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-                  transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px -6px rgba(15, 23, 42, 0.09);
+      border-color: #CBD5E1;
     }
     .cat-pill.active {
       background-color: #0284C7;
       color: #FFFFFF;
       border-color: #0284C7;
     }
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.45s ease-out, transform 0.45s ease-out;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
-<body class="light-grid antialiased selection:bg-sky-600 selection:text-white">
+<body class="light-grid antialiased">
 
-  <!-- Soft Light Ambient Gradient Backdrop -->
-  <div class="pointer-events-none fixed inset-x-0 top-0 -z-10 overflow-hidden">
-    <div class="mx-auto h-[460px] w-[1080px] -translate-y-1/2 rounded-full bg-gradient-to-r from-sky-200/60 via-teal-100/50 to-blue-200/60 blur-[110px]"></div>
-  </div>
-
-  <!-- Sticky Navigation Bar -->
-  <header class="nav-blur sticky top-0 z-50">
+  <!-- Minimal Sticky Navigation Header -->
+  <header class="nav-blur sticky top-0 z-50 transition-all">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
       <a href="#" class="flex items-center gap-3">
-        <img src="/assets/icon.svg" alt="AutoGIS Logo" class="h-9 w-9 rounded-xl border border-slate-200 bg-white p-0.5 shadow-sm" />
-        <div class="flex items-center gap-2">
-          <span class="text-base font-extrabold tracking-tight text-slate-900">AutoGIS Studio</span>
-          <span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-sky-700">v1.0.0</span>
+        <img src="/assets/icon.svg" alt="AutoGIS Logo" class="h-8 w-8" />
+        <div class="flex items-baseline gap-2">
+          <span class="font-extrabold tracking-tight text-slate-900 text-lg">AutoGIS</span>
+          <span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono text-[11px] font-bold text-sky-700">Studio v1.0.3</span>
         </div>
       </a>
 
-      <nav class="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
-        <a href="#features" class="transition hover:text-sky-600">Capabilities</a>
-        <a href="#setup" class="transition hover:text-sky-600">Installation &amp; Setup</a>
-        <a href="#tools" class="transition hover:text-sky-600">Documentation</a>
+      <nav class="hidden md:flex items-center gap-7 text-xs font-semibold text-slate-600">
+        <a href="#features" class="hover:text-slate-900 transition">Features</a>
+        <a href="#gee" class="hover:text-slate-900 transition flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>Google Earth Engine</a>
+        <a href="#setup" class="hover:text-slate-900 transition">Quick Install</a>
+        <a href="#tools" class="hover:text-slate-900 transition">39 Tools</a>
+        <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="hover:text-slate-900 transition">GitHub</a>
       </nav>
 
-      <div class="flex items-center gap-2.5">
-        <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" rel="noopener"
-           class="hidden rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 sm:inline-flex">
-          GitHub
-        </a>
-        <a href="https://github.com/sutharprin098/AutoGIS/releases/latest/download/AutoGIS.zip"
-           class="inline-flex items-center rounded-lg bg-sky-600 px-4 py-2 text-xs font-bold text-white shadow-sm shadow-sky-600/25 transition hover:bg-sky-700">
-          Download ZIP (v1.0.0)
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.3/AutoGIS.zip"
+           class="inline-flex items-center justify-center rounded-xl bg-sky-600 px-4 py-2 font-mono text-xs font-bold text-white shadow-sm transition hover:bg-sky-500 hover:shadow-md">
+          Download ZIP (v1.0.3)
         </a>
       </div>
     </div>
   </header>
 
   <!-- Hero Section -->
-  <section class="mx-auto max-w-6xl px-6 pt-16 pb-14 text-center">
-    <div class="reveal visible inline-flex items-center gap-2.5 rounded-full border border-sky-200 bg-white px-4 py-1.5 text-xs font-semibold text-sky-700 shadow-sm">
-      <span>QGIS 3.22 — 3.40+</span>
-      <span class="text-slate-300">|</span>
-      <span>Open-Source MIT</span>
+  <section class="relative mx-auto max-w-5xl px-6 pt-16 pb-12 text-center md:pt-24 md:pb-16">
+    <div class="reveal inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-800">
+      <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+      <span>v1.0.3: Deep Google Earth Engine Integration &amp; 39 Autonomous GIS Tools</span>
     </div>
 
-    <h1 class="reveal visible mx-auto mt-6 max-w-4xl text-4xl font-extrabold tracking-tight text-slate-900 sm:text-6xl leading-[1.12]">
-      Autonomous Geospatial AI Studio for <span class="bg-gradient-to-r from-sky-600 to-teal-600 bg-clip-text text-transparent">QGIS Desktop</span>
+    <h1 class="reveal mt-6 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl md:text-6xl leading-[1.12]">
+      The Autonomous Geospatial AI Agent for <span class="bg-gradient-to-r from-sky-600 to-teal-600 bg-clip-text text-transparent">QGIS Desktop</span>
     </h1>
 
-    <p class="reveal visible mx-auto mt-5 max-w-2xl text-base text-slate-600 sm:text-lg leading-relaxed">
-      Connect Gemini, ChatGPT, Claude, DeepSeek, or OpenRouter directly to your live QGIS canvas. Download real-time satellite &amp; OSM data, align CRS automatically, and execute multi-layer spatial workflows step by step.
+    <p class="reveal mx-auto mt-5 max-w-2xl text-base text-slate-600 md:text-lg leading-relaxed">
+      Connect frontier AI models directly to QGIS, Google Earth Engine, OSM, and satellite APIs. Execute multi-step spatial workflows, audit CRSs, download DEMs &amp; Sentinel imagery, and calculate spectral indices autonomously.
     </p>
 
-    <div class="reveal visible mt-8 flex flex-wrap items-center justify-center gap-3.5">
-      <a href="https://github.com/sutharprin098/AutoGIS/releases/latest/download/AutoGIS.zip"
-         class="inline-flex items-center rounded-xl bg-sky-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-600/25 transition hover:-translate-y-0.5 hover:bg-sky-700">
-        Download AutoGIS.zip (v1.0.0)
+    <!-- 1-Click Direct Download Hero CTA -->
+    <div class="reveal mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+      <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.3/AutoGIS.zip"
+         class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-xl bg-slate-900 px-6 py-3.5 font-mono text-xs font-bold text-white shadow-md transition hover:bg-slate-800 hover:shadow-lg">
+        <svg class="h-4 w-4 fill-current text-sky-400" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+        Download AutoGIS.zip (v1.0.3)
       </a>
-      <a href="#setup"
-         class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50">
-        Quick Setup Guide
-      </a>
-      <a href="#tools"
-         class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50">
-        Explore 25 Tools
+      <a href="https://github.com/sutharprin098/AutoGIS" target="_blank"
+         class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3.5 font-mono text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900">
+        <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub (Star &amp; Fork)
       </a>
     </div>
 
-    <!-- Key Metrics Bar -->
-    <div class="reveal mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-4 sm:grid-cols-4">
-      <div class="saas-card rounded-2xl p-4">
-        <div class="text-2xl font-extrabold text-sky-600">25 Tools</div>
-        <div class="mt-0.5 text-xs font-medium text-slate-500">PyQGIS, OSM, STAC &amp; PDF</div>
-      </div>
-      <div class="saas-card rounded-2xl p-4">
-        <div class="text-2xl font-extrabold text-teal-600">Auto CRS</div>
-        <div class="mt-0.5 text-xs font-medium text-slate-500">Metric UTM Reprojection</div>
-      </div>
-      <div class="saas-card rounded-2xl p-4">
-        <div class="text-2xl font-extrabold text-sky-600">-65% Tokens</div>
-        <div class="mt-0.5 text-xs font-medium text-slate-500">Compact Context Engine</div>
-      </div>
-      <div class="saas-card rounded-2xl p-4">
-        <div class="text-2xl font-extrabold text-teal-600">Zero Freeze</div>
-        <div class="mt-0.5 text-xs font-medium text-slate-500">35ms Non-Blocking Pacing</div>
-      </div>
-    </div>
-
-    <!-- Live QGIS Workspace Preview -->
-    <div class="reveal animate-float mx-auto mt-14 max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10">
-      <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2.5">
-        <div class="flex items-center gap-2">
-          <span class="h-3 w-3 rounded-full bg-red-400"></span>
-          <span class="h-3 w-3 rounded-full bg-amber-400"></span>
-          <span class="h-3 w-3 rounded-full bg-emerald-400"></span>
-        </div>
-        <div class="font-mono text-xs font-medium text-slate-500">
-          QGIS Desktop — Dipka Solar Suitability Model (37 Layers in EPSG:32644) — AutoGIS Studio v1.0.0
-        </div>
-        <span class="rounded bg-sky-50 px-2 py-0.5 font-mono text-[10px] font-bold text-sky-700">LIVE</span>
-      </div>
-      <img src="/assets/autogis_screenshot.png" alt="AutoGIS Studio v1.0.0 Live in QGIS Desktop" class="w-full object-cover" />
+    <!-- Quick Badges -->
+    <div class="reveal mt-6 flex flex-wrap items-center justify-center gap-2 text-xs font-mono text-slate-500">
+      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">QGIS 3.22 - 3.40+</span>
+      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">Google Earth Engine</span>
+      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">39 Tools</span>
+      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">Gemini / Claude / ChatGPT / DeepSeek</span>
+      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">MIT Open-Source</span>
     </div>
   </section>
 
-  <!-- Core Capabilities Section -->
+  <!-- Live Screenshot Display -->
+  <section class="reveal mx-auto max-w-5xl px-6 pb-16">
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 bg-slate-950 px-4 py-2.5 text-xs text-slate-400">
+        <div class="flex items-center gap-2">
+          <span class="h-3 w-3 rounded-full bg-rose-500/80 inline-block"></span>
+          <span class="h-3 w-3 rounded-full bg-amber-500/80 inline-block"></span>
+          <span class="h-3 w-3 rounded-full bg-emerald-500/80 inline-block"></span>
+          <span class="ml-2 font-mono text-slate-300 font-semibold">QGIS Desktop — Autonomous GEE &amp; Spatial Modeling — AutoGIS Studio v1.0.3</span>
+        </div>
+        <span class="font-mono text-emerald-400 font-bold">● Active 39 Tools</span>
+      </div>
+      <img src="/assets/autogis_screenshot.png" alt="AutoGIS Studio v1.0.3 Live in QGIS Desktop" class="w-full object-cover" />
+    </div>
+  </section>
+
+  <!-- Dedicated Google Earth Engine (GEE) Showcase Section -->
+  <section id="gee" class="border-y border-slate-200 bg-gradient-to-b from-white to-slate-50 py-16">
+    <div class="mx-auto max-w-6xl px-6">
+      <div class="reveal text-center">
+        <span class="font-mono text-xs font-bold tracking-widest text-emerald-600 uppercase">New in Release v1.0.3</span>
+        <h2 class="mt-2 text-3xl font-extrabold text-slate-900 sm:text-4xl">Deep Google Earth Engine (GEE) Integration</h2>
+        <p class="mx-auto mt-3 max-w-2xl text-sm text-slate-600">
+          AutoGIS now communicates natively with Google Earth Engine's multi-petabyte satellite catalog. Download DEMs, query Sentinel-2/Landsat collections, export multispectral bands, and calculate cloud-free spectral indices directly into your active QGIS canvas.
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div class="reveal saas-card rounded-2xl p-6 border-emerald-100">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-mono text-sm font-bold">01</div>
+          <h3 class="mt-4 text-base font-bold text-slate-900">Direct DEM Download &amp; Terrain</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Call <code class="font-mono text-[11px] text-emerald-700">gee_download_dem</code> with any place name (e.g. <em>"Kullu, Himachal"</em>) or bounding box to download a high-resolution GeoTIFF from USGS SRTM or Copernicus 30m DEM and load it into QGIS.
+          </p>
+        </div>
+
+        <div class="reveal saas-card rounded-2xl p-6 border-emerald-100">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-mono text-sm font-bold">02</div>
+          <h3 class="mt-4 text-base font-bold text-slate-900">Multispectral Band Exports</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Extract custom band combinations via <code class="font-mono text-[11px] text-emerald-700">gee_export_image</code> across Sentinel-2 Level-2A (B4, B3, B2 for True Color, B8 for NIR) or Landsat 8/9 with automated cloud masking and spatial clipping.
+          </p>
+        </div>
+
+        <div class="reveal saas-card rounded-2xl p-6 border-emerald-100">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-mono text-sm font-bold">03</div>
+          <h3 class="mt-4 text-base font-bold text-slate-900">Autonomous Spectral Indices (NDVI / NDWI)</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Run <code class="font-mono text-[11px] text-emerald-700">gee_compute_index</code> to calculate Normalized Difference Vegetation Index (NDVI), Water Index (NDWI), or Burn Ratio (NBR) directly on Earth Engine servers and stream the resulting GeoTIFF into QGIS.
+          </p>
+        </div>
+
+        <div class="reveal saas-card rounded-2xl p-6 border-emerald-100">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-mono text-sm font-bold">04</div>
+          <h3 class="mt-4 text-base font-bold text-slate-900">Collection Filter &amp; Metadata</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Inspect satellite availability with <code class="font-mono text-[11px] text-emerald-700">gee_image_collection</code> by date range, cloud-cover threshold, and spatial extent before downloading large datasets.
+          </p>
+        </div>
+
+        <div class="reveal saas-card rounded-2xl p-6 border-emerald-100">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-mono text-sm font-bold">05</div>
+          <h3 class="mt-4 text-base font-bold text-slate-900">Instant Web Thumbnails</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Generate 1024px PNG thumbnail preview URLs instantly using <code class="font-mono text-[11px] text-emerald-700">gee_image_preview</code> to verify image quality and scene coverage without consuming local disk space.
+          </p>
+        </div>
+
+        <div class="reveal saas-card rounded-2xl p-6 border-emerald-100">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-mono text-sm font-bold">06</div>
+          <h3 class="mt-4 text-base font-bold text-slate-900">Universal Geospatial Reasoning</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Fully unconstrained agent engine. AutoGIS synthesizes live GEE rasters with OpenStreetMap road networks, administrative boundary polygons, and QGIS Processing algorithms in a single prompt.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Architecture Features Grid -->
   <section id="features" class="mx-auto max-w-6xl px-6 py-16">
     <div class="reveal text-center">
-      <span class="font-mono text-xs font-bold tracking-widest text-sky-600 uppercase">Core Capabilities</span>
-      <h2 class="mt-2 text-3xl font-extrabold text-slate-900">Engineered for Large-Scale Spatial Analysis</h2>
+      <span class="font-mono text-xs font-bold tracking-widest text-sky-600 uppercase">Core Architecture</span>
+      <h2 class="mt-2 text-3xl font-extrabold text-slate-900 sm:text-4xl">Engineered for Complex Spatial Workflows</h2>
+      <p class="mx-auto mt-3 max-w-2xl text-sm text-slate-600">
+        AutoGIS is built specifically for GIS professionals, remote sensing researchers, and spatial analysts who need reliable, non-blocking execution across large projects.
+      </p>
     </div>
 
     <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -224,10 +262,10 @@
       </div>
 
       <div class="reveal saas-card rounded-2xl p-6">
-        <span class="rounded-md bg-teal-50 px-2.5 py-1 font-mono text-[11px] font-bold text-teal-700">LIVE DATA</span>
-        <h3 class="mt-3.5 text-base font-bold text-slate-900">OSM, STAC Rasters &amp; Road Routing</h3>
+        <span class="rounded-md bg-teal-50 px-2.5 py-1 font-mono text-[11px] font-bold text-teal-700">LIVE DATA &amp; GEE</span>
+        <h3 class="mt-3.5 text-base font-bold text-slate-900">GEE, OSM, STAC &amp; Road Routing</h3>
         <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-          Download administrative boundaries (Nominatim), live OpenStreetMap vectors (Overpass API), OSRM road routes, and STAC COGs (30m Copernicus DEM, 10m Sentinel-2, 10m LULC).
+          Download administrative boundaries (Nominatim), live OpenStreetMap vectors (Overpass API), OSRM road routes, STAC COGs, and Google Earth Engine satellite imagery in real time.
         </p>
       </div>
 
@@ -261,7 +299,7 @@
             <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-600 font-mono text-xs font-bold text-white">1</span>
             <div>
               <strong class="text-slate-900">Download Package:</strong> Save
-              <a href="https://github.com/sutharprin098/AutoGIS/releases/latest/download/AutoGIS.zip" class="font-semibold text-sky-600 underline">AutoGIS.zip (v1.0.0)</a>
+              <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.3/AutoGIS.zip" class="font-semibold text-sky-600 underline">AutoGIS.zip (v1.0.3)</a>
               to your computer.
             </div>
           </li>
@@ -291,7 +329,7 @@
       <!-- Step 2: Configure AI Provider -->
       <div class="saas-card rounded-2xl p-7">
         <span class="font-mono text-xs font-bold text-teal-600 uppercase">Step 2 — 20 Seconds</span>
-        <h3 class="mt-1.5 text-xl font-extrabold text-slate-900">Connect Your AI Model</h3>
+        <h3 class="mt-1.5 text-xl font-extrabold text-slate-900">Connect AI &amp; Google Earth Engine</h3>
         <ol class="mt-5 space-y-4 text-sm text-slate-600">
           <li class="flex gap-3.5">
             <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-600 font-mono text-xs font-bold text-white">1</span>
@@ -308,7 +346,7 @@
           <li class="flex gap-3.5">
             <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-600 font-mono text-xs font-bold text-white">3</span>
             <div>
-              <strong class="text-slate-900">Choose Model &amp; Save:</strong> Pick your preferred model from the synced dropdown (or enter any custom Model ID) and click <strong class="text-slate-800">Save</strong>.
+              <strong class="text-slate-900">Optional Google Earth Engine:</strong> In the GEE tab, enter your Google Cloud Project ID or click <em>Authenticate GEE</em> for seamless Earth Engine catalog access.
             </div>
           </li>
         </ol>
@@ -331,25 +369,26 @@
     </div>
   </section>
 
-  <!-- Interactive 25-Tool Documentation Reference -->
+  <!-- Interactive 39-Tool Documentation Reference -->
   <section id="tools" class="mx-auto max-w-6xl px-6 py-16">
     <div class="reveal flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
         <span class="font-mono text-xs font-bold tracking-widest text-sky-600 uppercase">Documentation &amp; Tool Reference</span>
-        <h2 class="mt-1.5 text-3xl font-extrabold text-slate-900">All 25 Autonomous GIS Tools</h2>
+        <h2 class="mt-1.5 text-3xl font-extrabold text-slate-900">All 39 Autonomous GIS &amp; GEE Tools</h2>
       </div>
-      <input type="text" id="tool-search" oninput="filterTools()" placeholder="Search tools (e.g. osm, stac, buffer, crs, pdf)..."
+      <input type="text" id="tool-search" oninput="filterTools()" placeholder="Search 39 tools (e.g. gee, ndvi, osm, buffer, crs)..."
              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none sm:w-72" />
     </div>
 
     <!-- Category Filter Pills -->
     <div class="reveal mt-5 flex flex-wrap gap-2">
-      <button onclick="setCat('', this)" class="cat-pill active rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">All (25)</button>
-      <button onclick="setCat('Live Data', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Live Spatial Data</button>
-      <button onclick="setCat('Geoprocessing', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Geoprocessing &amp; CRS</button>
-      <button onclick="setCat('Inspection', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Inspection &amp; Stats</button>
-      <button onclick="setCat('Cartography', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Cartography &amp; Layers</button>
-      <button onclick="setCat('Documents', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Documents &amp; PyQGIS</button>
+      <button onclick="setCat('', this)" class="cat-pill active rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">All (39)</button>
+      <button onclick="setCat('Earth Engine', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Google Earth Engine (5)</button>
+      <button onclick="setCat('Live Data', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Live Spatial Data (6)</button>
+      <button onclick="setCat('Geoprocessing', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Geoprocessing &amp; CRS (8)</button>
+      <button onclick="setCat('Inspection', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Inspection &amp; Stats (7)</button>
+      <button onclick="setCat('Cartography', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Cartography &amp; Layers (9)</button>
+      <button onclick="setCat('Documents', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Documents &amp; Code (4)</button>
     </div>
 
     <div class="reveal mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -364,14 +403,22 @@
             </tr>
           </thead>
           <tbody id="tools-tbody" class="divide-y divide-slate-100 text-slate-700">
+            <!-- Google Earth Engine Tools -->
+            <tr data-cat="Earth Engine"><td class="px-5 py-3 font-mono font-bold text-emerald-700">gee_download_dem</td><td class="px-5 py-3"><span class="rounded bg-emerald-50 px-2 py-0.5 text-emerald-800 font-semibold">Earth Engine</span></td><td class="px-5 py-3 font-mono text-slate-500">place, bbox, dataset (srtm|copernicus), scale</td><td class="px-5 py-3">Download digital elevation models directly from Earth Engine and load them as a GeoTIFF layer in QGIS.</td></tr>
+            <tr data-cat="Earth Engine"><td class="px-5 py-3 font-mono font-bold text-emerald-700">gee_compute_index</td><td class="px-5 py-3"><span class="rounded bg-emerald-50 px-2 py-0.5 text-emerald-800 font-semibold">Earth Engine</span></td><td class="px-5 py-3 font-mono text-slate-500">index (ndvi|ndwi|nbr), place, start_date, end_date</td><td class="px-5 py-3">Calculate Normalized Difference Vegetation (NDVI), Water (NDWI), or Burn (NBR) rasters on GEE and stream to QGIS.</td></tr>
+            <tr data-cat="Earth Engine"><td class="px-5 py-3 font-mono font-bold text-emerald-700">gee_export_image</td><td class="px-5 py-3"><span class="rounded bg-emerald-50 px-2 py-0.5 text-emerald-800 font-semibold">Earth Engine</span></td><td class="px-5 py-3 font-mono text-slate-500">image_id, bands, place, bbox, scale</td><td class="px-5 py-3">Export multispectral images from Earth Engine (Sentinel-2, Landsat) to a local GeoTIFF and add to QGIS canvas.</td></tr>
+            <tr data-cat="Earth Engine"><td class="px-5 py-3 font-mono font-bold text-emerald-700">gee_image_collection</td><td class="px-5 py-3"><span class="rounded bg-emerald-50 px-2 py-0.5 text-emerald-800 font-semibold">Earth Engine</span></td><td class="px-5 py-3 font-mono text-slate-500">collection_id, start_date, end_date, bbox</td><td class="px-5 py-3">Return image-collection metadata and count for a date/region filter before triggering downloads.</td></tr>
+            <tr data-cat="Earth Engine"><td class="px-5 py-3 font-mono font-bold text-emerald-700">gee_image_preview</td><td class="px-5 py-3"><span class="rounded bg-emerald-50 px-2 py-0.5 text-emerald-800 font-semibold">Earth Engine</span></td><td class="px-5 py-3 font-mono text-slate-500">image_id, bbox, bands</td><td class="px-5 py-3">Return a 1024px Earth Engine thumbnail preview URL for visual verification of scene quality.</td></tr>
+
+            <!-- Live Spatial Data Tools -->
             <tr data-cat="Live Data"><td class="px-5 py-3 font-mono font-bold text-sky-700">fetch_place_boundary</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono text-slate-500">place, layer_name, zoom</td><td class="px-5 py-3">Geocode any city, district, state, or country via OSM Nominatim/Photon and load its polygon boundary.</td></tr>
-            <tr data-cat="Live Data"><td class="px-5 py-3 font-mono font-bold text-sky-700">fetch_osm_features</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono text-slate-500">category, place, bbox, custom_tag</td><td class="px-5 py-3">Download live OpenStreetMap vectors (buildings, roads, rivers, water, railways, landuse, parks, hospitals, schools, power, boundary).</td></tr>
+            <tr data-cat="Live Data"><td class="px-5 py-3 font-mono font-bold text-sky-700">fetch_osm_features</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono text-slate-500">category, place, bbox, custom_tag</td><td class="px-5 py-3">Download live OpenStreetMap vectors (buildings, roads, rivers, water, railways, landuse, hospitals, schools).</td></tr>
             <tr data-cat="Live Data"><td class="px-5 py-3 font-mono font-bold text-sky-700">compute_road_route</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono text-slate-500">origin, destination, profile</td><td class="px-5 py-3">Calculate shortest OSRM road route (driving, walking, cycling) with distance (km) and duration (min).</td></tr>
-            <tr data-cat="Live Data"><td class="px-5 py-3 font-mono font-bold text-sky-700">fetch_stac_earth_data</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono text-slate-500">dataset (dem | sentinel2 | lulc), place</td><td class="px-5 py-3">Stream Cloud-Optimized GeoTIFFs (Copernicus 30m DEM, Sentinel-2 10m True Color, Esri 10m LULC) from Planetary Computer STAC.</td></tr>
+            <tr data-cat="Live Data"><td class="px-5 py-3 font-mono font-bold text-sky-700">fetch_stac_earth_data</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono text-slate-500">dataset (dem | sentinel2 | lulc), place</td><td class="px-5 py-3">Stream Cloud-Optimized GeoTIFFs (Copernicus 30m DEM, Sentinel-2 10m True Color, Esri 10m LULC) from Planetary Computer.</td></tr>
             <tr data-cat="Live Data"><td class="px-5 py-3 font-mono font-bold text-sky-700">list_saved_qgis_connections</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono text-slate-500">(none)</td><td class="px-5 py-3">List saved XYZ Tile, WMS/WMTS (ISRO Bhuvan), WFS, and PostGIS connections in the user's QGIS profile.</td></tr>
             <tr data-cat="Live Data"><td class="px-5 py-3 font-mono font-bold text-sky-700">load_saved_qgis_connection</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono text-slate-500">connection_type, name, typename</td><td class="px-5 py-3">Load a map layer directly from the user's saved QGIS XYZ, WMS, or WFS connections.</td></tr>
-            <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">read_uploaded_file_or_pdf</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">path, start_page, end_page, search_query</td><td class="px-5 py-3">Paginate or search across large PDFs, load GeoPDFs to canvas, or parse DOCX, XLSX, CSV, GeoJSON, and folders.</td></tr>
-            <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">update_agent_plan</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">title, steps[]</td><td class="px-5 py-3">Create and update the live step-by-step phase checklist in the AutoGIS studio panel.</td></tr>
+
+            <!-- Inspection & Stats Tools -->
             <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">get_project_overview</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">(none)</td><td class="px-5 py-3">Inspect project CRS, units (meters vs degrees), canvas extent, active layer, all layers, and CRS mismatches.</td></tr>
             <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">list_layers</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">(none)</td><td class="px-5 py-3">List all vector and raster layers with IDs, geometry types, CRS, feature counts, and extents.</td></tr>
             <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">inspect_layer</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">layer, sample_limit</td><td class="px-5 py-3">Detailed inspection: vector field schemas &amp; sample rows, or Raster Band Statistics (min, max, mean, std_dev).</td></tr>
@@ -379,16 +426,33 @@
             <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">compute_field_stats</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">layer, field</td><td class="px-5 py-3">Compute count, min, max, sum, mean, median, std_dev, null count, and top unique values for a field.</td></tr>
             <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">evaluate_expression</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">expression, layer</td><td class="px-5 py-3">Evaluate any QGIS expression string against the project or a specific vector layer.</td></tr>
             <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">select_features</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">layer, expression, zoom_to_selection</td><td class="px-5 py-3">Select vector features matching a QGIS expression and optionally zoom to the selection.</td></tr>
+
+            <!-- Geoprocessing Tools -->
             <tr data-cat="Geoprocessing"><td class="px-5 py-3 font-mono font-bold text-teal-700">spatial_buffer</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono text-slate-500">layer, distance, dissolve, output_name</td><td class="px-5 py-3">Create buffer zones with automatic metric UTM CRS reprojection when the input layer is in EPSG:4326 degrees.</td></tr>
             <tr data-cat="Geoprocessing"><td class="px-5 py-3 font-mono font-bold text-teal-700">spatial_overlay</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono text-slate-500">operation, input_layer, overlay_layer</td><td class="px-5 py-3">Run clip, intersection, difference, union, or dissolve with automatic CRS alignment between layers.</td></tr>
             <tr data-cat="Geoprocessing"><td class="px-5 py-3 font-mono font-bold text-teal-700">run_processing_algorithm</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono text-slate-500">algorithm_id, parameters, output_layer_name</td><td class="px-5 py-3">Run any QGIS Processing algorithm with invalid-geometry protection (GeometrySkipInvalid).</td></tr>
             <tr data-cat="Geoprocessing"><td class="px-5 py-3 font-mono font-bold text-teal-700">search_processing_algorithms</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono text-slate-500">query, limit</td><td class="px-5 py-3">Search the QGIS Processing registry by keyword to discover native, GDAL, GRASS, or SAGA algorithms.</td></tr>
             <tr data-cat="Geoprocessing"><td class="px-5 py-3 font-mono font-bold text-teal-700">get_algorithm_help</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono text-slate-500">algorithm_id</td><td class="px-5 py-3">Inspect parameter definitions, types, and documentation for any Processing algorithm ID.</td></tr>
+            <tr data-cat="Geoprocessing"><td class="px-5 py-3 font-mono font-bold text-teal-700">calculate_or_add_field</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono text-slate-500">layer, field_name, expression, field_type</td><td class="px-5 py-3">Create a new attribute column or recalculate an existing field using a QGIS expression.</td></tr>
+            <tr data-cat="Geoprocessing"><td class="px-5 py-3 font-mono font-bold text-teal-700">delete_features</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono text-slate-500">layer, expression</td><td class="px-5 py-3">Safely remove vector features that match an expression condition.</td></tr>
+            <tr data-cat="Geoprocessing"><td class="px-5 py-3 font-mono font-bold text-teal-700">export_layer</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono text-slate-500">layer, output_path, format, crs</td><td class="px-5 py-3">Save any layer as GeoPackage, Shapefile, GeoJSON, KML, or GeoTIFF.</td></tr>
+
+            <!-- Cartography & Layers Tools -->
             <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">style_vector_layer</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">layer, style_type, field, palette, classes</td><td class="px-5 py-3">Apply single, categorized, graduated choropleth, or point heatmap symbology.</td></tr>
             <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">configure_labels</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">layer, enabled, field, font_size, halo</td><td class="px-5 py-3">Enable and style text labels with halo buffers on vector layers.</td></tr>
-            <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">add_basemap / load_dataset</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">basemap / path, name, crs</td><td class="px-5 py-3">Add XYZ web basemaps (OSM, Google Satellite, Esri, Carto, OpenTopoMap) or load local datasets.</td></tr>
-            <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">create_memory_layer / add_features</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">name, geometry_type, fields, features</td><td class="px-5 py-3">Create scratch layers, add WKT features, compute fields, delete features, manage layer tree, or export layers.</td></tr>
-            <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">execute_pyqgis / capture_map_canvas</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">code / width, height</td><td class="px-5 py-3">Execute custom PyQGIS Python code on the main thread or capture a live PNG snapshot of the map canvas.</td></tr>
+            <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">add_basemap</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">basemap (osm | google_sat | carto_dark)</td><td class="px-5 py-3">Add standard XYZ web basemaps (OSM, Google Satellite, Esri, Carto, OpenTopoMap).</td></tr>
+            <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">load_dataset</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">path, name, crs</td><td class="px-5 py-3">Load local GIS files (GeoPackage, Shapefile, GeoTIFF, GeoJSON, CSV) to canvas.</td></tr>
+            <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">create_memory_layer</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">name, geometry_type, fields, crs</td><td class="px-5 py-3">Create an in-memory scratch layer for intermediate analysis results.</td></tr>
+            <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">add_features</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">layer, features[]</td><td class="px-5 py-3">Add vector points, lines, or polygons using WKT geometry and attribute values.</td></tr>
+            <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">zoom_map</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">target (extent|layer|selection), layer, bbox</td><td class="px-5 py-3">Pan and zoom the QGIS map canvas to a specific layer, bbox, or selected feature.</td></tr>
+            <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">manage_layer_tree</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">action, layer, group_name</td><td class="px-5 py-3">Organize QGIS table of contents: group layers, change visibility, remove or reorder layers.</td></tr>
+            <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">save_project</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">path</td><td class="px-5 py-3">Save the current QGIS project file (.qgz / .qgs) with all loaded layers and symbology.</td></tr>
+
+            <!-- Documents & Code Tools -->
+            <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">read_uploaded_file_or_pdf</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">path, start_page, end_page, search_query</td><td class="px-5 py-3">Paginate or search across large PDFs, load GeoPDFs to canvas, or parse DOCX, XLSX, CSV, and folders.</td></tr>
+            <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">update_agent_plan</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">title, steps[]</td><td class="px-5 py-3">Create and update the live step-by-step phase checklist in the AutoGIS studio panel.</td></tr>
+            <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">execute_pyqgis</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">code</td><td class="px-5 py-3">Safely execute custom PyQGIS Python scripts on the main Qt thread.</td></tr>
+            <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">capture_map_canvas</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">width, height</td><td class="px-5 py-3">Capture a high-resolution PNG snapshot of the live QGIS map canvas.</td></tr>
           </tbody>
         </table>
       </div>
@@ -400,13 +464,13 @@
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
       <div class="flex items-center gap-2.5">
         <img src="/assets/icon.svg" alt="AutoGIS" class="h-6 w-6" />
-        <span class="font-bold text-slate-800">AutoGIS Studio v1.0.0</span>
-        <span>— Open-Source (GPL-2.0-or-later)</span>
+        <span class="font-bold text-slate-800">AutoGIS Studio v1.0.3</span>
+        <span>— Open-Source (MIT License)</span>
       </div>
       <div class="flex flex-wrap items-center gap-6 font-medium">
         <a href="https://autogis.princesite.in/" class="text-sky-600 hover:underline">autogis.princesite.in</a>
         <a href="mailto:sutharprince098@gmail.com" class="text-slate-600 hover:text-slate-900">sutharprince098@gmail.com</a>
-        <a href="https://github.com/sutharprin098/AutoGIS/releases/latest/download/AutoGIS.zip" class="text-sky-600 hover:underline">Download AutoGIS.zip</a>
+        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.3/AutoGIS.zip" class="text-sky-600 hover:underline">Download AutoGIS.zip (v1.0.3)</a>
         <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="text-slate-600 hover:text-slate-900">GitHub Repository</a>
       </div>
     </div>
