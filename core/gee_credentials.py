@@ -9,21 +9,14 @@ import json
 import os
 from typing import Any
 
-from qgis.core import QgsSettings
-
-PREFIX = "AutoGIS/gee"
-
-
-def _settings() -> QgsSettings:
-    return QgsSettings()
-
+from .config import AutoGISConfig
 
 def get_gee_config() -> dict[str, str]:
-    settings = _settings()
+    config = AutoGISConfig()
     return {
-        "project_id": str(settings.value(f"{PREFIX}/project_id", "", type=str) or "").strip(),
-        "service_account": str(settings.value(f"{PREFIX}/service_account", "", type=str) or "").strip(),
-        "key_file": str(settings.value(f"{PREFIX}/key_file", "", type=str) or "").strip(),
+        "project_id": config.gee_project_id,
+        "service_account": config.gee_service_account,
+        "key_file": config.gee_key_file,
     }
 
 
@@ -42,11 +35,10 @@ def save_gee_config(project_id: str, service_account: str = "", key_file: str = 
         if service_account and service_account != str(payload["client_email"]):
             raise ValueError("The service-account email does not match the selected JSON key.")
         service_account = str(payload["client_email"])
-    settings = _settings()
-    settings.setValue(f"{PREFIX}/project_id", project_id)
-    settings.setValue(f"{PREFIX}/service_account", service_account)
-    settings.setValue(f"{PREFIX}/key_file", key_file)
-    settings.sync()
+    config = AutoGISConfig()
+    config.gee_project_id = project_id
+    config.gee_service_account = service_account
+    config.gee_key_file = key_file
 
 
 def initialize_earth_engine() -> tuple[bool, str]:
