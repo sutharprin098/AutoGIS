@@ -24,6 +24,7 @@ from qgis.PyQt.QtWidgets import (
 
 from ..core.config import PROVIDER_ENDPOINTS, PROVIDER_MODELS, PROVIDERS, AutoGISConfig
 from ..core.gee_credentials import initialize_earth_engine, save_gee_config
+from ..core.gee_credentials import initialize_earth_engine, save_gee_config
 from .theme import create_autogis_icon, create_autogis_pixmap, get_studio_stylesheet, set_custom_logo_path
 
 
@@ -262,6 +263,21 @@ class AutoGISSettingsDialog(QDialog):
                 "color: #16A34A; font-weight: 600;" if ok
                 else "color: #DC2626; font-weight: 600;"
             )
+            self._status_lbl.setText(message)
+        except Exception as exc:
+            self._status_lbl.setStyleSheet("color: #DC2626; font-weight: 600;")
+            self._status_lbl.setText(f"Earth Engine configuration error: {exc}")
+
+    def _test_gee(self) -> None:
+        try:
+            save_gee_config(
+                self._gee_project_edit.text().strip(),
+                self._gee_account_edit.text().strip(),
+                self._gee_key_edit.text().strip(),
+            )
+            ok, message = initialize_earth_engine()
+            color = "#16A34A" if ok else "#DC2626"
+            self._status_lbl.setStyleSheet(f"color: {color}; font-weight: 600;")
             self._status_lbl.setText(message)
         except Exception as exc:
             self._status_lbl.setStyleSheet("color: #DC2626; font-weight: 600;")
