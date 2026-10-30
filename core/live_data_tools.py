@@ -31,7 +31,6 @@ OVERPASS_ENDPOINTS = [
     "https://overpass.kumi.systems/api/interpreter",
     "https://overpass.private.coffee/api/interpreter",
     "https://overpass.osm.ch/api/interpreter",
-    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
 ]
 
 GEOCODE_ENDPOINTS = [
@@ -522,57 +521,56 @@ def _parse_custom_tag_clauses(raw_tag: str) -> list[str]:
 
 
 def _fetch_single_overpass(endpoint: str, post_bytes: bytes, timeout: float) -> tuple[str, dict]:
+    """POST a prepared Overpass query and validate the response."""
+    parsed_ep = urllib.parse.urlparse(endpoint)
+    if parsed_ep.scheme != "https" or not parsed_ep.netloc:
+        raise ValueError("Overpass endpoint must be a valid HTTPS URL.")
     req = urllib.request.Request(
         endpoint,
         data=post_bytes,
         headers={
             "User-Agent": USER_AGENT,
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
             "Accept": "application/json",
         },
         method="POST",
     )
-    parsed_ep = urllib.parse.urlparse(endpoint)
-    if parsed_ep.scheme not in ("http", "https"):
-        raise ValueError(f"Invalid URL scheme: {parsed_ep.scheme}")
-    with urllib.request.urlopen(req, timeout=timeout) as resp:  # nosec B310
+    with urllib.request.urlopen(req, timeout=max(5.0, min(float(timeout), 60.0))) as resp:  # nosec B310
         raw = resp.read().decode("utf-8", errors="replace")
     data = json.loads(raw)
-    if not isinstance(data, dict) or "elements" not in data:
+    if not isinstance(data, dict) or not isinstance(data.get("elements"), list):
         raise ValueError("Invalid Overpass JSON response")
-    remark = str(data.get("remark") or "").lower()
-    if ("runtime error" in remark or "out of memory" in remark) and not data.get("elements"):
-        raise RuntimeError(f"Overpass server remark: {data.get('remark')}")
+    remark = str(data.get("remark") or "")
+    if remark and not data["elements"]:
+        raise RuntimeError(f"Overpass server remark: {remark}")
     return endpoint, data
 
 
-def _query_overpass_fast(ql: str, timeout: float = 25.0) -> tuple[dict | None, str, str]:
-    """Query public Overpass mirrors in parallel with fast-failover race."""
+def _query_overpass_fast(ql: str, timeout: float = 35.0) -> tuple[dict | None, str, str]:
+    """Query a bounded number of public Overpass mirrors with finite deadlines."""
     post_bytes = urllib.parse.urlencode({"data": ql}).encode("utf-8")
     errors: list[str] = []
-
-    # Race public Overpass mirrors in parallel so the fastest responsive mirror wins
-    mirrors = list(OVERPASS_ENDPOINTS)
+    # Avoid flooding community servers. A small mirror race is more polite and
+    # still provides failover when one instance is overloaded.
+    mirrors = list(OVERPASS_ENDPOINTS[:3])
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=len(mirrors))
     futures = {
-        executor.submit(_fetch_single_overpass, ep, post_bytes, min(20.0, timeout)): ep
+        executor.submit(_fetch_single_overpass, ep, post_bytes, timeout): ep
         for ep in mirrors
     }
     try:
-        for fut in concurrent.futures.as_completed(futures, timeout=min(22.0, timeout + 2.0)):
+        for fut in concurrent.futures.as_completed(futures, timeout=max(8.0, timeout + 3.0)):
             ep = futures[fut]
             try:
                 used_ep, data = fut.result()
-                executor.shutdown(wait=False, cancel_futures=True)
                 return data, used_ep, ""
             except Exception as exc:
-                errors.append(f"{ep}: {exc}")
-    except Exception as exc:
-        errors.append(f"mirror_race: {exc}")
+                errors.append(f"{ep}: {str(exc)[:180]}")
+    except concurrent.futures.TimeoutError:
+        errors.append("Mirror race exceeded the overall deadline.")
     finally:
         executor.shutdown(wait=False, cancel_futures=True)
-
-    return None, "", "; ".join(errors[:3])
+    return None, "", "; ".join(errors[:3]) or "All Overpass mirrors failed."
 
 
 def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
@@ -658,7 +656,7 @@ def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
     ql = f"[out:json][timeout:25][bbox:{overpass_bbox}];(\n  " + "\n  ".join(clauses) + "\n);out geom;"
 
     # 3. Query Overpass public mirrors in parallel
-    raw_data, endpoint_used, err_detail = _query_overpass_fast(ql, timeout=25.0)
+    raw_data, endpoint_used, err_detail = _query_overpass_fast(ql, timeout=35.0)
 
     # If public mirrors are overloaded or gave 502/timeout, auto-retry on central urban core
     if not raw_data or not raw_data.get("elements"):
@@ -670,7 +668,7 @@ def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
         else:
             retry_clauses = clauses
         ql_tight = f"[out:json][timeout:20][bbox:{t_bbox}];(\n  " + "\n  ".join(retry_clauses) + "\n);out geom;"
-        tight_data, ep_tight, _ = _query_overpass_fast(ql_tight, timeout=20.0)
+        tight_data, ep_tight, _ = _query_overpass_fast(ql_tight, timeout=30.0)
         if tight_data and tight_data.get("elements"):
             raw_data = tight_data
             endpoint_used = ep_tight
@@ -687,8 +685,8 @@ def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
         return {
             "error": (
                 f"Overpass public servers are temporarily busy ({err_detail or 'timeout'}). "
-                "FREE TIPS for large areas: 1) Zoom your QGIS map canvas to the city center and re-run. "
-                "2) For whole administrative boundaries or districts, use fetch_place_boundary."
+                "Try again shortly, zoom to a smaller area, or request one feature category at a time. "
+                "For repeated large-area jobs, use a managed or self-hosted Overpass instance; public mirrors have shared capacity."
             )
         }
 

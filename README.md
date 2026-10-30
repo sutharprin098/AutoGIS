@@ -98,6 +98,20 @@ By default, **no AI provider or model is pre-selected** so you stay in full cont
 
 ---
 
+## Google Earth Engine & resilient OSM access
+
+AutoGIS can store a user's Google Earth Engine Cloud Project ID and optional
+service-account configuration in the local QGIS profile. See
+[Earth Engine and service configuration](docs/CONFIGURATION.md) for setup,
+OAuth and service-account guidance. The credential JSON itself is not copied
+into the repository or sent to the AutoGIS web portal.
+
+OpenStreetMap feature downloads use bounded POST requests and a limited
+Overpass mirror race with finite timeouts. Public Overpass servers are shared
+community infrastructure, so very large or high-density requests may still be
+throttled. Zoom into a smaller area or use a managed/self-hosted Overpass
+instance for repeat production-scale extraction.
+
 ## License
 
 Released under the **[MIT License](LICENSE)** — 100% original, clean-room open-source code.
