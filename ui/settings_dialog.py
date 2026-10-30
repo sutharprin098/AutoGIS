@@ -23,6 +23,7 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from ..core.config import PROVIDER_ENDPOINTS, PROVIDER_MODELS, PROVIDERS, AutoGISConfig
+from ..core.gee_credentials import initialize_earth_engine, save_gee_config
 from .theme import create_autogis_icon, create_autogis_pixmap, get_studio_stylesheet, set_custom_logo_path
 
 
@@ -152,6 +153,10 @@ class AutoGISSettingsDialog(QDialog):
         gee_browse.setObjectName("AutoGISGhostBtn")
         gee_browse.clicked.connect(self._browse_gee_key)
         gee_key_row.addWidget(gee_browse)
+        gee_test = QPushButton("Test / Initialize", gee_key_host)
+        gee_test.setObjectName("AutoGISGhostBtn")
+        gee_test.clicked.connect(self._test_gee)
+        gee_key_row.addWidget(gee_test)
         form.addRow(QLabel("Service-account key:"), gee_key_host)
 
         gee_note = QLabel("Credentials stay in your local QGIS profile. Never upload the JSON key to GitHub.", card)
@@ -244,6 +249,23 @@ class AutoGISSettingsDialog(QDialog):
         is_pw = self._key_edit.echoMode() == QLineEdit.EchoMode.Password
         self._key_edit.setEchoMode(QLineEdit.EchoMode.Normal if is_pw else QLineEdit.EchoMode.Password)
         self._show_btn.setText("Hide" if is_pw else "Show")
+
+    def _test_gee(self) -> None:
+        try:
+            save_gee_config(
+                self._gee_project_edit.text().strip(),
+                self._gee_account_edit.text().strip(),
+                self._gee_key_edit.text().strip(),
+            )
+            ok, message = initialize_earth_engine()
+            self._status_lbl.setStyleSheet(
+                "color: #16A34A; font-weight: 600;" if ok
+                else "color: #DC2626; font-weight: 600;"
+            )
+            self._status_lbl.setText(message)
+        except Exception as exc:
+            self._status_lbl.setStyleSheet("color: #DC2626; font-weight: 600;")
+            self._status_lbl.setText(f"Earth Engine configuration error: {exc}")
 
     def _browse_gee_key(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
@@ -350,9 +372,16 @@ class AutoGISSettingsDialog(QDialog):
         if chosen_model:
             self._config.model = chosen_model
 
-        self._config.gee_project_id = self._gee_project_edit.text().strip()
-        self._config.gee_service_account = self._gee_account_edit.text().strip()
-        self._config.gee_key_file = self._gee_key_edit.text().strip()
+        try:
+            save_gee_config(
+                self._gee_project_edit.text().strip(),
+                self._gee_account_edit.text().strip(),
+                self._gee_key_edit.text().strip(),
+            )
+        except Exception as exc:
+            self._status_lbl.setStyleSheet("color: #DC2626; font-weight: 600;")
+            self._status_lbl.setText(f"Earth Engine configuration error: {exc}")
+            return
         self._config.custom_logo_path = self._logo_edit.text().strip()
         set_custom_logo_path(self._config.custom_logo_path)
         self._config.custom_instructions = self._custom_edit.toPlainText().strip()
