@@ -1470,6 +1470,26 @@ from .live_data_tools import (
     tool_load_saved_qgis_connection,
 )
 
+from .gee_tools import (
+    tool_gee_download_dem, tool_gee_export_image, tool_gee_compute_index,
+    tool_gee_image_collection, tool_gee_image_preview,
+)
+
+def _gee_dem(iface, args: dict, run_on_main=None) -> dict:
+    return tool_gee_download_dem(args, iface=iface, run_on_main=run_on_main)
+
+def _gee_export(iface, args: dict, run_on_main=None) -> dict:
+    return tool_gee_export_image(args, iface=iface, run_on_main=run_on_main)
+
+def _gee_index(iface, args: dict, run_on_main=None) -> dict:
+    return tool_gee_compute_index(args, iface=iface, run_on_main=run_on_main)
+
+def _gee_collection(iface, args: dict, run_on_main=None) -> dict:
+    return tool_gee_image_collection(args)
+
+def _gee_preview(iface, args: dict, run_on_main=None) -> dict:
+    return tool_gee_image_preview(args)
+
 
 # ============================================================================
 # TOOL REGISTRY BUILDER
@@ -2042,4 +2062,44 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
             handler=_tool_save_project,
         ),
     ]
+
+    specs.extend([
+        GISToolSpec(name="gee_download_dem",
+            description="Download a real DEM from the user's authenticated Google Earth Engine project, save a GeoTIFF locally and load it into QGIS. For 'Delhi ka DEM', call immediately with place='Delhi, India'. Defaults to NASA/NASADEM_HGT/001 elevation at 30 m.",
+            risk="write", parameters={"type":"object","properties":{
+                "place":{"type":"string","description":"Place, e.g. Delhi, India."},
+                "bbox":{"type":"array","items":{"type":"number"},"description":"Optional [west,south,east,north] EPSG:4326."},
+                "dataset_id":{"type":"string","description":"Default NASA/NASADEM_HGT/001."},
+                "band":{"type":"string","description":"Default elevation."},
+                "scale":{"type":"integer","description":"Output resolution in meters; default 30."},
+                "crs":{"type":"string","description":"Output CRS; default EPSG:32643 for Delhi, otherwise EPSG:4326."},
+                "layer_name":{"type":"string"}}, "required":[]}, handler=_gee_dem),
+        GISToolSpec(name="gee_export_image",
+            description="Export an accessible Google Earth Engine image asset to a bounded GeoTIFF and load it into QGIS. Use image_id, optional bands, place or bbox, scale and CRS.",
+            risk="write", parameters={"type":"object","properties":{
+                "image_id":{"type":"string"},"bands":{"type":"array","items":{"type":"string"}},
+                "place":{"type":"string"},"bbox":{"type":"array","items":{"type":"number"}},
+                "scale":{"type":"integer"},"crs":{"type":"string"},"layer_name":{"type":"string"}},
+                "required":["image_id"]}, handler=_gee_export),
+        GISToolSpec(name="gee_compute_index",
+            description="Compute Sentinel-2 median composite NDVI, NDWI or NDBI in Earth Engine for a bounded place/bbox and date range, export a GeoTIFF and load it in QGIS. Defaults to the latest year.",
+            risk="write", parameters={"type":"object","properties":{
+                "index":{"type":"string","enum":["NDVI","NDWI","NDBI"]},"place":{"type":"string"},
+                "bbox":{"type":"array","items":{"type":"number"}},"start_date":{"type":"string"},
+                "end_date":{"type":"string"},"max_cloud_cover":{"type":"number"},
+                "scale":{"type":"integer"},"crs":{"type":"string"},"layer_name":{"type":"string"}},
+                "required":["index"]}, handler=_gee_index),
+        GISToolSpec(name="gee_image_collection",
+            description="Inspect an Earth Engine image collection and return image count and first-image metadata for a bounded region and date range.",
+            risk="read", parameters={"type":"object","properties":{
+                "collection_id":{"type":"string"},"start_date":{"type":"string"},"end_date":{"type":"string"},
+                "bbox":{"type":"array","items":{"type":"number"}}},
+                "required":["start_date","end_date","bbox"]}, handler=_gee_collection),
+        GISToolSpec(name="gee_image_preview",
+            description="Preview an Earth Engine image by asset ID and bands for a bounded bbox.",
+            risk="read", parameters={"type":"object","properties":{
+                "image_id":{"type":"string"},"bands":{"type":"array","items":{"type":"string"}},
+                "bbox":{"type":"array","items":{"type":"number"}}},
+                "required":["image_id","bbox"]}, handler=_gee_preview),
+    ])
     return {s.name: s for s in specs}
