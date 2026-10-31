@@ -1263,8 +1263,8 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
             finally:
                 try:
                     shutil.rmtree(work_dir, ignore_errors=True)
-                except Exception:
-                    pass
+                except Exception as _cleanup_err:  # nosec B110
+                    log_warn(f"Temporary cleanup notice: {_cleanup_err}")
 
 
         return run_on_main(_calc_index_on_main) if callable(run_on_main) else _calc_index_on_main()

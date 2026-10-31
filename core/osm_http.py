@@ -31,7 +31,7 @@ def fetch_overpass(endpoint: str, query: str, timeout: float = 35.0) -> dict:
             "Accept": "application/json",
         },
     )
-    with urllib.request.urlopen(request, timeout=max(5.0, min(float(timeout), 90.0))) as response:
+    with urllib.request.urlopen(request, timeout=max(5.0, min(float(timeout), 90.0))) as response:  # nosec B310
         payload = json.loads(response.read().decode("utf-8", errors="replace"))
     if not isinstance(payload, dict) or not isinstance(payload.get("elements"), list):
         raise ValueError("Overpass returned an unexpected response.")

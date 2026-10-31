@@ -91,6 +91,7 @@ import datetime as _gee_dt
 import os as _gee_os
 import tempfile as _gee_tempfile
 import urllib.request as _gee_urllib
+import urllib.parse as _gee_urlparse
 import zipfile as _gee_zipfile
 from .config import data_dir as _gee_data_dir
 
@@ -138,9 +139,12 @@ def _gee_download_and_load(image, args, iface=None, run_on_main=None, name="Eart
     _gee_os.close(fd)
     output = _gee_os.path.join(folder, _gee_safe_slug(name) + "_" + str(int(_gee_dt.datetime.now().timestamp())) + ".tif")
     try:
+        parsed_url = _gee_urlparse.urlparse(url)
+        if parsed_url.scheme not in ("http", "https") or not parsed_url.netloc:
+            raise ValueError(f"Invalid Earth Engine download URL scheme: {parsed_url.scheme}")
         req = _gee_urllib.Request(url, headers={"User-Agent":"AutoGIS-Studio/1.0"})
         size = 0
-        with _gee_urllib.urlopen(req, timeout=120) as response, open(temp_path, "wb") as out:
+        with _gee_urllib.urlopen(req, timeout=120) as response, open(temp_path, "wb") as out:  # nosec B310
             while True:
                 chunk = response.read(1024*1024)
                 if not chunk: break
