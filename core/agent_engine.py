@@ -55,6 +55,8 @@ class AutoGISEngine(QObject):
         self._active_run_id: str | None = None
         self._cancelled_runs: set[str] = set()
         self._step_count = 0
+        self._current_plan_steps: list[dict[str, Any]] = []
+        self._auto_nudge_count = 0
         self._lock = threading.Lock()
         self._active_workers = 0
 
@@ -176,7 +178,7 @@ class AutoGISEngine(QObject):
             "Core Rules:\n"
             "1. **CRS Intelligence (CRITICAL)**: Always check project and layer CRS (`EPSG`, projected meters vs geographic degrees). "
             "`spatial_buffer` and `spatial_overlay` automatically reproject/align CRSs to metric UTM/Project CRS, and for custom `run_processing_algorithm` or `execute_pyqgis` always verify CRS alignment (`native:reprojectlayer`) before distance/area calculations.\n"
-            "2. **Step-by-Step Decomposition**: For large or multi-step workflows (2+ actions), call `update_agent_plan` first to break the work into sequential phases (`pending`/`in_progress`/`completed`), execute 1-2 tools per turn, and update the plan after each step.\n"
+            "2. **Fast Step-by-Step Execution**: For multi-step workflows (2+ actions), call `update_agent_plan` to track phases (`pending`/`in_progress`/`completed`), and ALWAYS combine `update_agent_plan` with actual execution tool calls in the same turn (you may also batch multiple independent tool calls, such as multiple `fetch_osm_features` calls, in a single turn). Never waste a turn calling only `update_agent_plan`, and NEVER stop or report completion while any step in your plan is still `pending` or `in_progress`.\n"
             "3. **Universal Geospatial Workflow (NO TASK-SPECIFIC HARDCODING)**: Treat every user request as a general geospatial goal, not as a predefined recipe. Do not assume a specific index, city, dataset, layer name, CRS, or output layout unless the user specifies it. Inspect the current project and available inputs first. For QGIS operations, discover algorithms with `search_processing_algorithms`, inspect exact parameters with `get_algorithm_help`, and run suitable algorithms through `run_processing_algorithm`. For Earth Engine, use the user's configured credentials and choose datasets, bands and filters based on the request; use available GEE tools where they fit. Use STAC only as a disclosed alternative when GEE is unavailable or the user permits it.\n"
             "4. **Autonomous Execution and Verification (DO NOT DUMP CODE)**: Orchestrate a complete workflow using generic tools. Use `execute_pyqgis` only when generic QGIS Processing tools cannot express the operation; do not create or rely on one-off hardcoded implementations for NDVI or any other named analysis. Never tell the user to run code manually. Before processing, inspect the AOI, source data, CRS, resolution, NoData and output destination. Clip raster/vector outputs to the actual AOI polygon when available; use a bbox only when no polygon exists and disclose that. Preserve original user layers. Keep intermediate downloads, bands, temporary rasters and scratch layers out of the visible project unless requested. Add only final deliverables, use meaningful names, apply suitable styling, and make NoData transparent outside the AOI. On reruns, replace only prior AutoGIS-generated outputs for the same task; never delete user-owned layers. If a step fails, diagnose/retry safely or return the actual error—never claim success from partial/raw inputs. Verify output validity, dimensions/feature count, CRS, resolution and path before reporting completion.\n"
             "5. **Concise & Token-Efficient**: Keep responses clear, professional, direct, and without emojis."
@@ -219,6 +221,8 @@ class AutoGISEngine(QObject):
         with self._lock:
             self._active_run_id = run_id
             self._step_count = 0
+            self._current_plan_steps = []
+            self._auto_nudge_count = 0
             if not self._messages or self._messages[0].get("role") != "system":
                 self._messages.insert(0, {"role": "system", "content": sys_prompt})
             else:
@@ -378,6 +382,29 @@ class AutoGISEngine(QObject):
                 text_acc, reasoning_acc, tool_calls = self._stream_once(
                     run_id, api_key, base_url, model, max_tokens, messages, tools
                 )
+                # Free OpenRouter models occasionally emit an empty stream (0 tokens, 0 tool_calls) mid-workflow.
+                # Retry once after a brief pause, and if still empty, try fallback models before giving up.
+                if not text_acc.strip() and not tool_calls and run_id not in self._cancelled_runs:
+                    log_info(f"Model {model} returned an empty stream; retrying once after 1.2s...")
+                    self._post("status", run_id, f"Retrying {model.split('/')[-1]}...")
+                    time.sleep(1.2)
+                    text_acc, reasoning_acc, tool_calls = self._stream_once(
+                        run_id, api_key, base_url, model, max_tokens, messages, tools
+                    )
+                    if not text_acc.strip() and not tool_calls and auto_fallback and or_key:
+                        for fb_model in FALLBACK_CHAIN:
+                            if fb_model == model and provider == "openrouter":
+                                continue
+                            try:
+                                log_info(f"Model {model} returned empty stream twice; falling back to {fb_model}")
+                                self._post("status", run_id, f"Switching to {fb_model.split('/')[-1]}...")
+                                text_acc, reasoning_acc, tool_calls = self._stream_once(
+                                    run_id, or_key, DEFAULT_BASE_URL, fb_model, min(max_tokens, 2048), messages, tools
+                                )
+                                if text_acc.strip() or tool_calls:
+                                    break
+                            except Exception as fb_exc:
+                                log_warn(f"Empty-stream fallback {fb_model} failed: {fb_exc}")
             except urllib.error.HTTPError as he:
                 body = ""
                 try:
@@ -455,6 +482,37 @@ class AutoGISEngine(QObject):
                     self._post("assistant_step_done", run_id, text_acc)
                 self._post("exec_tools", run_id, parsed_calls)
             else:
+                # Check if there are still incomplete steps in the active agent plan
+                with self._lock:
+                    incomplete_steps = [
+                        str(s.get("step") or s.get("title") or "").strip()
+                        for s in self._current_plan_steps
+                        if isinstance(s, dict)
+                        and str(s.get("status") or "").strip().lower() not in ("completed", "done")
+                        and str(s.get("step") or s.get("title") or "").strip()
+                    ]
+                    nudge_cnt = self._auto_nudge_count
+
+                if incomplete_steps and nudge_cnt < 5 and self._step_count < MAX_AUTONOMOUS_STEPS:
+                    with self._lock:
+                        self._auto_nudge_count += 1
+                        if text_acc.strip():
+                            self._messages.append({"role": "assistant", "content": text_acc})
+                        next_step_label = incomplete_steps[0]
+                        self._messages.append({
+                            "role": "user",
+                            "content": (
+                                f"[System Auto-Continue]: Your plan still has {len(incomplete_steps)} incomplete step(s), "
+                                f"starting with: '{next_step_label}'. Do NOT stop early. "
+                                "Call the required tool(s) now to execute the remaining steps and update_agent_plan."
+                            ),
+                        })
+                    if text_acc.strip():
+                        self._post("assistant_step_done", run_id, text_acc)
+                    self._post("status", run_id, f"Continuing: {next_step_label[:48]}...")
+                    self._post("continue_step", run_id)
+                    return
+
                 if not text_acc.strip():
                     text_acc = reasoning_acc.strip() or "Task complete. Let me know how else I can help with your QGIS project!"
                     self._post("token", run_id, text_acc)
@@ -518,6 +576,9 @@ class AutoGISEngine(QObject):
                 elif kind == "exec_tools":
                     pending_tools = payload
                     break
+                elif kind == "continue_step":
+                    rid = payload[0]
+                    QTimer.singleShot(40, lambda r=rid: self._launch_step(r))
                 elif kind == "run_finished":
                     self.status_updated.emit(payload[0], "")
                     self.run_finished.emit(*payload)
@@ -623,11 +684,17 @@ class AutoGISEngine(QObject):
         self.tool_call_finished.emit(run_id, cid, cname, res, elapsed_ms, is_err)
 
         if cname == "update_agent_plan" and isinstance(res, dict) and not is_err:
+            steps_list = list(res.get("steps") or [])
+            with self._lock:
+                self._current_plan_steps = steps_list
             self.plan_updated.emit(
                 run_id,
                 str(res.get("plan_title") or "Autonomous GIS Plan"),
-                list(res.get("steps") or []),
+                steps_list,
             )
+        elif not is_err:
+            with self._lock:
+                self._auto_nudge_count = 0
 
         if isinstance(res, dict) and res.get("image_path") and not is_err:
             self.map_captured.emit(run_id, str(res["image_path"]))

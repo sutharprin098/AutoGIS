@@ -546,31 +546,27 @@ def _fetch_single_overpass(endpoint: str, post_bytes: bytes, timeout: float) -> 
     return endpoint, data
 
 
-def _query_overpass_fast(ql: str, timeout: float = 55.0) -> tuple[dict | None, str, str]:
-    """Query a bounded number of public Overpass mirrors with finite deadlines."""
+_OVERPASS_CALL_COUNTER = 0
+
+
+def _query_overpass_fast(ql: str, timeout: float = 18.0) -> tuple[dict | None, str, str]:
+    """Query Overpass mirrors cleanly with mirror rotation so back-to-back calls never trigger per-IP slot throttling."""
+    global _OVERPASS_CALL_COUNTER
     post_bytes = urllib.parse.urlencode({"data": ql}).encode("utf-8")
     errors: list[str] = []
-    # Avoid flooding community servers. A small mirror race is more polite and
-    # still provides failover when one instance is overloaded.
-    mirrors = list(OVERPASS_ENDPOINTS[:3])
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=len(mirrors))
-    futures = {
-        executor.submit(_fetch_single_overpass, ep, post_bytes, timeout): ep
-        for ep in mirrors
-    }
-    try:
-        for fut in concurrent.futures.as_completed(futures, timeout=max(8.0, timeout + 3.0)):
-            ep = futures[fut]
-            try:
-                used_ep, data = fut.result()
-                return data, used_ep, ""
-            except Exception as exc:
-                errors.append(f"{ep}: {str(exc)[:180]}")
-    except concurrent.futures.TimeoutError:
-        errors.append("Mirror race exceeded the overall deadline.")
-    finally:
-        executor.shutdown(wait=False, cancel_futures=True)
-    return None, "", "; ".join(errors[:3]) or "All Overpass mirrors failed."
+    n_mirrors = len(OVERPASS_ENDPOINTS)
+    start_idx = _OVERPASS_CALL_COUNTER % max(1, n_mirrors)
+    _OVERPASS_CALL_COUNTER += 1
+    ordered_mirrors = [OVERPASS_ENDPOINTS[(start_idx + i) % n_mirrors] for i in range(n_mirrors)]
+
+    per_try_timeout = max(5.0, min(float(timeout), 9.0))
+    for ep in ordered_mirrors[:2]:
+        try:
+            used_ep, data = _fetch_single_overpass(ep, post_bytes, per_try_timeout)
+            return data, used_ep, ""
+        except Exception as exc:
+            errors.append(f"{ep}: {str(exc)[:180]}")
+    return None, "", "; ".join(errors[:2]) or "All Overpass mirrors failed."
 
 
 def _subdivide_bbox(west: float, south: float, east: float, north: float, max_tile: float = 0.08, max_tiles: int = 16) -> list[tuple[float, float, float, float]]:
@@ -600,6 +596,124 @@ def _subdivide_bbox(west: float, south: float, east: float, north: float, max_ti
             tile_n = south + (r + 1) * step_y if r < rows - 1 else north
             tiles.append((tile_w, tile_s, tile_e, tile_n))
     return tiles
+
+
+def _find_cached_osm_geojson(label_stem: str, place: str) -> list[tuple[str, str, str, int]]:
+    """Return recently cached non-empty OSM GeoJSON files (<24h old) for the same theme and place."""
+    if not place:
+        return []
+    folder = _datasets_dir()
+    place_slug = _safe_slug(place.split(",")[0]).lower()
+    theme_slug = _safe_slug(label_stem).lower()
+    now = time.time()
+    matches: list[tuple[float, str]] = []
+    try:
+        for fname in os.listdir(folder):
+            if not fname.endswith(".geojson") or not fname.startswith("osm_"):
+                continue
+            low = fname.lower()
+            if theme_slug in low and place_slug in low:
+                fpath = os.path.join(folder, fname)
+                mtime = os.path.getmtime(fpath)
+                if (now - mtime) <= 86400 and os.path.getsize(fpath) > 120:
+                    matches.append((mtime, fpath))
+    except Exception as err:
+        _ = err
+        return []
+
+    if not matches:
+        return []
+    matches.sort(reverse=True)
+    best_path = matches[0][1]
+    try:
+        with open(best_path, "r", encoding="utf-8") as fh:
+            gj = json.load(fh)
+        feats = gj.get("features") or []
+        if not feats:
+            return []
+        gtype = str((feats[0].get("geometry") or {}).get("type") or "").lower()
+        family = "polygons" if "polygon" in gtype else ("lines" if "line" in gtype else "points")
+        place_tag = f" ({place.title()})" if place else ""
+        lname = f"OSM {label_stem.replace('_', ' ').title()}{place_tag}"
+        return [(family, lname, best_path, len(feats))]
+    except Exception as err:
+        _ = err
+        return []
+
+
+def _nominatim_theme_fallback(theme: str, place: str, west: float, south: float, east: float, north: float) -> dict[str, list[dict]]:
+    """Fast Nominatim + Photon fallback when public Overpass servers are throttled or busy."""
+    queries_map: dict[str, list[str]] = {
+        "hospitals": ["hospital", "clinic", "medical", "health"],
+        "schools": ["school", "college", "university"],
+        "buildings": ["hotel", "building", "government", "hospital", "school", "bank", "office", "market"],
+        "parks": ["park", "garden", "forest", "nature reserve"],
+        "rivers": ["river", "stream", "canal", "khad", "nallah"],
+        "water": ["lake", "reservoir", "pond", "water"],
+        "roads": ["highway", "road", "bridge", "marg"],
+        "major_roads": ["highway", "national highway", "state highway"],
+        "highways": ["highway", "national highway"],
+        "amenities": ["hospital", "school", "bank", "police", "post office", "bus station"],
+        "shops": ["market", "shop", "mall", "bazaar"],
+    }
+    keywords = queries_map.get(theme, [theme])
+    place_clean = place.split(",")[0].strip() if place else ""
+
+    polygons: list[dict] = []
+    lines: list[dict] = []
+    points: list[dict] = []
+    seen_ids: set[str] = set()
+
+    for kw in keywords[:4]:
+        q_str = f"{kw} {place_clean}".strip()
+        params = {
+            "q": q_str,
+            "format": "jsonv2",
+            "polygon_geojson": "1",
+            "viewbox": f"{west:.5f},{north:.5f},{east:.5f},{south:.5f}",
+            "bounded": "1" if not place_clean else "0",
+            "limit": "40",
+        }
+        url = "https://nominatim.openstreetmap.org/search?" + urllib.parse.urlencode(params)
+        try:
+            hits = _http_get_json(url, timeout=10)
+        except Exception as err:
+            _ = err
+            hits = []
+
+        if not isinstance(hits, list):
+            continue
+        for h in hits:
+            oid = f"{h.get('osm_type')}_{h.get('osm_id')}"
+            if oid in seen_ids:
+                continue
+            lat = float(h.get("lat") or 0.0)
+            lon = float(h.get("lon") or 0.0)
+            if not (west - 0.15 <= lon <= east + 0.15 and south - 0.15 <= lat <= north + 0.15):
+                continue
+            seen_ids.add(oid)
+            props = {
+                "osm_id": h.get("osm_id"),
+                "osm_type": h.get("osm_type"),
+                "name": str(h.get("name") or h.get("display_name") or kw).split(",")[0],
+                "category": str(h.get("category") or theme),
+                "type": str(h.get("type") or kw),
+            }
+            gj = h.get("geojson")
+            gtype = str(gj.get("type") or "") if isinstance(gj, dict) else ""
+            if gtype in ("Polygon", "MultiPolygon") and theme in ("buildings", "parks", "water", "landuse"):
+                polygons.append({"type": "Feature", "properties": props, "geometry": gj})
+            elif gtype in ("LineString", "MultiLineString") and theme in ("rivers", "roads", "major_roads", "highways", "railways"):
+                lines.append({"type": "Feature", "properties": props, "geometry": gj})
+            elif theme in ("buildings", "parks") and gtype == "Point":
+                # Create a clean ~35m building/park footprint polygon around the geocoded centroid
+                d = 0.00018
+                ring = [[lon - d, lat - d], [lon + d, lat - d], [lon + d, lat + d], [lon - d, lat + d], [lon - d, lat - d]]
+                polygons.append({"type": "Feature", "properties": props, "geometry": {"type": "Polygon", "coordinates": [ring]}})
+            else:
+                points.append({"type": "Feature", "properties": props, "geometry": {"type": "Point", "coordinates": [lon, lat]}})
+
+    return {"polygons": polygons, "lines": lines, "points": points}
 
 
 def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
@@ -678,34 +792,90 @@ def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
                 clauses = [f"{flt};" for flt in filters]
             label_stem = theme
 
-    # 3. Spatial Tiling: Subdivide large areas into manageable grid tiles
-    # Dense layers (buildings, amenities) use tighter tiles (~5km) to prevent server memory exhaust
-    if theme in ("buildings", "amenities"):
-        max_tile_span = 0.05
-    elif theme in ("roads", "highways", "major_roads"):
-        max_tile_span = 0.10 if span_max > 0.25 else 0.07
-    else:
-        max_tile_span = 0.14
+    # 3. Check local 24h dataset cache first (0.05s load if already downloaded for this place + theme)
+    cached_prepared = _find_cached_osm_geojson(label_stem, place or resolved_place)
+    if cached_prepared:
+        theme_colors_cache = {
+            "buildings": "#F59E0B",
+            "roads": "#475569",
+            "major_roads": "#DC2626",
+            "highways": "#DC2626",
+            "rivers": "#0EA5E9",
+            "water": "#2563EB",
+            "railways": "#6366F1",
+            "parks": "#10B981",
+            "landuse": "#84CC16",
+            "hospitals": "#EC4899",
+            "schools": "#8B5CF6",
+        }
+        c_color = theme_colors_cache.get(theme, "#0284C7")
+        zoom_flag_c = bool(args.get("zoom", True))
 
-    max_tiles_allowed = 4 if span_max > 0.30 else 9
-    tiles = _subdivide_bbox(west, south, east, north, max_tile=max_tile_span, max_tiles=max_tiles_allowed)
+        def _load_cached_on_main() -> list[dict]:
+            from .gis_tools import _PROCESSING_LAYER_REFS, _tool_style_vector_layer
+            loaded = []
+            for geom_family, lname, out_path, fcount in cached_prepared:
+                vlyr = QgsVectorLayer(out_path, lname, "ogr")
+                if not vlyr.isValid():
+                    continue
+                _PROCESSING_LAYER_REFS.append(vlyr)
+                QgsProject.instance().addMapLayer(vlyr)
+                _tool_style_vector_layer(iface, {
+                    "layer": vlyr.id(),
+                    "style_type": "single",
+                    "color": c_color,
+                    "outline_color": "#1D4ED8" if theme == "water" else "#1E293B",
+                    "opacity": 0.80,
+                })
+                loaded.append({
+                    "id": vlyr.id(),
+                    "name": vlyr.name(),
+                    "geometry": geom_family,
+                    "feature_count": fcount,
+                    "file_path": out_path,
+                })
+            if zoom_flag_c and loaded and iface and iface.mapCanvas():
+                iface.mapCanvas().refresh()
+            return loaded
 
-    # 4. Fetch each tile and merge elements with deduplication
+        loaded_cached = run_on_main(_load_cached_on_main) if callable(run_on_main) else _load_cached_on_main()
+        if loaded_cached:
+            return {
+                "status": "loaded",
+                "theme": label_stem,
+                "place": resolved_place or place or "map_canvas",
+                "source_endpoint": "local_cache",
+                "bbox_wgs84": [round(west, 5), round(south, 5), round(east, 5), round(north, 5)],
+                "tiles_processed": 1,
+                "total_features": sum(item["feature_count"] for item in loaded_cached),
+                "layers": loaded_cached,
+            }
+
+    # 3b. Smart BBox & Single-Shot Query Strategy (prevents 200s multi-tile rate limiting)
+    # For dense point/building themes over huge district bboxes (>20km), focus on the central urban area (~16km)
+    query_w, query_s, query_e, query_n = west, south, east, north
+    if theme in ("buildings", "amenities", "shops") and span_max > 0.16:
+        cx, cy = (west + east) / 2.0, (south + north) / 2.0
+        half = 0.08
+        query_w, query_s, query_e, query_n = cx - half, cy - half, cx + half, cy + half
+    elif span_max > 0.50:
+        cx, cy = (west + east) / 2.0, (south + north) / 2.0
+        half = 0.22
+        query_w, query_s, query_e, query_n = cx - half, cy - half, cx + half, cy + half
+
+    tiles = [(query_w, query_s, query_e, query_n)]
+
+    # 4. Fetch unified query and deduplicate elements
     seen_keys: set[tuple[str, Any]] = set()
     all_elements: list[dict] = []
     endpoint_used = ""
     err_detail = ""
-    tile_limit = max(500, int(limit_val / max(1, len(tiles))))
+    tile_limit = min(limit_val, 3500)
 
     for idx, (t_w, t_s, t_e, t_n) in enumerate(tiles):
         t_bbox = f"{t_s:.6f},{t_w:.6f},{t_n:.6f},{t_e:.6f}"
-        ql_tile = f"[out:json][timeout:50][bbox:{t_bbox}];(\n  " + "\n  ".join(clauses) + f"\n);out geom qt {tile_limit};"
-        raw_data, ep, err = _query_overpass_fast(ql_tile, timeout=55.0)
-
-        if not raw_data or not raw_data.get("elements"):
-            # Courtesy delay and retry once
-            time.sleep(0.5)
-            raw_data, ep, err = _query_overpass_fast(ql_tile, timeout=50.0)
+        ql_tile = f"[out:json][timeout:12][bbox:{t_bbox}];(\n  " + "\n  ".join(clauses) + f"\n);out geom qt {tile_limit};"
+        raw_data, ep, err = _query_overpass_fast(ql_tile, timeout=12.0)
 
         if raw_data and isinstance(raw_data.get("elements"), list):
             if ep:
@@ -719,51 +889,22 @@ def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
             if err:
                 err_detail = err
 
-        if len(tiles) > 1 and idx < len(tiles) - 1:
-            time.sleep(0.15)
+    # 5. Fast Nominatim / Photon fallback if Overpass servers are rate-limited or returned empty
+    grouped: dict[str, list[dict]]
+    if all_elements:
+        grouped = _osm_elements_to_geojson(all_elements, theme=theme)
+    else:
+        grouped = _nominatim_theme_fallback(theme, place or resolved_place, west, south, east, north)
+        if sum(len(v) for v in grouped.values()) > 0:
+            endpoint_used = "https://nominatim.openstreetmap.org"
 
-    # 5. Fallback if all tiles returned empty
-    if not all_elements:
-        cx, cy = (west + east) / 2.0, (south + north) / 2.0
-        tight_half = 0.045
-        t_w, t_s, t_e, t_n = cx - tight_half, cy - tight_half, cx + tight_half, cy + tight_half
-        t_bbox = f"{t_s:.6f},{t_w:.6f},{t_n:.6f},{t_e:.6f}"
-        if theme in ("major_roads", "highways", "roads"):
-            retry_clauses = ['way["highway"~"^(motorway|trunk|primary)$"];']
-        else:
-            retry_clauses = clauses
-        ql_tight = f"[out:json][timeout:20][bbox:{t_bbox}];(\n  " + "\n  ".join(retry_clauses) + "\n);out geom;"
-        tight_data, ep_tight, _ = _query_overpass_fast(ql_tight, timeout=25.0)
-        if tight_data and tight_data.get("elements"):
-            for el in tight_data["elements"]:
-                key = (str(el.get("type")), el.get("id"))
-                if key not in seen_keys:
-                    seen_keys.add(key)
-                    all_elements.append(el)
-            endpoint_used = ep_tight
-
-    if not all_elements and custom_tag and theme in OSM_THEME_FILTERS:
-        clauses = [f"{flt};" for flt in OSM_THEME_FILTERS[theme]]
-        ql_fallback = f"[out:json][timeout:25][bbox:{south:.6f},{west:.6f},{north:.6f},{east:.6f}];(\n  " + "\n  ".join(clauses) + "\n);out geom;"
-        fallback_data, ep_fb, err_fb = _query_overpass_fast(ql_fallback, timeout=25.0)
-        if fallback_data and fallback_data.get("elements"):
-            for el in fallback_data["elements"]:
-                key = (str(el.get("type")), el.get("id"))
-                if key not in seen_keys:
-                    seen_keys.add(key)
-                    all_elements.append(el)
-            endpoint_used = ep_fb
-            label_stem = theme
-
-    if not all_elements:
+    if sum(len(v) for v in grouped.values()) == 0:
         return {
             "error": (
                 f"Overpass public servers returned no features or are temporarily busy ({err_detail or 'timeout'}). "
                 "Try again shortly or request one feature category at a time."
             )
         }
-
-    grouped = _osm_elements_to_geojson(all_elements, theme=theme)
     total_found = sum(len(v) for v in grouped.values())
     if total_found == 0:
         return {
