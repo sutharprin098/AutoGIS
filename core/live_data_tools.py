@@ -573,6 +573,35 @@ def _query_overpass_fast(ql: str, timeout: float = 35.0) -> tuple[dict | None, s
     return None, "", "; ".join(errors[:3]) or "All Overpass mirrors failed."
 
 
+def _subdivide_bbox(west: float, south: float, east: float, north: float, max_tile: float = 0.08, max_tiles: int = 16) -> list[tuple[float, float, float, float]]:
+    """Subdivide a large bounding box into smaller tiles to avoid Overpass timeouts and memory limits."""
+    span_lon = max(0.0001, east - west)
+    span_lat = max(0.0001, north - south)
+    if span_lon <= max_tile and span_lat <= max_tile:
+        return [(west, south, east, north)]
+
+    cols = max(1, math.ceil(span_lon / max_tile))
+    rows = max(1, math.ceil(span_lat / max_tile))
+
+    if cols * rows > max_tiles:
+        scale_factor = math.sqrt(max_tiles / (cols * rows))
+        cols = max(1, int(round(cols * scale_factor)))
+        rows = max(1, int(round(rows * scale_factor)))
+
+    step_x = span_lon / cols
+    step_y = span_lat / rows
+
+    tiles = []
+    for r in range(rows):
+        for c in range(cols):
+            tile_w = west + c * step_x
+            tile_e = west + (c + 1) * step_x if c < cols - 1 else east
+            tile_s = south + r * step_y
+            tile_n = south + (r + 1) * step_y if r < rows - 1 else north
+            tiles.append((tile_w, tile_s, tile_e, tile_n))
+    return tiles
+
+
 def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
     raw_cat = str(args.get("category") or args.get("theme") or "buildings").strip().lower()
     place = str(args.get("place") or "").strip()
@@ -628,20 +657,7 @@ def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
     if south > north:
         south, north = north, south
 
-    # Clamp overly wide district/state bounding boxes to an optimal urban extent (~10-15km)
-    # so free public community Overpass servers never get overloaded with 502/timeouts
-    span_lon = abs(east - west)
-    span_lat = abs(north - south)
-    max_span = 0.10 if theme in ("buildings", "roads", "major_roads", "amenities") else 0.16
-    cx, cy = (west + east) / 2.0, (south + north) / 2.0
-    if span_lon > max_span or span_lat > max_span:
-        half_lon = min(span_lon / 2.0, max_span / 2.0)
-        half_lat = min(span_lat / 2.0, max_span / 2.0)
-        west, south, east, north = cx - half_lon, cy - half_lat, cx + half_lon, cy + half_lat
-
-    overpass_bbox = f"{south:.6f},{west:.6f},{north:.6f},{east:.6f}"
-
-    # 2. Build clean Overpass QL using bounding box filter
+    # 2. Build clean Overpass QL clauses
     if custom_tag:
         clauses = _parse_custom_tag_clauses(custom_tag)
         label_stem = _safe_slug(custom_tag)[:24] or theme
@@ -653,13 +669,51 @@ def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
             clauses = [f"{flt};" for flt in filters]
         label_stem = theme
 
-    ql = f"[out:json][timeout:25][bbox:{overpass_bbox}];(\n  " + "\n  ".join(clauses) + "\n);out geom;"
+    # 3. Spatial Tiling: Subdivide large areas into manageable grid tiles
+    # Dense layers (buildings, amenities) use tighter tiles (~5km) to prevent server memory exhaust
+    if theme in ("buildings", "amenities"):
+        max_tile_span = 0.05
+    elif theme in ("roads", "highways", "major_roads"):
+        max_tile_span = 0.07
+    else:
+        max_tile_span = 0.12
 
-    # 3. Query Overpass public mirrors in parallel
-    raw_data, endpoint_used, err_detail = _query_overpass_fast(ql, timeout=35.0)
+    tiles = _subdivide_bbox(west, south, east, north, max_tile=max_tile_span, max_tiles=16)
 
-    # If public mirrors are overloaded or gave 502/timeout, auto-retry on central urban core
-    if not raw_data or not raw_data.get("elements"):
+    # 4. Fetch each tile and merge elements with deduplication
+    seen_keys: set[tuple[str, Any]] = set()
+    all_elements: list[dict] = []
+    endpoint_used = ""
+    err_detail = ""
+
+    for idx, (t_w, t_s, t_e, t_n) in enumerate(tiles):
+        t_bbox = f"{t_s:.6f},{t_w:.6f},{t_n:.6f},{t_e:.6f}"
+        ql_tile = f"[out:json][timeout:25][bbox:{t_bbox}];(\n  " + "\n  ".join(clauses) + "\n);out geom;"
+        raw_data, ep, err = _query_overpass_fast(ql_tile, timeout=30.0)
+
+        if not raw_data or not raw_data.get("elements"):
+            # Courtesy delay and retry once
+            time.sleep(0.3)
+            raw_data, ep, err = _query_overpass_fast(ql_tile, timeout=25.0)
+
+        if raw_data and isinstance(raw_data.get("elements"), list):
+            if ep:
+                endpoint_used = ep
+            for el in raw_data["elements"]:
+                key = (str(el.get("type")), el.get("id"))
+                if key not in seen_keys:
+                    seen_keys.add(key)
+                    all_elements.append(el)
+        else:
+            if err:
+                err_detail = err
+
+        if len(tiles) > 1 and idx < len(tiles) - 1:
+            time.sleep(0.15)
+
+    # 5. Fallback if all tiles returned empty
+    if not all_elements:
+        cx, cy = (west + east) / 2.0, (south + north) / 2.0
         tight_half = 0.045
         t_w, t_s, t_e, t_n = cx - tight_half, cy - tight_half, cx + tight_half, cy + tight_half
         t_bbox = f"{t_s:.6f},{t_w:.6f},{t_n:.6f},{t_e:.6f}"
@@ -668,29 +722,37 @@ def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
         else:
             retry_clauses = clauses
         ql_tight = f"[out:json][timeout:20][bbox:{t_bbox}];(\n  " + "\n  ".join(retry_clauses) + "\n);out geom;"
-        tight_data, ep_tight, _ = _query_overpass_fast(ql_tight, timeout=30.0)
+        tight_data, ep_tight, _ = _query_overpass_fast(ql_tight, timeout=25.0)
         if tight_data and tight_data.get("elements"):
-            raw_data = tight_data
+            for el in tight_data["elements"]:
+                key = (str(el.get("type")), el.get("id"))
+                if key not in seen_keys:
+                    seen_keys.add(key)
+                    all_elements.append(el)
             endpoint_used = ep_tight
-            west, south, east, north = t_w, t_s, t_e, t_n
 
-    # If a custom_tag query returned 0 or failed and a valid category was also provided, fallback to category filters
-    if (raw_data is None or not raw_data.get("elements")) and custom_tag and theme in OSM_THEME_FILTERS:
+    if not all_elements and custom_tag and theme in OSM_THEME_FILTERS:
         clauses = [f"{flt};" for flt in OSM_THEME_FILTERS[theme]]
-        ql_fallback = f"[out:json][timeout:25][bbox:{overpass_bbox}];(\n  " + "\n  ".join(clauses) + "\n);out geom;"
-        raw_data, endpoint_used, err_detail = _query_overpass_fast(ql_fallback, timeout=25.0)
-        label_stem = theme
+        ql_fallback = f"[out:json][timeout:25][bbox:{south:.6f},{west:.6f},{north:.6f},{east:.6f}];(\n  " + "\n  ".join(clauses) + "\n);out geom;"
+        fallback_data, ep_fb, err_fb = _query_overpass_fast(ql_fallback, timeout=25.0)
+        if fallback_data and fallback_data.get("elements"):
+            for el in fallback_data["elements"]:
+                key = (str(el.get("type")), el.get("id"))
+                if key not in seen_keys:
+                    seen_keys.add(key)
+                    all_elements.append(el)
+            endpoint_used = ep_fb
+            label_stem = theme
 
-    if not isinstance(raw_data, dict) or "elements" not in raw_data:
+    if not all_elements:
         return {
             "error": (
-                f"Overpass public servers are temporarily busy ({err_detail or 'timeout'}). "
-                "Try again shortly, zoom to a smaller area, or request one feature category at a time. "
-                "For repeated large-area jobs, use a managed or self-hosted Overpass instance; public mirrors have shared capacity."
+                f"Overpass public servers returned no features or are temporarily busy ({err_detail or 'timeout'}). "
+                "Try again shortly or request one feature category at a time."
             )
         }
 
-    grouped = _osm_elements_to_geojson(raw_data.get("elements") or [], theme=theme)
+    grouped = _osm_elements_to_geojson(all_elements, theme=theme)
     total_found = sum(len(v) for v in grouped.values())
     if total_found == 0:
         return {
@@ -772,6 +834,7 @@ def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
         "place": resolved_place or place or "map_canvas",
         "source_endpoint": endpoint_used,
         "bbox_wgs84": [round(west, 5), round(south, 5), round(east, 5), round(north, 5)],
+        "tiles_processed": len(tiles),
         "total_features": total_found,
         "layers": loaded_layers,
     }
