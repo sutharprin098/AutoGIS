@@ -10,7 +10,7 @@
 [![Download ZIP for QGIS](https://img.shields.io/badge/Download_Plugin_ZIP-AutoGIS.zip_(v1.0.4)-0284C7?style=for-the-badge&logo=qgis&logoColor=white)](https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.4/AutoGIS.zip)
 [![QGIS 3.22 - 3.40+](https://img.shields.io/badge/QGIS-3.22%20--%203.40%2B-589632?style=for-the-badge&logo=qgis&logoColor=white)](https://qgis.org)
 [![Google Earth Engine](https://img.shields.io/badge/Google_Earth_Engine-Integrated-10B981?style=for-the-badge&logo=googleearthengine&logoColor=white)](https://earthengine.google.com)
-[![XERJ Corpus Hub](https://img.shields.io/badge/XERJ_Corpus_Hub-Contributor-6366F1?style=for-the-badge)](https://hub.xerj.org/contributors/sutharprin098)
+[![XERJ Corpus Hub](https://hub.xerj.org/contributors/sutharprin098/badge.svg)](https://hub.xerj.org/contributors/sutharprin098)
 [![License: MIT](https://img.shields.io/badge/License-MIT-0D9488?style=for-the-badge)](LICENSE)
 
 </div>
