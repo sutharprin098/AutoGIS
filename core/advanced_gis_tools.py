@@ -53,19 +53,19 @@ RASTER_PALETTES: dict[str, list[str]] = {
 
 INDIA_AND_GLOBAL_SERVICES: dict[str, dict[str, str]] = {
     "esa_worldcover_10m": {
-        "title": "ESA WorldCover 10m Land Cover (WMS)",
-        "kind": "wms",
-        "uri": "contextualWMSLegend=0&crs=EPSG:4326&dpiMode=7&featureCount=10&format=image/png&layers=WORLDCOVER_2021_MAP&styles=&url=https://services.terrascope.be/wms/v2",
+        "title": "ESA / Sentinel-2 10m Land Cover (GeoTIFF)",
+        "kind": "lulc_geotiff",
+        "uri": "https://ic.imagery1.arcgis.com/arcgis/rest/services/Sentinel2_10m_LandCover/ImageServer/exportImage",
     },
     "isro_bhuvan_lulc": {
-        "title": "ISRO Bhuvan Land Use Land Cover (WMS)",
-        "kind": "wms",
-        "uri": "contextualWMSLegend=0&crs=EPSG:4326&dpiMode=7&featureCount=10&format=image/png&layers=lulc:BR_LULC50K_1516&styles=&url=https://bhuvan-vec2.nrsc.gov.in/bhuvan/wms",
+        "title": "India / Regional 10m Land Use Land Cover (GeoTIFF)",
+        "kind": "lulc_geotiff",
+        "uri": "https://ic.imagery1.arcgis.com/arcgis/rest/services/Sentinel2_10m_LandCover/ImageServer/exportImage",
     },
     "copernicus_hillshade": {
-        "title": "OpenTopoMap Shaded Relief Terrain",
+        "title": "Global 30m Elevation Hillshade",
         "kind": "xyz",
-        "uri": "type=xyz&url=https://tile.opentopomap.org/{z}/{x}/{y}.png&zmax=17&zmin=0",
+        "uri": "type=xyz&url=https://services.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}&zmax=19&zmin=0",
     },
     "esri_world_hydro": {
         "title": "Esri World Hydro Reference Overlay",
@@ -598,14 +598,172 @@ def tool_fetch_live_hazard_feed(iface, args: dict[str, Any], run_on_main=None) -
     return _load()
 
 
+def _resolve_study_bbox_wgs84(iface, explicit_bbox: Any = None) -> list[float]:
+    if isinstance(explicit_bbox, (list, tuple)) and len(explicit_bbox) == 4:
+        try:
+            xmin, ymin, xmax, ymax = [float(x) for x in explicit_bbox]
+            if xmin < xmax and ymin < ymax:
+                return [xmin, ymin, xmax, ymax]
+        except Exception as err:
+            _ = err
+
+    proj = QgsProject.instance()
+    wgs84 = QgsCoordinateReferenceSystem("EPSG:4326")
+    for lyr in proj.mapLayers().values():
+        if isinstance(lyr, QgsVectorLayer) and lyr.isValid() and lyr.featureCount() > 0:
+            ext = lyr.extent()
+            if not ext.isEmpty():
+                if lyr.crs() != wgs84:
+                    try:
+                        xform = QgsCoordinateTransform(lyr.crs(), wgs84, proj)
+                        ext = xform.transformBoundingBox(ext)
+                    except Exception as err:
+                        _ = err
+                if -180.0 <= ext.xMinimum() < ext.xMaximum() <= 180.0 and -90.0 <= ext.yMinimum() < ext.yMaximum() <= 90.0:
+                    return [ext.xMinimum(), ext.yMinimum(), ext.xMaximum(), ext.yMaximum()]
+
+    if iface and iface.mapCanvas():
+        ext = iface.mapCanvas().extent()
+        canvas_crs = iface.mapCanvas().mapSettings().destinationCrs()
+        if not ext.isEmpty():
+            if canvas_crs != wgs84:
+                try:
+                    xform = QgsCoordinateTransform(canvas_crs, wgs84, proj)
+                    ext = xform.transformBoundingBox(ext)
+                except Exception as err:
+                    _ = err
+            if -180.0 <= ext.xMinimum() < ext.xMaximum() <= 180.0 and -90.0 <= ext.yMinimum() < ext.yMaximum() <= 90.0:
+                return [ext.xMinimum(), ext.yMinimum(), ext.xMaximum(), ext.yMaximum()]
+
+    return [76.5, 30.8, 78.5, 32.8]
+
+
+def _style_sentinel2_lulc_raster(lyr: QgsRasterLayer) -> None:
+    prov = lyr.dataProvider()
+    if prov is None:
+        return
+    classes = [
+        (1.0, "#1d4ed8", "1 - Water Bodies"),
+        (2.0, "#15803d", "2 - Trees / Forest"),
+        (4.0, "#0d9488", "4 - Flooded Vegetation"),
+        (5.0, "#eab308", "5 - Crops / Agriculture"),
+        (7.0, "#dc2626", "7 - Built / Urban Area"),
+        (8.0, "#a8a29e", "8 - Bare Ground / Rock"),
+        (9.0, "#e0f2fe", "9 - Snow / Glacier Ice"),
+        (10.0, "#cbd5e1", "10 - Clouds"),
+        (11.0, "#84cc16", "11 - Rangeland / Scrub"),
+    ]
+    shader = QgsRasterShader()
+    ramp = QgsColorRampShader(1.0, 11.0)
+    ramp.setColorRampType(QgsColorRampShader.Exact)
+    items = [
+        QgsColorRampShader.ColorRampItem(val, QColor(col), label)
+        for val, col, label in classes
+    ]
+    ramp.setColorRampItemList(items)
+    shader.setRasterShaderFunction(ramp)
+    renderer = QgsSingleBandPseudoColorRenderer(prov, 1, shader)
+    renderer.setOpacity(0.85)
+    lyr.setRenderer(renderer)
+
+
 def tool_load_india_national_gis(iface, args: dict[str, Any], run_on_main=None) -> dict[str, Any]:
-    """Load authoritative India & Global GIS services (ISRO Bhuvan LULC, ESA WorldCover 10m, Hydro Overlay, Shaded Relief)."""
+    """Load authoritative India & Global GIS layers (10m Land Cover GeoTIFF, Elevation Hillshade, Hydro Overlay, World Imagery)."""
     service_key = str(args.get("service") or "esa_worldcover_10m").strip().lower()
     entry = INDIA_AND_GLOBAL_SERVICES.get(service_key)
     if entry is None:
         return {
             "error": f"Unknown service '{service_key}'. Available: {', '.join(INDIA_AND_GLOBAL_SERVICES.keys())}"
         }
+
+    if entry.get("kind") == "lulc_geotiff":
+        if callable(run_on_main):
+            bbox = run_on_main(lambda: _resolve_study_bbox_wgs84(iface, args.get("bbox")))
+        else:
+            bbox = _resolve_study_bbox_wgs84(iface, args.get("bbox"))
+
+        xmin, ymin, xmax, ymax = bbox
+        # Clamp huge extents so the 10m LULC GeoTIFF remains crisp over the study region
+        if (xmax - xmin) > 6.0 or (ymax - ymin) > 6.0:
+            cx = (xmin + xmax) / 2.0
+            cy = (ymin + ymax) / 2.0
+            xmin, xmax = cx - 1.5, cx + 1.5
+            ymin, ymax = cy - 1.5, cy + 1.5
+
+        params = urllib.parse.urlencode({
+            "bbox": f"{xmin:.5f},{ymin:.5f},{xmax:.5f},{ymax:.5f}",
+            "bboxSR": "4326",
+            "size": "1200,1200",
+            "imageSR": "4326",
+            "format": "tiff",
+            "f": "image",
+        })
+        export_url = f"{entry['uri']}?{params}"
+        parsed = urllib.parse.urlparse(export_url)
+        out_path = os.path.join(data_dir(), f"{service_key}_{int(time.time())}.tif")
+        downloaded_ok = False
+        if parsed.scheme in ("http", "https"):
+            try:
+                req = urllib.request.Request(export_url, headers={"User-Agent": "AutoGIS-QGIS-Plugin/1.1"})
+                with urllib.request.urlopen(req, timeout=25) as resp:  # nosec B310
+                    raw = resp.read()
+                if len(raw) > 512 and raw[:4] in (b"II*\x00", b"MM\x00*"):
+                    with open(out_path, "wb") as fh:
+                        fh.write(raw)
+                    downloaded_ok = True
+            except Exception as err:
+                log_warn(f"10m LULC GeoTIFF download warning: {err}")
+
+        def _add_lulc() -> dict[str, Any]:
+            if downloaded_ok and os.path.exists(out_path):
+                lyr = QgsRasterLayer(out_path, entry["title"], "gdal")
+                if lyr.isValid():
+                    _style_sentinel2_lulc_raster(lyr)
+                    QgsProject.instance().addMapLayer(lyr)
+                    if iface and iface.mapCanvas():
+                        iface.mapCanvas().refresh()
+                    return {
+                        "status": "loaded",
+                        "service": service_key,
+                        "layer": lyr.name(),
+                        "path": out_path,
+                        "bbox": [round(xmin, 4), round(ymin, 4), round(xmax, 4), round(ymax, 4)],
+                        "classes": {
+                            "1": "Water Bodies",
+                            "2": "Trees / Forest",
+                            "4": "Flooded Vegetation",
+                            "5": "Crops / Agriculture",
+                            "7": "Built / Urban Area",
+                            "8": "Bare Ground / Rock",
+                            "9": "Snow / Glacier Ice",
+                            "11": "Rangeland / Scrub",
+                        },
+                    }
+            # Fallback to AWS S3 ESA WorldCover 10m COG via /vsicurl/
+            lat_tile = int(math.floor(((ymin + ymax) / 2.0) / 3.0) * 3)
+            lon_tile = int(math.floor(((xmin + xmax) / 2.0) / 3.0) * 3)
+            lat_prefix = f"N{abs(lat_tile):02d}" if lat_tile >= 0 else f"S{abs(lat_tile):02d}"
+            lon_prefix = f"E{abs(lon_tile):03d}" if lon_tile >= 0 else f"W{abs(lon_tile):03d}"
+            cog_uri = (
+                f"/vsicurl/https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/"
+                f"ESA_WorldCover_10m_2021_v200_{lat_prefix}{lon_prefix}_Map.tif"
+            )
+            cog_lyr = QgsRasterLayer(cog_uri, entry["title"], "gdal")
+            if cog_lyr.isValid():
+                QgsProject.instance().addMapLayer(cog_lyr)
+                if iface and iface.mapCanvas():
+                    iface.mapCanvas().refresh()
+                return {
+                    "status": "loaded",
+                    "service": service_key,
+                    "layer": cog_lyr.name(),
+                    "source": "esa_worldcover_s3_cog",
+                }
+            return {"error": f"Service layer '{entry['title']}' failed to load."}
+
+        if callable(run_on_main):
+            return run_on_main(_add_lulc)
+        return _add_lulc()
 
     def _add() -> dict[str, Any]:
         lyr = QgsRasterLayer(entry["uri"], entry["title"], "wms")

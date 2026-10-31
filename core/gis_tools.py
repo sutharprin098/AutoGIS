@@ -2216,7 +2216,7 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
         ),
         GISToolSpec(
             name="load_india_national_gis",
-            description="Load authoritative India & Global GIS services ('isro_bhuvan_lulc', 'esa_worldcover_10m', 'copernicus_hillshade', 'esri_world_hydro', 'esri_world_imagery') directly into QGIS.",
+            description="Load authoritative India & Global GIS layers ('isro_bhuvan_lulc', 'esa_worldcover_10m' 10m Land Cover GeoTIFFs with scientific class legend, 'copernicus_hillshade', 'esri_world_hydro', 'esri_world_imagery') directly into QGIS.",
             risk="write",
             parameters={
                 "type": "object",
@@ -2225,6 +2225,11 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
                         "type": "string",
                         "enum": ["isro_bhuvan_lulc", "esa_worldcover_10m", "copernicus_hillshade", "esri_world_hydro", "esri_world_imagery"],
                         "description": "Curated national/global GIS service key.",
+                    },
+                    "bbox": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "Optional [xmin, ymin, xmax, ymax] EPSG:4326 bounding box for 10m Land Cover GeoTIFF download (auto-detected from active layers/canvas if omitted).",
                     },
                 },
                 "required": ["service"],
