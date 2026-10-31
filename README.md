@@ -2,12 +2,12 @@
 
 <img src="icons/icon.svg" width="108" height="108" alt="AutoGIS Logo" />
 
-# AutoGIS Studio (`v1.0.4`)
+# AutoGIS Studio (`v1.1.0`)
 
-**Autonomous Geospatial AI Agent with Google Earth Engine & 39 Spatial Analysis Tools for QGIS**
+**Autonomous Geospatial AI Agent, Live MCP Server & 39 Spatial Analysis Tools for QGIS**
 
 [![Official QGIS Plugin Repo](https://img.shields.io/badge/QGIS_Plugin_Repo-AutoGIS-589632?style=for-the-badge&logo=qgis&logoColor=white)](https://plugins.qgis.org/plugins/AutoGIS/)
-[![Download ZIP for QGIS](https://img.shields.io/badge/Download_Plugin_ZIP-AutoGIS.zip_(v1.0.4)-0284C7?style=for-the-badge&logo=qgis&logoColor=white)](https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.4/AutoGIS.zip)
+[![Download ZIP for QGIS](https://img.shields.io/badge/Download_Plugin_ZIP-AutoGIS.zip_(v1.1.0)-0284C7?style=for-the-badge&logo=qgis&logoColor=white)](https://github.com/sutharprin098/AutoGIS/releases/download/v1.1.0/AutoGIS.zip)
 [![QGIS 3.22 - 3.40+](https://img.shields.io/badge/QGIS-3.22%20--%203.40%2B-589632?style=for-the-badge&logo=qgis&logoColor=white)](https://qgis.org)
 [![Google Earth Engine](https://img.shields.io/badge/Google_Earth_Engine-Integrated-10B981?style=for-the-badge&logo=googleearthengine&logoColor=white)](https://earthengine.google.com)
 [![XERJ Corpus Hub](https://hub.xerj.org/contributors/sutharprin098/badge.svg)](https://hub.xerj.org/contributors/sutharprin098)
@@ -20,34 +20,40 @@
 ## AutoGIS Studio Live inside QGIS Desktop
 
 <div align="center">
-  <img src="docs/autogis_screenshot.png" alt="AutoGIS Studio v1.0.3 Live in QGIS Desktop" width="100%" />
-  <p><em>AutoGIS Studio v1.0.3 running live inside QGIS Desktop — integrating Google Earth Engine satellite imagery, OpenStreetMap vectors, and 39 spatial analysis tools with non-blocking execution.</em></p>
+  <img src="docs/autogis_screenshot.png" alt="AutoGIS Studio v1.1.0 Live in QGIS Desktop" width="100%" />
+  <p><em>AutoGIS Studio v1.1.0 running live inside QGIS Desktop — integrating Google Earth Engine satellite imagery, OpenStreetMap vectors, Live MCP Server, Offline Local AI (Ollama), and 39 spatial analysis tools with non-blocking execution.</em></p>
 </div>
 
 ---
 
-## What's New in `v1.0.3` 🚀
+## What's New in `v1.1.0` 🚀
 
-- 🌍 **Deep Google Earth Engine (GEE) Integration:**
-  - `gee_download_dem`: Download Digital Elevation Models (SRTM or Copernicus 30m) directly into QGIS as GeoTIFFs.
-  - `gee_compute_index`: Autonomously calculate cloud-free **NDVI**, **NDWI**, or **NBR** rasters on GEE servers and stream them to your map canvas.
-  - `gee_export_image`: Export multispectral Sentinel-2 (B4/B3/B2, NIR) and Landsat scenes with automated cloud masking.
-  - `gee_image_collection`: Query GEE image collections with date/region/cloud filters.
-  - `gee_image_preview`: Generate instant 1024px web thumbnail preview URLs.
-- ⚡ **Expanded Tool Catalog (39 Autonomous Tools):**
-  - Expanded from 25 to **39 tools** covering Earth Engine, vector editing (`calculate_or_add_field`, `delete_features`), layer tree management, scratch memory layers, raster styling, and project persistence.
-- 🧠 **Universal AI Geospatial Agent:**
-  - Generalized agent engine with zero hardcoded workflow constraints — handles any custom spatial workflow (NDVI, DEM, solar suitability, flood modeling, GLOF, landslide analysis, OSM networks).
-- 🛡️ **Bandit & Security Hardened:**
-  - Strict URL scheme validation (`http://` / `https://` only), AST-safe exception handling, and full QGIS official repository security compliance.
+- 🔌 **Built-in Live Loopback MCP Bridge (`127.0.0.1:8765`):**
+  - Exposes all 39 QGIS tools via `/status`, `/tools`, and `/call` (`/mcp`) with thread-safe Qt main-thread dispatch so external AI agents (Claude Code, Cursor, Antigravity, XERJ) can inspect and control live QGIS sessions directly.
+- 🖥️ **100% Offline Local AI Support (Ollama & LM Studio):**
+  - Zero API key required! Run `qwen2.5-coder:14b`, `llama3.3`, `deepseek-r1:14b`, or `gemma3:12b` locally on `http://127.0.0.1:11434/v1` with full tool-calling support.
+- 📊 **Advanced Raster Analytics & Scientific Styling:**
+  - `inspect_raster_layer`: Instant raster band statistics (`min`, `max`, `mean`, `std_dev`), pixel resolution, CRS, and NoData inspection.
+  - `style_raster_layer`: Apply scientific singleband pseudocolor palettes (`viridis`, `rdylgn`, `terrain`, `spectral`, `reds`, `blues`, `greens`, `magma`) with auto or custom min/max stretch.
+  - `compute_zonal_statistics`: Calculate polygon-over-raster zonal statistics (`count`, `sum`, `mean`, `stdev`, `min`, `max`) via `native:zonalstatisticsfb`.
+- 🗺️ **300 DPI Publication Cartography & 3D Interactive WebGIS:**
+  - `export_publication_map`: Automatically builds an A4 landscape `QgsPrintLayout` complete with Map Frame, Title, Subtitle, North Arrow, Dynamic Legend, Metric Scale Bar, and CRS/DPI metadata footer, exporting both **300 DPI PNG** and **PDF**.
+  - `export_interactive_webmap`: Exports visible QGIS vector layers (auto-reprojected to `EPSG:4326`) into a standalone 3D **MapLibre GL JS** `.html` web map with click popups and layer switcher.
+- 🌋 **Real-Time Global Hazard Feeds & India National GIS Basemaps:**
+  - `fetch_live_hazard_feed`: Live USGS Earthquake feeds (`24h`, `7d`, `30d`) and **NASA EONET** active natural events (wildfires, floods, storms, volcanoes) with spatial bounding-box filtering.
+  - `load_india_national_gis`: 1-call loader for **ISRO Bhuvan LULC WMS**, **ESA WorldCover 10m**, **Copernicus GLO-30 Hillshade**, and **Esri World Hydro Reference**.
+- 🌍 **Deep Google Earth Engine (GEE) & Tiled OSM Integration:**
+  - `gee_download_dem`, `gee_compute_index` (`NDVI`, `NDWI`, `NBR`), `gee_export_image`, `gee_image_collection`, `gee_image_preview`, plus auto-tiled polite Overpass OSM downloads (`fetch_osm_layers`).
+- 🛡️ **100% Bandit Security Clean:**
+  - Zero High/Medium/Low Bandit findings across all 7,500+ lines of plugin code (`plugins.qgis.org` verified).
 
 ---
 
 ## 1-Click Download & Direct Install in QGIS (`Install from ZIP`)
 
-You can install **AutoGIS Studio (`v1.0.3`)** directly inside QGIS in **under 30 seconds**:
+You can install **AutoGIS Studio (`v1.1.0`)** directly inside QGIS in **under 30 seconds**:
 
-### [Click Here to Download `AutoGIS.zip` (`v1.0.3`) Directly from GitHub Releases](https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.3/AutoGIS.zip)
+### [Click Here to Download `AutoGIS.zip` (`v1.1.0`) Directly from GitHub Releases](https://github.com/sutharprin098/AutoGIS/releases/download/v1.1.0/AutoGIS.zip)
 *(Official Documentation & Web Portal: [https://autogis.princesite.in/](https://autogis.princesite.in/) | Contact: [sutharprince098@gmail.com](mailto:sutharprince098@gmail.com))*
 
 ### Method 1: Install from ZIP in QGIS (Recommended)

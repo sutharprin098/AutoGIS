@@ -1,9 +1,9 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 <plugins>
-    <pyqgis_plugin name="AutoGIS" version="1.0.3">
-        <description><![CDATA[Autonomous Geospatial AI Agent & Spatial Analysis Studio for QGIS with Google Earth Engine (GEE)]]></description>
-        <about><![CDATA[AutoGIS is an open-source, standalone Autonomous Geospatial AI Agent and Spatial Analysis Studio for QGIS built in Python (PyQGIS + PyQt5). Connect your preferred AI model (Gemini, Claude, ChatGPT, DeepSeek, or OpenRouter) to Google Earth Engine (GEE), live OpenStreetMap vectors, administrative boundaries, STAC Earth Observation rasters, OSRM routes, read large PDFs/documents, decompose large multi-layer GIS projects into step-by-step phases, run QGIS Processing algorithms, and automate PyQGIS workflows across 39 autonomous tools.]]></about>
-        <version>1.0.3</version>
+    <pyqgis_plugin name="AutoGIS" version="1.1.0">
+        <description><![CDATA[Autonomous Geospatial AI Agent, Live MCP Bridge & Spatial Analysis Studio for QGIS with Google Earth Engine (GEE)]]></description>
+        <about><![CDATA[AutoGIS is an open-source, standalone Autonomous Geospatial AI Agent, Live MCP Server, and Spatial Analysis Studio for QGIS built in Python (PyQGIS + PyQt5). Connect Cloud AI (Gemini, Claude, ChatGPT, DeepSeek, OpenRouter) or Offline Local AI (Ollama / LM Studio) to Google Earth Engine (GEE), live OpenStreetMap vectors, USGS/NASA hazard feeds, ISRO Bhuvan & ESA WorldCover layers, raster band statistics & zonal statistics, 300 DPI publication layouts, 3D MapLibre web maps, and PyQGIS workflows across 39 autonomous tools.]]></about>
+        <version>1.1.0</version>
         <qgis_minimum_version>3.22.0</qgis_minimum_version>
         <qgis_maximum_version>4.99.0</qgis_maximum_version>
         <homepage>https://autogis.princesite.in/</homepage>
@@ -11,14 +11,14 @@
         <icon>https://raw.githubusercontent.com/sutharprin098/AutoGIS/main/icons/icon.png</icon>
         <author_name>Prince Suthar</author_name>
         <author_email>sutharprince098@gmail.com</author_email>
-        <download_url>https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.3/AutoGIS.zip</download_url>
+        <download_url>https://github.com/sutharprin098/AutoGIS/releases/download/v1.1.0/AutoGIS.zip</download_url>
         <uploaded_by>sutharprin098</uploaded_by>
         <create_date>2026-10-28</create_date>
-        <update_date>2026-10-30</update_date>
+        <update_date>2026-10-31</update_date>
         <experimental>False</experimental>
         <deprecated>False</deprecated>
         <tracker>https://github.com/sutharprin098/AutoGIS/issues</tracker>
         <repository>https://github.com/sutharprin098/AutoGIS</repository>
-        <tags>autogis,gis,earth engine,gee,remote sensing,spatial analysis,automation,pyqgis,osm,stac,routing,cartography</tags>
+        <tags>autogis,gis,mcp,earth engine,gee,remote sensing,spatial analysis,automation,pyqgis,osm,stac,routing,cartography,ollama</tags>
     </pyqgis_plugin>
 </plugins>

@@ -300,10 +300,12 @@ class AutoGISSettingsDialog(QDialog):
     def _test_connection_fast(self) -> None:
         """Ultra-fast (<1.8s) thread-safe connection check that never blocks or crashes QGIS."""
         key = self._key_edit.text().strip()
-        if not key:
+        if not key and self._current_pid != "ollama":
             self._status_lbl.setStyleSheet("color: #DC2626; font-weight: 600;")
             self._status_lbl.setText("Please paste an API Key first.")
             return
+        if not key and self._current_pid == "ollama":
+            key = "ollama-local"
 
         pid = self._current_pid
         if key.startswith("sk-or-"):

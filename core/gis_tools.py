@@ -1474,6 +1474,15 @@ from .gee_tools import (
     tool_gee_download_dem, tool_gee_export_image, tool_gee_compute_index,
     tool_gee_image_collection, tool_gee_image_preview,
 )
+from .advanced_gis_tools import (
+    tool_compute_zonal_statistics,
+    tool_export_interactive_webmap,
+    tool_export_publication_map,
+    tool_fetch_live_hazard_feed,
+    tool_inspect_raster_layer,
+    tool_load_india_national_gis,
+    tool_style_raster_layer,
+)
 
 def _gee_dem(iface, args: dict, run_on_main=None) -> dict:
     return tool_gee_download_dem(args, iface=iface, run_on_main=run_on_main)
@@ -2101,5 +2110,126 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
                 "image_id":{"type":"string"},"bands":{"type":"array","items":{"type":"string"}},
                 "bbox":{"type":"array","items":{"type":"number"}}},
                 "required":["image_id","bbox"]}, handler=_gee_preview),
+        GISToolSpec(
+            name="inspect_raster_layer",
+            description="Inspect a raster layer (DEM, NDVI, NDWI, Slope, LULC, Satellite) in detail: band count, pixel resolution, CRS, extent, NoData value, and band statistics (min, max, mean, std_dev).",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "layer": {"type": "string", "description": "Raster layer name or ID."},
+                },
+                "required": ["layer"],
+            },
+            handler=tool_inspect_raster_layer,
+        ),
+        GISToolSpec(
+            name="style_raster_layer",
+            description="Apply a single-band pseudocolor ramp ('viridis', 'rdylgn', 'terrain', 'spectral', 'reds', 'blues', 'greens', 'magma') to a raster layer with automatic or custom min/max stretch.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "layer": {"type": "string", "description": "Raster layer name or ID."},
+                    "palette": {
+                        "type": "string",
+                        "enum": ["viridis", "rdylgn", "terrain", "spectral", "reds", "blues", "greens", "magma"],
+                        "description": "Color ramp palette name.",
+                    },
+                    "band": {"type": "integer", "description": "Band number (default 1)."},
+                    "min_value": {"type": "number", "description": "Optional custom stretch minimum."},
+                    "max_value": {"type": "number", "description": "Optional custom stretch maximum."},
+                    "invert": {"type": "boolean", "description": "Invert color ramp direction."},
+                    "opacity": {"type": "number", "description": "Layer opacity 0.1 to 1.0 (default 0.9)."},
+                },
+                "required": ["layer"],
+            },
+            handler=tool_style_raster_layer,
+        ),
+        GISToolSpec(
+            name="compute_zonal_statistics",
+            description="Compute zonal statistics (count, sum, mean, stdev, min, max) of a raster layer (e.g. NDVI, DEM, Slope) within each polygon of a vector zones layer and add the enriched polygon layer to QGIS.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "zones_layer": {"type": "string", "description": "Polygon vector layer name or ID."},
+                    "raster_layer": {"type": "string", "description": "Raster layer name or ID."},
+                    "band": {"type": "integer", "description": "Raster band index (default 1)."},
+                    "column_prefix": {"type": "string", "description": "Attribute prefix for output stats fields (default 'zonal_')."},
+                    "output_name": {"type": "string", "description": "Optional name for the output polygon layer."},
+                },
+                "required": ["zones_layer", "raster_layer"],
+            },
+            handler=tool_compute_zonal_statistics,
+        ),
+        GISToolSpec(
+            name="export_publication_map",
+            description="Generate and export a journal/publication-ready 300 DPI cartographic map layout (both PDF and PNG) with Title, Subtitle, Map Frame, Dynamic Legend, Metric Scale Bar, North Arrow, and CRS footer.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string", "description": "Main map title."},
+                    "subtitle": {"type": "string", "description": "Optional subtitle or study area description."},
+                    "focus_layer": {"type": "string", "description": "Optional layer name or ID to frame the map extent around."},
+                    "dpi": {"type": "integer", "description": "Export resolution DPI (default 300, max 600)."},
+                    "output_pdf_path": {"type": "string", "description": "Optional custom output PDF file path."},
+                    "output_png_path": {"type": "string", "description": "Optional custom output PNG file path."},
+                },
+                "required": ["title"],
+            },
+            handler=tool_export_publication_map,
+        ),
+        GISToolSpec(
+            name="export_interactive_webmap",
+            description="Export visible QGIS vector layers into a standalone, zero-dependency 3D interactive MapLibre GL JS HTML web map (.html) with popups and layer toggles.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string", "description": "Title for the exported web map."},
+                    "output_path": {"type": "string", "description": "Optional destination .html file path."},
+                },
+                "required": [],
+            },
+            handler=tool_export_interactive_webmap,
+        ),
+        GISToolSpec(
+            name="fetch_live_hazard_feed",
+            description="Download real-time global/regional hazard feeds ('earthquakes_24h', 'earthquakes_7d', 'earthquakes_30d' from USGS, or 'nasa_eonet_events' active wildfires/floods/storms/volcanoes from NASA EONET) and load into QGIS.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "feed": {
+                        "type": "string",
+                        "enum": ["earthquakes_24h", "earthquakes_7d", "earthquakes_30d", "nasa_eonet_events"],
+                        "description": "Live hazard feed key.",
+                    },
+                    "bbox": {"type": "array", "items": {"type": "number"}, "description": "Optional [xmin, ymin, xmax, ymax] EPSG:4326 filter."},
+                    "layer_name": {"type": "string", "description": "Optional layer display name."},
+                },
+                "required": ["feed"],
+            },
+            handler=tool_fetch_live_hazard_feed,
+        ),
+        GISToolSpec(
+            name="load_india_national_gis",
+            description="Load authoritative India & Global GIS services ('isro_bhuvan_lulc', 'esa_worldcover_10m', 'copernicus_hillshade', 'esri_world_hydro', 'esri_world_imagery') directly into QGIS.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "service": {
+                        "type": "string",
+                        "enum": ["isro_bhuvan_lulc", "esa_worldcover_10m", "copernicus_hillshade", "esri_world_hydro", "esri_world_imagery"],
+                        "description": "Curated national/global GIS service key.",
+                    },
+                },
+                "required": ["service"],
+            },
+            handler=tool_load_india_national_gis,
+        ),
     ])
     return {s.name: s for s in specs}

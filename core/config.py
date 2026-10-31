@@ -18,6 +18,7 @@ PROVIDERS: list[tuple[str, str, str]] = [
     ("anthropic", "Anthropic (Claude)", "https://api.anthropic.com/v1"),
     ("deepseek", "DeepSeek", "https://api.deepseek.com/v1"),
     ("openrouter", "OpenRouter (All Models)", "https://openrouter.ai/api/v1"),
+    ("ollama", "Local AI (Ollama / LM Studio - Offline)", "http://127.0.0.1:11434/v1"),
 ]
 
 PROVIDER_ENDPOINTS: dict[str, str] = {pid: url for pid, _, url in PROVIDERS}
@@ -62,6 +63,13 @@ PROVIDER_MODELS: dict[str, list[tuple[str, str]]] = {
         ("deepseek/deepseek-chat", "DeepSeek V3"),
         ("qwen/qwen-2.5-72b-instruct", "Qwen 2.5 72B"),
     ],
+    "ollama": [
+        ("ollama/qwen2.5-coder:14b", "Local: Qwen 2.5 Coder 14B (Ollama)"),
+        ("ollama/qwen2.5-coder:7b", "Local: Qwen 2.5 Coder 7B (Ollama)"),
+        ("ollama/llama3.3:latest", "Local: Llama 3.3 (Ollama)"),
+        ("ollama/deepseek-r1:14b", "Local: DeepSeek R1 14B (Ollama)"),
+        ("ollama/gemma3:12b", "Local: Gemma 3 12B (Ollama)"),
+    ],
 }
 
 CURATED_MODELS: list[tuple[str, str]] = [
@@ -83,6 +91,9 @@ CURATED_MODELS: list[tuple[str, str]] = [
     ("google/gemma-4-31b-it:free", "Gemma 4 31B (Free)"),
     ("deepseek/deepseek-chat-v3-0324:free", "DeepSeek V3 (Free)"),
     ("meta-llama/llama-3.3-70b-instruct:free", "Llama 3.3 70B (Free)"),
+    ("ollama/qwen2.5-coder:14b", "Local: Qwen 2.5 Coder 14B (Ollama)"),
+    ("ollama/qwen2.5-coder:7b", "Local: Qwen 2.5 Coder 7B (Ollama)"),
+    ("ollama/llama3.3:latest", "Local: Llama 3.3 (Ollama)"),
 ]
 
 _MEM_CACHE: dict[str, Any] = {}
@@ -309,6 +320,11 @@ class AutoGISConfig:
         m = (model_id if model_id is not None else self.model).strip()
         if not m:
             return ("none", "", self.base_url, "")
+
+        if m.startswith("ollama/") or self.active_provider == "ollama":
+            clean_m = m.split("/", 1)[1] if m.startswith("ollama/") else m
+            local_url = self.get_str("ollama_url", PROVIDER_ENDPOINTS["ollama"]) or PROVIDER_ENDPOINTS["ollama"]
+            return ("ollama", "ollama-local", local_url.rstrip("/"), clean_m)
 
         or_key = self.api_key
         gem_key = self.gemini_key

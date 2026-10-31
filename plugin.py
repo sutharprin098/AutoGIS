@@ -103,6 +103,8 @@ class AutoGISPlugin:
                 try:
                     self.dock.panel._engine.cancel_current_run()
                     self.dock.panel._engine._timer.stop()
+                    if hasattr(self.dock.panel._engine, "_mcp_bridge") and self.dock.panel._engine._mcp_bridge:
+                        self.dock.panel._engine._mcp_bridge.stop()
                     self.dock.panel._status_banner.stop_status()
                 except Exception as _err:  # nosec B110
                     _ = _err

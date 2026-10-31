@@ -40,6 +40,8 @@ class AutoGISEngine(QObject):
         "fetch_osm_features",
         "compute_road_route",
         "fetch_stac_earth_data",
+        "fetch_live_hazard_feed",
+        "load_india_national_gis",
         "gee_download_dem", "gee_export_image", "gee_compute_index",
         "gee_image_collection", "gee_image_preview",
     })
@@ -69,6 +71,11 @@ class AutoGISEngine(QObject):
 
         self._main_invoke_sig.connect(self._on_main_invoke)
         self._async_tool_done_sig.connect(self._on_async_tool_done)
+
+        from .mcp_bridge import AutoGISMCPBridge
+
+        self._mcp_bridge = AutoGISMCPBridge(self)
+        self._mcp_bridge.start()
 
     def _on_main_invoke(self, pkg: object) -> None:
         fn, res_q = pkg
