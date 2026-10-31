@@ -546,7 +546,7 @@ def _fetch_single_overpass(endpoint: str, post_bytes: bytes, timeout: float) -> 
     return endpoint, data
 
 
-def _query_overpass_fast(ql: str, timeout: float = 35.0) -> tuple[dict | None, str, str]:
+def _query_overpass_fast(ql: str, timeout: float = 55.0) -> tuple[dict | None, str, str]:
     """Query a bounded number of public Overpass mirrors with finite deadlines."""
     post_bytes = urllib.parse.urlencode({"data": ql}).encode("utf-8")
     errors: list[str] = []
@@ -657,44 +657,55 @@ def tool_fetch_osm_features(iface, args: dict, run_on_main=None) -> dict:
     if south > north:
         south, north = north, south
 
-    # 2. Build clean Overpass QL clauses
+    # 2. Extract requested limit and build clean Overpass QL clauses
+    limit_val = max(100, min(int(args.get("limit") or 5000), 10000))
+    span_max = max(abs(east - west), abs(north - south))
+
     if custom_tag:
         clauses = _parse_custom_tag_clauses(custom_tag)
         label_stem = _safe_slug(custom_tag)[:24] or theme
     else:
-        filters = OSM_THEME_FILTERS.get(theme)
-        if not filters:
-            clauses = [f'nwr["{theme}"];']
+        # Adaptive network filtering: for metropolitan/regional scales (>20km),
+        # prioritize arterial & major networks so queries never choke on 100,000+ local residential gullies
+        if theme in ("roads", "highways") and span_max > 0.18:
+            clauses = ['way["highway"~"^(motorway|trunk|primary|secondary|tertiary)$"];']
+            label_stem = theme
         else:
-            clauses = [f"{flt};" for flt in filters]
-        label_stem = theme
+            filters = OSM_THEME_FILTERS.get(theme)
+            if not filters:
+                clauses = [f'nwr["{theme}"];']
+            else:
+                clauses = [f"{flt};" for flt in filters]
+            label_stem = theme
 
     # 3. Spatial Tiling: Subdivide large areas into manageable grid tiles
     # Dense layers (buildings, amenities) use tighter tiles (~5km) to prevent server memory exhaust
     if theme in ("buildings", "amenities"):
         max_tile_span = 0.05
     elif theme in ("roads", "highways", "major_roads"):
-        max_tile_span = 0.07
+        max_tile_span = 0.10 if span_max > 0.25 else 0.07
     else:
-        max_tile_span = 0.12
+        max_tile_span = 0.14
 
-    tiles = _subdivide_bbox(west, south, east, north, max_tile=max_tile_span, max_tiles=16)
+    max_tiles_allowed = 4 if span_max > 0.30 else 9
+    tiles = _subdivide_bbox(west, south, east, north, max_tile=max_tile_span, max_tiles=max_tiles_allowed)
 
     # 4. Fetch each tile and merge elements with deduplication
     seen_keys: set[tuple[str, Any]] = set()
     all_elements: list[dict] = []
     endpoint_used = ""
     err_detail = ""
+    tile_limit = max(500, int(limit_val / max(1, len(tiles))))
 
     for idx, (t_w, t_s, t_e, t_n) in enumerate(tiles):
         t_bbox = f"{t_s:.6f},{t_w:.6f},{t_n:.6f},{t_e:.6f}"
-        ql_tile = f"[out:json][timeout:25][bbox:{t_bbox}];(\n  " + "\n  ".join(clauses) + "\n);out geom;"
-        raw_data, ep, err = _query_overpass_fast(ql_tile, timeout=30.0)
+        ql_tile = f"[out:json][timeout:50][bbox:{t_bbox}];(\n  " + "\n  ".join(clauses) + f"\n);out geom qt {tile_limit};"
+        raw_data, ep, err = _query_overpass_fast(ql_tile, timeout=55.0)
 
         if not raw_data or not raw_data.get("elements"):
             # Courtesy delay and retry once
-            time.sleep(0.3)
-            raw_data, ep, err = _query_overpass_fast(ql_tile, timeout=25.0)
+            time.sleep(0.5)
+            raw_data, ep, err = _query_overpass_fast(ql_tile, timeout=50.0)
 
         if raw_data and isinstance(raw_data.get("elements"), list):
             if ep:
