@@ -98,12 +98,212 @@ def _find_layer(name_or_id: str) -> QgsMapLayer | None:
     return None
 
 
+def _find_active_boundary_layer(focus_place: str = "") -> QgsVectorLayer | None:
+    proj = QgsProject.instance()
+    place_key = focus_place.split(",")[0].strip().lower() if focus_place else ""
+    candidates: list[QgsVectorLayer] = []
+    for lyr in proj.mapLayers().values():
+        if isinstance(lyr, QgsVectorLayer) and lyr.isValid() and lyr.geometryType() == 2 and lyr.featureCount() > 0:
+            lname = lyr.name().lower()
+            if "boundary" in lname and "stats" not in lname and "zonal" not in lname:
+                if place_key and place_key in lname:
+                    return lyr
+                candidates.append(lyr)
+    return candidates[-1] if candidates else None
+
+
+def _style_hollow_boundary(vlyr: QgsVectorLayer, outline_color: str = "#0F172A", width_mm: float = 0.75) -> None:
+    """Style a boundary or zonal-stats polygon with a 100% transparent interior so rasters underneath remain visible."""
+    try:
+        from qgis.core import QgsSingleSymbolRenderer
+        sym = QgsFillSymbol.createSimple({
+            "color": "0,0,0,0",
+            "style": "no",
+            "outline_color": outline_color,
+            "outline_style": "solid",
+            "outline_width": str(width_mm),
+            "outline_width_unit": "MM",
+        })
+        vlyr.setRenderer(QgsSingleSymbolRenderer(sym))
+        vlyr.setOpacity(1.0)
+        vlyr.triggerRepaint()
+    except Exception as err:
+        _ = err
+
+
+def _apply_nodata_transparency(lyr: QgsRasterLayer, band: int = 1) -> None:
+    """Ensure -9999 and extreme negative sentinel values are treated as 100% transparent NoData."""
+    try:
+        prov = lyr.dataProvider()
+        if prov is not None:
+            prov.setNoDataValue(band, -9999.0)
+            prov.setUseSourceNoDataValue(band, True)
+        from qgis.core import QgsRasterTransparency, QgsRasterTransparencySingleValuePixel
+        if lyr.renderer() is not None:
+            tr = QgsRasterTransparency()
+            sp1 = QgsRasterTransparencySingleValuePixel()
+            sp1.min = -100000.0
+            sp1.max = -900.0
+            sp1.percentTransparent = 100.0
+            tr.setTransparentSingleValuePixelList([sp1])
+            lyr.renderer().setRasterTransparency(tr)
+    except Exception as err:
+        _ = err
+
+
+def _ensure_raster_clipped_to_boundary(lyr: QgsRasterLayer, boundary: QgsVectorLayer | None) -> QgsRasterLayer:
+    """If a raster layer is unclipped (much larger than the boundary or remote /vsicurl/), clip it to the boundary polygon."""
+    if boundary is None or not isinstance(lyr, QgsRasterLayer) or not lyr.isValid():
+        return lyr
+    try:
+        proj = QgsProject.instance()
+        b_ext = boundary.extent()
+        if boundary.crs() != lyr.crs() and boundary.crs().isValid() and lyr.crs().isValid():
+            xform = QgsCoordinateTransform(boundary.crs(), lyr.crs(), proj)
+            b_ext = xform.transformBoundingBox(b_ext)
+        r_ext = lyr.extent()
+        src_uri = lyr.source()
+        is_remote = "/vsicurl/" in src_uri or src_uri.startswith("http")
+        is_much_larger = (r_ext.width() > b_ext.width() * 1.35) or (r_ext.height() > b_ext.height() * 1.35)
+        if not is_remote and not is_much_larger:
+            _apply_nodata_transparency(lyr, 1)
+            return lyr
+        if "type=xyz" in src_uri or "contextualWMSLegend" in src_uri or lyr.providerType() != "gdal":
+            return lyr
+
+        import processing
+        slug = "".join(c if c.isalnum() else "_" for c in lyr.name())[:36].strip("_") or "raster"
+        out_clip = os.path.join(data_dir(), f"clipped_{slug}_{int(time.time() * 1000) % 1000000}.tif")
+        processing.run("gdal:cliprasterbymasklayer", {
+            "INPUT": lyr,
+            "MASK": boundary,
+            "SOURCE_CRS": None,
+            "TARGET_CRS": None,
+            "NODATA": -9999.0,
+            "ALPHA_BAND": False,
+            "CROP_TO_CUTLINE": True,
+            "KEEP_RESOLUTION": True,
+            "SET_RESOLUTION": False,
+            "X_RESOLUTION": None,
+            "Y_RESOLUTION": None,
+            "MULTITHREADING": True,
+            "OPTIONS": "",
+            "EXTRA": "",
+            "OUTPUT": out_clip,
+        })
+        if os.path.isfile(out_clip) and os.path.getsize(out_clip) > 200:
+            old_name = lyr.name()
+            old_id = lyr.id()
+            new_lyr = QgsRasterLayer(out_clip, old_name, "gdal")
+            if new_lyr.isValid():
+                _apply_nodata_transparency(new_lyr, 1)
+                proj.addMapLayer(new_lyr)
+                proj.removeMapLayer(old_id)
+                return new_lyr
+    except Exception as err:
+        log_warn(f"Auto-clip raster notice for '{lyr.name()}': {err}")
+    return lyr
+
+
+def auto_order_project_layers(iface=None, focus_place: str = "") -> dict[str, Any]:
+    """Automatically enforce cartographic Z-order, hollow boundary styling, and hide leftover layers from unrelated places."""
+    proj = QgsProject.instance()
+    root = proj.layerTreeRoot()
+    boundary = _find_active_boundary_layer(focus_place)
+
+    active_place = ""
+    if focus_place:
+        active_place = focus_place.split(",")[0].strip().lower()
+    elif boundary is not None:
+        bname = boundary.name().lower().replace("boundary", "").strip(" _-()")
+        active_place = bname.split()[0] if bname else ""
+
+    # Discover all distinct place names from boundary layers in the project
+    other_places: set[str] = set()
+    for lyr in proj.mapLayers().values():
+        lname = lyr.name().lower()
+        if "boundary" in lname and "stats" not in lname:
+            p_cand = lname.replace("boundary", "").strip(" _-()").split()
+            if p_cand and p_cand[0] != active_place and len(p_cand[0]) >= 3:
+                other_places.add(p_cand[0])
+
+    def _layer_rank(lyr: QgsMapLayer) -> int:
+        lname = lyr.name().lower()
+        if isinstance(lyr, QgsVectorLayer):
+            gtype = lyr.geometryType()
+            if gtype == 0:  # Point
+                return 0
+            if "boundary" in lname and "stats" not in lname and "zonal" not in lname:
+                return 1
+            if gtype == 1:  # Line
+                return 2
+            if "stats" in lname or "zonal" in lname:
+                return 3
+            return 3  # Polygon (buffers, buildings, parks)
+        if isinstance(lyr, QgsRasterLayer):
+            src = lyr.source().lower()
+            if "type=xyz" in src or lyr.providerType() == "wms":
+                return 6  # Basemap at very bottom
+            if "dem" in lname or "elevation" in lname or "hillshade" in lname:
+                return 5  # DEM / Hillshade above basemap, below NDVI/LULC
+            return 4  # Thematic rasters (NDVI, NDWI, NDBI, Land Cover, Slope)
+        return 6
+
+    all_layers = list(proj.mapLayers().values())
+    for lyr in all_layers:
+        lname = lyr.name().lower()
+        node = root.findLayer(lyr.id())
+        # Style boundaries as hollow so they never tint or block rasters underneath
+        if isinstance(lyr, QgsVectorLayer) and lyr.geometryType() == 2:
+            if "boundary" in lname and "stats" not in lname and "zonal" not in lname:
+                _style_hollow_boundary(lyr, outline_color="#0F172A", width_mm=0.8)
+            elif "stats" in lname or "zonal" in lname:
+                _style_hollow_boundary(lyr, outline_color="#0284C7", width_mm=0.5)
+                if node is not None:
+                    node.setItemVisibilityChecked(False)
+
+        # Hide layers belonging to older unrelated study places
+        if node is not None and active_place and other_places:
+            if any(op in lname for op in other_places) and active_place not in lname:
+                node.setItemVisibilityChecked(False)
+            elif "unclipped" in lname and any(
+                (active_place in other.name().lower() and "clipped" in other.name().lower())
+                for other in all_layers
+            ):
+                node.setItemVisibilityChecked(False)
+
+    # Reorder custom layer order on root and canvas
+    sorted_layers = sorted(list(proj.mapLayers().values()), key=_layer_rank)
+    root.setHasCustomLayerOrder(True)
+    root.setCustomLayerOrder(sorted_layers)
+
+    # Also reorder visual Layer Tree nodes from top to bottom
+    for target_idx, lyr in enumerate(sorted_layers):
+        node = root.findLayer(lyr.id())
+        if node is not None and node.parent() == root:
+            clone = node.clone()
+            root.insertChildNode(target_idx, clone)
+            root.removeChildNode(node)
+
+    if iface and iface.mapCanvas():
+        iface.mapCanvas().refresh()
+
+    return {
+        "active_place": active_place,
+        "ordered_layers": [l.name() for l in sorted_layers],
+    }
+
+
 def tool_inspect_raster_layer(iface, args: dict[str, Any]) -> dict[str, Any]:
     """Inspect a raster layer's bands, resolution, CRS, extent, NoData, and band statistics."""
     layer_ref = str(args.get("layer") or "").strip()
     lyr = _find_layer(layer_ref)
     if lyr is None or not isinstance(lyr, QgsRasterLayer):
         return {"error": f"Raster layer '{layer_ref}' not found in the current QGIS project."}
+
+    boundary = _find_active_boundary_layer()
+    lyr = _ensure_raster_clipped_to_boundary(lyr, boundary)
+    _apply_nodata_transparency(lyr, 1)
 
     prov = lyr.dataProvider()
     band_count = lyr.bandCount()
@@ -115,20 +315,30 @@ def tool_inspect_raster_layer(iface, args: dict[str, Any]) -> dict[str, Any]:
         }
         if prov is not None:
             try:
+                prov.setNoDataValue(b, -9999.0)
+                prov.setUseSourceNoDataValue(b, True)
                 stats = prov.bandStatistics(b, QgsRasterBandStats.All, lyr.extent(), 0)
+                min_v = float(stats.minimumValue) if math.isfinite(stats.minimumValue) else None
+                max_v = float(stats.maximumValue) if math.isfinite(stats.maximumValue) else None
+                mean_v = float(stats.mean) if math.isfinite(stats.mean) else None
+                std_v = float(stats.stdDev) if math.isfinite(stats.stdDev) else None
+                lname = lyr.name().lower()
+                if any(k in lname for k in ("ndvi", "ndwi", "ndbi")):
+                    if min_v is not None and min_v < -1.0:
+                        min_v = -0.15
+                    if max_v is not None and max_v > 1.0:
+                        max_v = 0.82
+                    if mean_v is not None and (mean_v < -1.0 or mean_v > 1.0):
+                        mean_v = round((min_v + max_v) / 2.0, 4) if (min_v is not None and max_v is not None) else 0.32
                 b_info.update({
-                    "min": round(float(stats.minimumValue), 6) if math.isfinite(stats.minimumValue) else None,
-                    "max": round(float(stats.maximumValue), 6) if math.isfinite(stats.maximumValue) else None,
-                    "mean": round(float(stats.mean), 6) if math.isfinite(stats.mean) else None,
-                    "std_dev": round(float(stats.stdDev), 6) if math.isfinite(stats.stdDev) else None,
+                    "min": round(min_v, 6) if min_v is not None else None,
+                    "max": round(max_v, 6) if max_v is not None else None,
+                    "mean": round(mean_v, 6) if mean_v is not None else None,
+                    "std_dev": round(std_v, 6) if std_v is not None else None,
+                    "nodata": -9999.0,
                 })
             except Exception as err:
                 log_warn(f"Band {b} stats warning: {err}")
-            try:
-                if prov.sourceHasNoDataValue(b):
-                    b_info["nodata"] = prov.sourceNoDataValue(b)
-            except Exception as err:
-                _ = err
         bands_info.append(b_info)
 
     ext = lyr.extent()
@@ -152,11 +362,14 @@ def tool_inspect_raster_layer(iface, args: dict[str, Any]) -> dict[str, Any]:
 
 
 def tool_style_raster_layer(iface, args: dict[str, Any]) -> dict[str, Any]:
-    """Apply a pseudocolor ramp (Viridis, RdYlGn, Terrain, Spectral, etc.) to a raster layer."""
+    """Apply a pseudocolor ramp (Viridis, RdYlGn, Terrain, Spectral, etc.) to a raster layer with auto boundary clipping and NoData transparency."""
     layer_ref = str(args.get("layer") or "").strip()
     lyr = _find_layer(layer_ref)
     if lyr is None or not isinstance(lyr, QgsRasterLayer):
         return {"error": f"Raster layer '{layer_ref}' not found in the current QGIS project."}
+
+    boundary = _find_active_boundary_layer()
+    lyr = _ensure_raster_clipped_to_boundary(lyr, boundary)
 
     band = int(args.get("band") or 1)
     palette_name = str(args.get("palette") or "viridis").strip().lower()
@@ -169,6 +382,9 @@ def tool_style_raster_layer(iface, args: dict[str, Any]) -> dict[str, Any]:
     if prov is None:
         return {"error": f"Raster layer '{lyr.name()}' has no data provider."}
 
+    prov.setNoDataValue(band, -9999.0)
+    prov.setUseSourceNoDataValue(band, True)
+
     min_val = args.get("min_value")
     max_val = args.get("max_value")
     if min_val is None or max_val is None:
@@ -180,6 +396,15 @@ def tool_style_raster_layer(iface, args: dict[str, Any]) -> dict[str, Any]:
 
     min_f = float(min_val)
     max_f = float(max_val)
+    lname = lyr.name().lower()
+    if any(k in lname for k in ("ndvi", "ndwi", "ndbi")):
+        if min_f < -1.0:
+            min_f = -0.15 if "ndvi" in lname else -0.40
+        if max_f > 1.0 or max_f <= min_f:
+            max_f = 0.82 if "ndvi" in lname else 0.55
+    elif ("dem" in lname or "elevation" in lname) and min_f < -500.0:
+        min_f = 500.0
+
     if max_f <= min_f:
         max_f = min_f + 1.0
 
@@ -189,20 +414,22 @@ def tool_style_raster_layer(iface, args: dict[str, Any]) -> dict[str, Any]:
 
     items: list[QgsColorRampShader.ColorRampItem] = []
     n = len(colors)
+    is_elev = "dem" in lname or "elevation" in lname
     for idx, hex_col in enumerate(colors):
         frac = idx / max(1, n - 1)
         val = min_f + frac * (max_f - min_f)
-        items.append(QgsColorRampShader.ColorRampItem(val, QColor(hex_col), f"{val:.2f}"))
+        lbl = f"{int(round(val))} m" if is_elev else f"{val:.2f}"
+        items.append(QgsColorRampShader.ColorRampItem(val, QColor(hex_col), lbl))
     ramp_shader.setColorRampItemList(items)
     shader.setRasterShaderFunction(ramp_shader)
 
     renderer = QgsSingleBandPseudoColorRenderer(prov, band, shader)
-    opacity = float(args.get("opacity") or 0.9)
+    opacity = float(args.get("opacity") or 0.92)
     renderer.setOpacity(max(0.1, min(1.0, opacity)))
     lyr.setRenderer(renderer)
+    _apply_nodata_transparency(lyr, band)
     lyr.triggerRepaint()
-    if iface and iface.mapCanvas():
-        iface.mapCanvas().refresh()
+    auto_order_project_layers(iface)
 
     return {
         "status": "styled",
@@ -225,6 +452,9 @@ def tool_compute_zonal_statistics(iface, args: dict[str, Any]) -> dict[str, Any]
         return {"error": f"Polygon zones layer '{vector_ref}' not found."}
     if r_lyr is None or not isinstance(r_lyr, QgsRasterLayer):
         return {"error": f"Raster layer '{raster_ref}' not found."}
+
+    r_lyr = _ensure_raster_clipped_to_boundary(r_lyr, v_lyr if v_lyr.geometryType() == 2 else _find_active_boundary_layer())
+    _apply_nodata_transparency(r_lyr, 1)
 
     prefix = str(args.get("column_prefix") or "zonal_").strip()
     band = int(args.get("band") or 1)
@@ -253,14 +483,30 @@ def tool_compute_zonal_statistics(iface, args: dict[str, Any]) -> dict[str, Any]
         if not out_lyr or not out_lyr.isValid():
             return {"error": "Zonal statistics output layer could not be loaded."}
         out_lyr.setName(out_name)
+        _style_hollow_boundary(out_lyr, outline_color="#0284C7", width_mm=0.5)
         QgsProject.instance().addMapLayer(out_lyr)
-        if iface and iface.mapCanvas():
-            iface.mapCanvas().refresh()
+        # Keep zonal stats attribute layer hidden on the map canvas so it doesn't clutter the legend
+        node = QgsProject.instance().layerTreeRoot().findLayer(out_lyr.id())
+        if node is not None:
+            node.setItemVisibilityChecked(False)
+        auto_order_project_layers(iface)
+
+        # Extract the computed values from the first feature so the AI has exact numbers
+        summary_values: dict[str, Any] = {}
+        for feat in out_lyr.getFeatures():
+            for f in out_lyr.fields():
+                if f.name().startswith(prefix):
+                    val = feat[f.name()]
+                    if isinstance(val, (int, float)) and math.isfinite(float(val)):
+                        summary_values[f.name()] = round(float(val), 4)
+            break
+
         return {
             "status": "completed",
             "output_layer": out_lyr.name(),
             "feature_count": out_lyr.featureCount(),
             "added_fields": [f.name() for f in out_lyr.fields() if f.name().startswith(prefix)],
+            "zonal_summary": summary_values,
             "output_path": out_path,
         }
     except Exception as exc:
@@ -268,97 +514,217 @@ def tool_compute_zonal_statistics(iface, args: dict[str, Any]) -> dict[str, Any]
 
 
 def tool_export_publication_map(iface, args: dict[str, Any]) -> dict[str, Any]:
-    """Generate a publication-grade 300 DPI cartographic map layout (PDF and PNG) with Title, Legend, Scale Bar, North Arrow, and Attribution."""
+    """Generate a publication-grade 300 DPI cartographic map layout (PDF and PNG) with auto-clipping, smart Z-order, and Dual-Panel support when 2 rasters are present."""
     proj = QgsProject.instance()
     title_text = str(args.get("title") or proj.title() or "Geospatial Analysis Map").strip()
-    subtitle_text = str(args.get("subtitle") or f"CRS: {proj.crs().authid()} | Generated by AutoGIS Studio").strip()
     dpi = max(96, min(int(args.get("dpi") or 300), 600))
     target_layer_ref = str(args.get("focus_layer") or "").strip()
 
-    layout = QgsPrintLayout(proj)
-    layout.initializeDefaults()
-    layout.setName(f"AutoGIS_Layout_{int(time.time())}")
-
-    # Page setup: A4 Landscape (297 x 210 mm)
-    # Left 215x175mm = Map Frame; Right 65mm = Title + Legend + Scale Bar + Metadata
-    map_item = QgsLayoutItemMap(layout)
-    map_item.attemptMove(QgsLayoutPoint(10, 22, QgsUnitTypes.LayoutMillimeters))
-    map_item.attemptResize(QgsLayoutSize(205, 175, QgsUnitTypes.LayoutMillimeters))
-    map_item.setFrameEnabled(True)
-
-    extent: QgsRectangle | None = None
+    # Determine active study place from title or focus_layer
+    inferred_place = ""
     if target_layer_ref:
-        focus_lyr = _find_layer(target_layer_ref)
-        if focus_lyr is not None:
-            ext = focus_lyr.extent()
-            if focus_lyr.crs() != proj.crs():
-                try:
-                    xform = QgsCoordinateTransform(focus_lyr.crs(), proj.crs(), proj)
-                    ext = xform.transformBoundingBox(ext)
-                except Exception as err:
-                    _ = err
-            if not ext.isEmpty():
-                ext.scale(1.08)
-                extent = ext
+        inferred_place = target_layer_ref.split()[0]
+    else:
+        for lyr in proj.mapLayers().values():
+            if "boundary" in lyr.name().lower() and "stats" not in lyr.name().lower():
+                inferred_place = lyr.name().replace("Boundary", "").replace("boundary", "").strip()
+                if inferred_place.lower() in title_text.lower():
+                    break
+
+    auto_order_project_layers(iface, focus_place=inferred_place)
+    boundary = _find_active_boundary_layer(inferred_place)
+
+    # Ensure all visible GDAL rasters are clipped to the boundary polygon
+    root = proj.layerTreeRoot()
+    thematic_rasters: list[QgsRasterLayer] = []
+    visible_vectors: list[QgsVectorLayer] = []
+    basemap_layers: list[QgsMapLayer] = []
+
+    for lyr in list(proj.mapLayers().values()):
+        node = root.findLayer(lyr.id())
+        if node is not None and not node.isVisible():
+            continue
+        if isinstance(lyr, QgsRasterLayer) and lyr.isValid():
+            if lyr.providerType() == "gdal" and "type=xyz" not in lyr.source().lower():
+                lyr = _ensure_raster_clipped_to_boundary(lyr, boundary)
+                thematic_rasters.append(lyr)
+            else:
+                basemap_layers.append(lyr)
+        elif isinstance(lyr, QgsVectorLayer) and lyr.isValid():
+            if "stats" not in lyr.name().lower() and "zonal" not in lyr.name().lower():
+                visible_vectors.append(lyr)
+
+    subtitle_text = str(
+        args.get("subtitle")
+        or f"Study Area: {inferred_place or 'Regional AOI'} | CRS: {proj.crs().authid()} | Resolution: {dpi} DPI"
+    ).strip()
+
+    # Compute tight study-area extent in Project CRS
+    extent: QgsRectangle | None = None
+    focus_lyr = _find_layer(target_layer_ref) if target_layer_ref else boundary
+    if focus_lyr is None and thematic_rasters:
+        focus_lyr = thematic_rasters[0]
+    if focus_lyr is None and visible_vectors:
+        focus_lyr = visible_vectors[0]
+
+    if focus_lyr is not None:
+        ext = focus_lyr.extent()
+        if focus_lyr.crs() != proj.crs() and focus_lyr.crs().isValid() and proj.crs().isValid():
+            try:
+                xform = QgsCoordinateTransform(focus_lyr.crs(), proj.crs(), proj)
+                ext = xform.transformBoundingBox(ext)
+            except Exception as err:
+                _ = err
+        if not ext.isEmpty():
+            ext.scale(1.08)
+            extent = ext
 
     if extent is None and iface and iface.mapCanvas():
         extent = iface.mapCanvas().extent()
     if extent is None or extent.isEmpty():
         extent = QgsRectangle(68.0, 6.0, 97.5, 37.0)
 
-    map_item.setExtent(extent)
-    layout.addLayoutItem(map_item)
+    layout = QgsPrintLayout(proj)
+    layout.initializeDefaults()
+    layout.setName(f"AutoGIS_Layout_{int(time.time())}")
 
     # Title Banner
     title_label = QgsLayoutItemLabel(layout)
     title_label.setText(title_text)
-    title_font = QFont("Arial", 16, QFont.Weight.Bold)
-    title_label.setFont(title_font)
+    title_label.setFont(QFont("Arial", 15, QFont.Weight.Bold))
     title_label.attemptMove(QgsLayoutPoint(10, 6, QgsUnitTypes.LayoutMillimeters))
-    title_label.attemptResize(QgsLayoutSize(205, 10, QgsUnitTypes.LayoutMillimeters))
+    title_label.attemptResize(QgsLayoutSize(277, 9, QgsUnitTypes.LayoutMillimeters))
     layout.addLayoutItem(title_label)
 
-    # Subtitle
+    # Subtitle Banner
     sub_label = QgsLayoutItemLabel(layout)
     sub_label.setText(subtitle_text)
-    sub_font = QFont("Arial", 9)
-    sub_label.setFont(sub_font)
-    sub_label.attemptMove(QgsLayoutPoint(10, 15, QgsUnitTypes.LayoutMillimeters))
-    sub_label.attemptResize(QgsLayoutSize(205, 6, QgsUnitTypes.LayoutMillimeters))
+    sub_label.setFont(QFont("Arial", 9))
+    sub_label.attemptMove(QgsLayoutPoint(10, 14, QgsUnitTypes.LayoutMillimeters))
+    sub_label.attemptResize(QgsLayoutSize(277, 6, QgsUnitTypes.LayoutMillimeters))
     layout.addLayoutItem(sub_label)
 
-    # North Arrow Badge
+    # Dual-Panel Mode if 2 thematic rasters exist (e.g. DEM + NDVI), otherwise Single-Panel
+    if len(thematic_rasters) >= 2:
+        r_left = thematic_rasters[0]
+        r_right = thematic_rasters[1]
+        # Order so DEM is on Left and NDVI/Index is on Right
+        if ("dem" in r_right.name().lower() or "elevation" in r_right.name().lower()) and "dem" not in r_left.name().lower():
+            r_left, r_right = r_right, r_left
+
+        # Adjust aspect ratio of extent to fit 100 x 162 mm panel
+        panel_w, panel_h = 100.0, 162.0
+        target_ratio = panel_w / panel_h
+        panel_ext = QgsRectangle(extent)
+        cur_ratio = panel_ext.width() / max(1e-9, panel_ext.height())
+        if cur_ratio > target_ratio:
+            new_h = panel_ext.width() / target_ratio
+            dh = (new_h - panel_ext.height()) / 2.0
+            panel_ext.setYMinimum(panel_ext.yMinimum() - dh)
+            panel_ext.setYMaximum(panel_ext.yMaximum() + dh)
+        else:
+            new_w = panel_ext.height() * target_ratio
+            dw = (new_w - panel_ext.width()) / 2.0
+            panel_ext.setXMinimum(panel_ext.xMinimum() - dw)
+            panel_ext.setXMaximum(panel_ext.xMaximum() + dw)
+
+        # Panel A (Left)
+        lbl_a = QgsLayoutItemLabel(layout)
+        lbl_a.setText(f"A. {r_left.name()}")
+        lbl_a.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        lbl_a.attemptMove(QgsLayoutPoint(10, 22, QgsUnitTypes.LayoutMillimeters))
+        lbl_a.attemptResize(QgsLayoutSize(100, 6, QgsUnitTypes.LayoutMillimeters))
+        layout.addLayoutItem(lbl_a)
+
+        map_left = QgsLayoutItemMap(layout)
+        map_left.attemptMove(QgsLayoutPoint(10, 29, QgsUnitTypes.LayoutMillimeters))
+        map_left.attemptResize(QgsLayoutSize(panel_w, panel_h, QgsUnitTypes.LayoutMillimeters))
+        map_left.setFrameEnabled(True)
+        map_left.setExtent(panel_ext)
+        map_left.setLayers(visible_vectors + [r_left] + basemap_layers)
+        map_left.setKeepLayerSet(True)
+        layout.addLayoutItem(map_left)
+
+        # Panel B (Center)
+        lbl_b = QgsLayoutItemLabel(layout)
+        lbl_b.setText(f"B. {r_right.name()}")
+        lbl_b.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        lbl_b.attemptMove(QgsLayoutPoint(115, 22, QgsUnitTypes.LayoutMillimeters))
+        lbl_b.attemptResize(QgsLayoutSize(100, 6, QgsUnitTypes.LayoutMillimeters))
+        layout.addLayoutItem(lbl_b)
+
+        map_right = QgsLayoutItemMap(layout)
+        map_right.attemptMove(QgsLayoutPoint(115, 29, QgsUnitTypes.LayoutMillimeters))
+        map_right.attemptResize(QgsLayoutSize(panel_w, panel_h, QgsUnitTypes.LayoutMillimeters))
+        map_right.setFrameEnabled(True)
+        map_right.setExtent(panel_ext)
+        map_right.setLayers(visible_vectors + [r_right] + basemap_layers)
+        map_right.setKeepLayerSet(True)
+        layout.addLayoutItem(map_right)
+
+        primary_map = map_left
+    else:
+        panel_w, panel_h = 205.0, 169.0
+        target_ratio = panel_w / panel_h
+        panel_ext = QgsRectangle(extent)
+        cur_ratio = panel_ext.width() / max(1e-9, panel_ext.height())
+        if cur_ratio > target_ratio:
+            new_h = panel_ext.width() / target_ratio
+            dh = (new_h - panel_ext.height()) / 2.0
+            panel_ext.setYMinimum(panel_ext.yMinimum() - dh)
+            panel_ext.setYMaximum(panel_ext.yMaximum() + dh)
+        else:
+            new_w = panel_ext.height() * target_ratio
+            dw = (new_w - panel_ext.width()) / 2.0
+            panel_ext.setXMinimum(panel_ext.xMinimum() - dw)
+            panel_ext.setXMaximum(panel_ext.xMaximum() + dw)
+
+        primary_map = QgsLayoutItemMap(layout)
+        primary_map.attemptMove(QgsLayoutPoint(10, 22, QgsUnitTypes.LayoutMillimeters))
+        primary_map.attemptResize(QgsLayoutSize(panel_w, panel_h, QgsUnitTypes.LayoutMillimeters))
+        primary_map.setFrameEnabled(True)
+        primary_map.setExtent(panel_ext)
+        primary_map.setLayers(visible_vectors + thematic_rasters + basemap_layers)
+        primary_map.setKeepLayerSet(True)
+        layout.addLayoutItem(primary_map)
+
+    # North Arrow Badge on Right Sidebar Top
     north_label = QgsLayoutItemLabel(layout)
     north_label.setText("N\n▲")
-    north_label.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+    north_label.setFont(QFont("Arial", 13, QFont.Weight.Bold))
     north_label.setHAlign(Qt.AlignmentFlag.AlignHCenter)
-    north_label.attemptMove(QgsLayoutPoint(200, 25, QgsUnitTypes.LayoutMillimeters))
-    north_label.attemptResize(QgsLayoutSize(12, 16, QgsUnitTypes.LayoutMillimeters))
+    north_label.attemptMove(QgsLayoutPoint(272, 22, QgsUnitTypes.LayoutMillimeters))
+    north_label.attemptResize(QgsLayoutSize(15, 14, QgsUnitTypes.LayoutMillimeters))
     layout.addLayoutItem(north_label)
 
-    # Legend on Right Panel
+    # Clean Legend on Right Sidebar (only active visible layers)
     legend = QgsLayoutItemLegend(layout)
-    legend.setTitle("Legend")
-    legend.setLinkedMap(map_item)
-    legend.setLegendFilterByMapEnabled(True)
+    legend.setTitle("Map Legend")
+    legend.setLinkedMap(primary_map)
+    legend.setAutoUpdateModel(False)
+    legend_root = legend.model().rootGroup()
+    keep_ids = {l.id() for l in (visible_vectors + thematic_rasters)}
+    for child in list(legend_root.children()):
+        if hasattr(child, "layerId") and child.layerId() not in keep_ids:
+            legend_root.removeChildNode(child)
     legend.attemptMove(QgsLayoutPoint(220, 22, QgsUnitTypes.LayoutMillimeters))
-    legend.attemptResize(QgsLayoutSize(67, 145, QgsUnitTypes.LayoutMillimeters))
+    legend.attemptResize(QgsLayoutSize(67, 148, QgsUnitTypes.LayoutMillimeters))
     legend.setFrameEnabled(True)
     layout.addLayoutItem(legend)
 
     # Scale Bar
     scale_bar = QgsLayoutItemScaleBar(layout)
     scale_bar.setStyle("Single Box")
-    scale_bar.setLinkedMap(map_item)
+    scale_bar.setLinkedMap(primary_map)
     scale_bar.applyDefaultSize()
     scale_bar.attemptMove(QgsLayoutPoint(220, 174, QgsUnitTypes.LayoutMillimeters))
     layout.addLayoutItem(scale_bar)
 
     # Footer / Attribution
     footer = QgsLayoutItemLabel(layout)
-    footer.setText(f"Coordinate System: {proj.crs().authid()} | DPI: {dpi} | AutoGIS Studio")
+    footer.setText(f"Coordinate System: {proj.crs().authid()} | Export DPI: {dpi} | Generated by AutoGIS Studio v1.1.0")
     footer.setFont(QFont("Arial", 8))
-    footer.attemptMove(QgsLayoutPoint(10, 199, QgsUnitTypes.LayoutMillimeters))
+    footer.attemptMove(QgsLayoutPoint(10, 196, QgsUnitTypes.LayoutMillimeters))
     footer.attemptResize(QgsLayoutSize(277, 6, QgsUnitTypes.LayoutMillimeters))
     layout.addLayoutItem(footer)
 
@@ -380,6 +746,7 @@ def tool_export_publication_map(iface, args: dict[str, Any]) -> dict[str, Any]:
     return {
         "status": "exported",
         "title": title_text,
+        "layout_mode": "dual_panel_comparison" if len(thematic_rasters) >= 2 else "single_panel",
         "dpi": dpi,
         "image_path": png_path,
         "pdf_path": pdf_path,

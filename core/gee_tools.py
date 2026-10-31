@@ -8,15 +8,31 @@ from __future__ import annotations
 
 from typing import Any
 
-from .gee_credentials import initialize_earth_engine, get_gee_config
+import json as _gee_json
+from .gee_credentials import initialize_earth_engine, get_gee_config, get_oauth_credentials_project
+from .config import AutoGISConfig, data_dir as _gee_data_dir
 
 
-def _ee():
-    ok, message = initialize_earth_engine()
+def _ee(override_project: str = ""):
+    ok, message = initialize_earth_engine(override_project=override_project)
     if not ok:
         raise RuntimeError(message)
     import ee  # type: ignore
     return ee
+
+
+def _retry_gee_with_oauth_project(fn):
+    """Execute an Earth Engine call; if the configured project lacks permission, retry with the OAuth default project."""
+    try:
+        return fn()
+    except Exception as exc:
+        msg = str(exc)
+        fb_proj = get_oauth_credentials_project()
+        if fb_proj and ("Permission" in msg or "denied" in msg or "not exist" in msg or "403" in msg):
+            _ee(override_project=fb_proj)
+            AutoGISConfig().gee_project_id = fb_proj
+            return fn()
+        raise
 
 
 def tool_gee_image_collection(args: dict[str, Any]) -> dict[str, Any]:
@@ -96,18 +112,81 @@ import zipfile as _gee_zipfile
 from .config import data_dir as _gee_data_dir
 
 
-def _gee_bbox(args):
+def _resolve_boundary_info_threadsafe(place: str, run_on_main=None) -> tuple[list[float] | None, str, dict | None]:
+    """Thread-safely inspect QgsProject on the main thread to get bbox and exact polygon GeoJSON for clipping."""
+    def _inspect_project():
+        try:
+            from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject, QgsVectorLayer
+            proj = QgsProject.instance()
+            wgs84 = QgsCoordinateReferenceSystem("EPSG:4326")
+            place_clean = place.split(",")[0].strip().lower() if place else ""
+            best_lyr = None
+            for lyr in proj.mapLayers().values():
+                if isinstance(lyr, QgsVectorLayer) and lyr.isValid() and lyr.featureCount() > 0 and lyr.geometryType() == 2:
+                    lname = lyr.name().lower()
+                    if "boundary" in lname:
+                        if place_clean and place_clean in lname:
+                            best_lyr = lyr
+                            break
+                        if best_lyr is None:
+                            best_lyr = lyr
+            if best_lyr is not None:
+                ext = best_lyr.extent()
+                xform = None
+                if best_lyr.crs().isValid() and best_lyr.crs() != wgs84:
+                    xform = QgsCoordinateTransform(best_lyr.crs(), wgs84, proj)
+                    ext = xform.transformBoundingBox(ext)
+                bbox = [
+                    round(ext.xMinimum(), 6),
+                    round(ext.yMinimum(), 6),
+                    round(ext.xMaximum(), 6),
+                    round(ext.yMaximum(), 6),
+                ]
+                poly_json = None
+                for feat in best_lyr.getFeatures():
+                    geom = feat.geometry()
+                    if geom and not geom.isEmpty():
+                        if xform is not None:
+                            geom.transform(xform)
+                        # Simplify slightly if vertex count is huge so GEE getDownloadURL payload stays compact
+                        if geom.constGet() and geom.asWkb() and len(geom.asWkb()) > 25000:
+                            geom = geom.simplify(0.0005)
+                        poly_json = _gee_json.loads(geom.asJson())
+                        break
+                return bbox, best_lyr.name(), poly_json
+        except Exception as err:
+            _ = err
+        return None, "", None
+
+    if callable(run_on_main):
+        return run_on_main(_inspect_project, timeout=15.0)
+    return _inspect_project()
+
+
+def _gee_bbox(args, run_on_main=None):
     raw = args.get("bbox")
+    place = str(args.get("place") or "").strip()
     if raw is None:
-        place = str(args.get("place") or "").strip()
         if not place:
             raise ValueError("Provide a place name (e.g. Delhi, India) or bbox=[west,south,east,north].")
-        from .live_data_tools import _resolve_place_bbox_wgs84
-        raw, resolved = _resolve_place_bbox_wgs84(place)
-        if not raw:
-            raise RuntimeError("Could not resolve area for " + place)
+        proj_bbox, proj_name, _ = _resolve_boundary_info_threadsafe(place, run_on_main=run_on_main)
+        if proj_bbox:
+            raw, resolved = proj_bbox, proj_name
+        else:
+            from .live_data_tools import _geocode_nominatim
+            hits = _geocode_nominatim(place, with_polygon=False, limit=5)
+            if not hits:
+                raise RuntimeError("Could not resolve area for " + place)
+            best = hits[0]
+            bb = best.get("boundingbox")
+            if isinstance(bb, list) and len(bb) == 4:
+                raw = [float(bb[2]), float(bb[0]), float(bb[3]), float(bb[1])]
+            else:
+                lat, lon = float(best.get("lat", 0)), float(best.get("lon", 0))
+                raw = [lon - 0.06, lat - 0.06, lon + 0.06, lat + 0.06]
+            resolved = str(best.get("display_name") or place)
     else:
-        resolved = str(args.get("place") or "custom AOI")
+        resolved = place or "custom AOI"
     if not isinstance(raw, (list, tuple)) or len(raw) != 4:
         raise ValueError("bbox must be [west,south,east,north] in EPSG:4326.")
     bbox = [float(v) for v in raw]
@@ -124,15 +203,40 @@ def _gee_safe_slug(text):
     return value.strip("_")[:70] or "gee_raster"
 
 
-def _gee_download_and_load(image, args, iface=None, run_on_main=None, name="Earth_Engine_Raster"):
+def _gee_download_and_load(image, args, iface=None, run_on_main=None, name="Earth_Engine_Raster", default_palette=""):
     ee = _ee()
-    bbox, area = _gee_bbox(args)
+    place = str(args.get("place") or "").strip()
+    bbox, area = _gee_bbox(args, run_on_main=run_on_main)
+    _, boundary_name, boundary_geojson = _resolve_boundary_info_threadsafe(place, run_on_main=run_on_main)
+
+    span = max(abs(bbox[2] - bbox[0]), abs(bbox[3] - bbox[1]))
     scale = int(args.get("scale") or 30)
+    # Prevent giant multi-hundred-MB downloads that freeze GDAL on regional mountain bboxes
+    if span > 0.30 and scale < 20:
+        scale = 20
+    if span > 0.60 and scale < 30:
+        scale = 30
     if not 1 <= scale <= 1000:
         raise ValueError("scale must be between 1 and 1000 meters.")
     crs = str(args.get("crs") or "EPSG:4326")
     region = ee.Geometry.Rectangle(bbox)
-    url = image.getDownloadURL({"name":name, "region":region, "scale":scale, "crs":crs, "format":"GEO_TIFF"})
+
+    # Clip to exact boundary polygon on Google Earth Engine servers and set outside pixels to -9999 NoData
+    clipped_to_poly = False
+    if isinstance(boundary_geojson, dict) and boundary_geojson.get("type") in ("Polygon", "MultiPolygon"):
+        try:
+            ee_poly = ee.Geometry(boundary_geojson)
+            image = image.toFloat().clip(ee_poly).unmask(-9999)
+            clipped_to_poly = True
+        except Exception as err:
+            _ = err
+            image = image.toFloat().clip(region).unmask(-9999)
+    else:
+        image = image.toFloat().clip(region).unmask(-9999)
+
+    url = _retry_gee_with_oauth_project(
+        lambda: image.getDownloadURL({"name": name, "region": region, "scale": scale, "crs": crs, "format": "GEO_TIFF"})
+    )
     folder = _gee_os.path.join(_gee_data_dir(), "datasets")
     _gee_os.makedirs(folder, exist_ok=True)
     fd, temp_path = _gee_tempfile.mkstemp(prefix="gee_", suffix=".tmp", dir=folder)
@@ -169,15 +273,30 @@ def _gee_download_and_load(image, args, iface=None, run_on_main=None, name="Eart
         layer_name = str(args.get("layer_name") or name)
         def _load():
             from qgis.core import QgsProject, QgsRasterLayer
+            from .advanced_gis_tools import auto_order_project_layers, tool_style_raster_layer
+            project = QgsProject.instance()
+            # Replace any prior layer with the same name so layers don't pile up
+            for old_lyr in list(project.mapLayers().values()):
+                if old_lyr.name().strip().lower() == layer_name.strip().lower():
+                    project.removeMapLayer(old_lyr.id())
             layer = QgsRasterLayer(output, layer_name, "gdal")
             if not layer.isValid():
                 raise RuntimeError("Downloaded file is not a valid QGIS raster: " + output)
-            QgsProject.instance().addMapLayer(layer)
+            prov = layer.dataProvider()
+            if prov is not None:
+                for b in range(1, layer.bandCount() + 1):
+                    prov.setNoDataValue(b, -9999.0)
+                    prov.setUseSourceNoDataValue(b, True)
+            project.addMapLayer(layer)
+            if default_palette:
+                tool_style_raster_layer(iface, {"layer": layer.id(), "palette": default_palette})
+            auto_order_project_layers(iface, focus_place=place)
             if iface and iface.mapCanvas():
                 iface.mapCanvas().setExtent(layer.extent())
                 iface.mapCanvas().refresh()
             return {"layer_id":layer.id(),"layer_name":layer.name(),"width":layer.width(),
-                    "height":layer.height(),"bands":layer.bandCount(),"crs":layer.crs().authid()}
+                    "height":layer.height(),"bands":layer.bandCount(),"crs":layer.crs().authid(),
+                    "clipped_to_boundary": clipped_to_poly, "boundary_layer": boundary_name or None}
         loaded = run_on_main(_load, timeout=60) if run_on_main else _load()
         return {"status":"success","provider":"Google Earth Engine","project_id":get_gee_config().get("project_id",""),
                 "area":area,"bbox":bbox,"scale_m":scale,"output_crs":crs,"file_path":output,
@@ -197,7 +316,7 @@ def tool_gee_download_dem(args, iface=None, run_on_main=None):
     payload["crs"] = str(args.get("crs") or ("EPSG:32643" if "delhi" in place.lower() else "EPSG:4326"))
     payload["layer_name"] = args.get("layer_name") or (place + " DEM").strip() or "Earth Engine DEM"
     image = ee.Image(dataset).select([band])
-    out = _gee_download_and_load(image, payload, iface, run_on_main, _gee_safe_slug(payload["layer_name"]))
+    out = _gee_download_and_load(image, payload, iface, run_on_main, _gee_safe_slug(payload["layer_name"]), default_palette="terrain")
     out.update({"dataset_id":dataset,"band":band,"product":"DEM"})
     return out
 
@@ -223,21 +342,30 @@ def tool_gee_compute_index(args, iface=None, run_on_main=None):
     index = str(args.get("index") or "NDVI").upper()
     pairs = {"NDVI":("B8","B4"),"NDWI":("B3","B8"),"NDBI":("B11","B8")}
     if index not in pairs: raise ValueError("index must be NDVI, NDWI, or NDBI.")
-    bbox, _ = _gee_bbox(args)
+    bbox, _ = _gee_bbox(args, run_on_main=run_on_main)
     today = _gee_dt.date.today()
     start = str(args.get("start_date") or (today-_gee_dt.timedelta(days=365)).isoformat())
     end = str(args.get("end_date") or today.isoformat())
     if start >= end: raise ValueError("start_date must be earlier than end_date.")
     region = ee.Geometry.Rectangle(bbox)
+    max_cloud = float(args.get("max_cloud_cover", 30))
     collection = (ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED").filterDate(start,end)
-                  .filterBounds(region).filter(ee.Filter.lte("CLOUDY_PIXEL_PERCENTAGE",float(args.get("max_cloud_cover",30)))))
-    count = int(collection.size().getInfo())
+                  .filterBounds(region).filter(ee.Filter.lte("CLOUDY_PIXEL_PERCENTAGE", max_cloud)))
+    count = int(_retry_gee_with_oauth_project(lambda: collection.size().getInfo()))
+    if count == 0 and max_cloud < 50:
+        collection = (ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED").filterDate(start,end)
+                      .filterBounds(region).filter(ee.Filter.lte("CLOUDY_PIXEL_PERCENTAGE", 50.0)))
+        count = int(_retry_gee_with_oauth_project(lambda: collection.size().getInfo()))
     if count == 0: raise RuntimeError("No Sentinel-2 images found for this area/date range; expand the date range or cloud threshold.")
     a,b = pairs[index]
     image = collection.median().normalizedDifference([a,b]).rename(index)
     payload = dict(args); payload["bbox"] = bbox; payload["scale"] = int(args.get("scale") or 10)
     payload["layer_name"] = args.get("layer_name") or (index + " " + str(args.get("place") or "AOI"))
-    out = _gee_download_and_load(image,payload,iface,run_on_main,_gee_safe_slug(payload["layer_name"]))
+    palette_map = {"NDVI": "rdylgn", "NDWI": "blues", "NDBI": "reds"}
+    out = _gee_download_and_load(
+        image, payload, iface, run_on_main, _gee_safe_slug(payload["layer_name"]),
+        default_palette=palette_map.get(index, "rdylgn")
+    )
     out.update({"product":index,"dataset_id":"COPERNICUS/S2_SR_HARMONIZED","image_count":count,
                 "start_date":start,"end_date":end,"band_math":f"normalizedDifference({a}, {b})"})
     return out

@@ -293,19 +293,28 @@ def tool_fetch_place_boundary(iface, args: dict, run_on_main=None) -> dict:
     def _load_on_main() -> str | None:
         if not add_to_map:
             return None
+        proj = QgsProject.instance()
+        for old_lyr in list(proj.mapLayers().values()):
+            if old_lyr.name().strip().lower() == layer_name.strip().lower():
+                proj.removeMapLayer(old_lyr.id())
         vlyr = QgsVectorLayer(out_file, layer_name, "ogr")
         if not vlyr.isValid():
             return None
         from .gis_tools import _PROCESSING_LAYER_REFS, _tool_style_vector_layer
+        from .advanced_gis_tools import _style_hollow_boundary, auto_order_project_layers
         _PROCESSING_LAYER_REFS.append(vlyr)
-        QgsProject.instance().addMapLayer(vlyr)
-        _tool_style_vector_layer(iface, {
-            "layer": vlyr.id(),
-            "style_type": "single",
-            "color": "#00BBF9",
-            "outline_color": "#0284C7",
-            "opacity": 0.30 if gj_geom.get("type") in ("Polygon", "MultiPolygon") else 0.9,
-        })
+        proj.addMapLayer(vlyr)
+        if gj_geom.get("type") in ("Polygon", "MultiPolygon"):
+            _style_hollow_boundary(vlyr, outline_color="#0F172A", width_mm=0.8)
+        else:
+            _tool_style_vector_layer(iface, {
+                "layer": vlyr.id(),
+                "style_type": "single",
+                "color": "#00BBF9",
+                "outline_color": "#0284C7",
+                "opacity": 0.9,
+            })
+        auto_order_project_layers(iface, focus_place=place)
         if zoom and iface and iface.mapCanvas():
             ext = iface.mapCanvas().mapSettings().layerToMapCoordinates(vlyr, vlyr.extent())
             if not ext.isEmpty():
@@ -1385,24 +1394,24 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
                 clip_l = os.path.join(work_dir, "other_band_clip.tif")
                 temp_files.extend([clip_h, clip_l])
                 processing.run("gdal:cliprasterbyextent", {
-                    "INPUT": layer_h, "PROJWIN": ext_str, "NODATA": None,
-                    "OPTIONS": "", "DATA_TYPE": 0, "EXTRA": "", "OUTPUT": clip_h,
+                    "INPUT": layer_h, "PROJWIN": ext_str, "NODATA": 0,
+                    "OPTIONS": "", "DATA_TYPE": 6, "EXTRA": "", "OUTPUT": clip_h,
                 })
                 processing.run("gdal:cliprasterbyextent", {
-                    "INPUT": layer_l, "PROJWIN": ext_str, "NODATA": None,
-                    "OPTIONS": "", "DATA_TYPE": 0, "EXTRA": "", "OUTPUT": clip_l,
+                    "INPUT": layer_l, "PROJWIN": ext_str, "NODATA": 0,
+                    "OPTIONS": "", "DATA_TYPE": 6, "EXTRA": "", "OUTPUT": clip_l,
                 })
                 if not os.path.isfile(clip_h) or not os.path.isfile(clip_l):
                     raise RuntimeError("Could not clip the source bands to the requested area.")
 
-                # Calculate normalized difference using matching, locally clipped rasters.
+                # Calculate normalized difference using Float32 rasters (prevents uint16 integer underflow!).
                 raw_index = os.path.join(work_dir, "index_unmasked.tif")
                 temp_files.append(raw_index)
                 processing.run("gdal:rastercalculator", {
                     "INPUT_A": clip_h, "BAND_A": 1,
                     "INPUT_B": clip_l, "BAND_B": 1,
-                    "FORMULA": "(A-B)/(A+B)",
-                    "NO_DATA": None, "RTYPE": 5, "OPTIONS": "", "EXTRA": "",
+                    "FORMULA": "where((A>0)*(B>0), (A-B)/(A+B+1e-6), -9999)",
+                    "NO_DATA": -9999, "RTYPE": 5, "OPTIONS": "", "EXTRA": "",
                     "OUTPUT": raw_index,
                 })
                 if not os.path.isfile(raw_index) or os.path.getsize(raw_index) < 100:
@@ -1453,10 +1462,13 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
                     raise RuntimeError("The generated NDVI GeoTIFF is not a valid QGIS raster.")
 
                 # Make NoData transparent and apply an NDVI-specific legend.
+                from .advanced_gis_tools import _apply_nodata_transparency, auto_order_project_layers
                 _apply_raster_transparency(calc_layer)
                 style_fn(calc_layer)
+                _apply_nodata_transparency(calc_layer, 1)
                 _PROCESSING_LAYER_REFS.append(calc_layer)
                 project.addMapLayer(calc_layer)
+                auto_order_project_layers(iface, focus_place=place)
                 _zoom_canvas_to_aoi()
                 return {
                     "status": f"{idx_name.lower()}_calculated_successfully",
@@ -1585,15 +1597,56 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
     layer_name = str(args.get("layer_name") or f"{label_prefix}{place_suffix} [{item_id[:18]}]").strip()
 
     def _load_cog_on_main() -> dict:
+        from .gis_tools import _PROCESSING_LAYER_REFS
+        from .advanced_gis_tools import (
+            _apply_nodata_transparency,
+            _ensure_raster_clipped_to_boundary,
+            _find_active_boundary_layer,
+            auto_order_project_layers,
+            tool_style_raster_layer,
+        )
+        proj = QgsProject.instance()
+        for old_lyr in list(proj.mapLayers().values()):
+            if old_lyr.name().strip().lower() == layer_name.strip().lower():
+                proj.removeMapLayer(old_lyr.id())
+
         rlayer = QgsRasterLayer(vsi_uri, layer_name, "gdal")
         if not rlayer.isValid():
             return {"error": f"GDAL could not stream COG raster from '{signed_href[:120]}'."}
 
-        _apply_raster_transparency(rlayer)
+        boundary = _find_active_boundary_layer(place)
+        if boundary is not None:
+            proj.addMapLayer(rlayer)
+            rlayer = _ensure_raster_clipped_to_boundary(rlayer, boundary)
+        else:
+            # Materialize AOI bbox locally so remote /vsicurl/ doesn't freeze subsequent stats/styling calls
+            try:
+                import processing
+                xmin, ymin, xmax, ymax = bbox_4326
+                local_clip = os.path.join(data_dir(), f"stac_{_safe_slug(layer_name)}_{int(time.time())}.tif")
+                processing.run("gdal:cliprasterbyextent", {
+                    "INPUT": rlayer,
+                    "PROJWIN": f"{xmin},{xmax},{ymin},{ymax} [EPSG:4326]",
+                    "NODATA": -9999.0,
+                    "OPTIONS": "",
+                    "DATA_TYPE": 0,
+                    "EXTRA": "",
+                    "OUTPUT": local_clip,
+                })
+                if os.path.isfile(local_clip) and os.path.getsize(local_clip) > 200:
+                    local_lyr = QgsRasterLayer(local_clip, layer_name, "gdal")
+                    if local_lyr.isValid():
+                        rlayer = local_lyr
+            except Exception as err:
+                _ = err
+            proj.addMapLayer(rlayer)
 
-        from .gis_tools import _PROCESSING_LAYER_REFS
+        _apply_raster_transparency(rlayer)
+        _apply_nodata_transparency(rlayer, 1)
+        if collection == "cop-dem-glo-30" or "dem" in layer_name.lower():
+            tool_style_raster_layer(iface, {"layer": rlayer.id(), "palette": "terrain"})
         _PROCESSING_LAYER_REFS.append(rlayer)
-        QgsProject.instance().addMapLayer(rlayer)
+        auto_order_project_layers(iface, focus_place=place)
         _zoom_canvas_to_aoi()
         return {
             "status": "streamed_cog_loaded",
@@ -1608,6 +1661,7 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
             "width": rlayer.width(),
             "height": rlayer.height(),
             "bands": rlayer.bandCount(),
+            "clipped_to_boundary": boundary is not None,
         }
 
     return run_on_main(_load_cog_on_main) if callable(run_on_main) else _load_cog_on_main()
