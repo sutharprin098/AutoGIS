@@ -27,10 +27,10 @@ USER_AGENT = "AutoGIS-Studio/1.0 (+https://autogis.princesite.in/ - contact: sut
 
 # Global public Overpass API mirrors
 OVERPASS_ENDPOINTS = [
+    "https://overpass.osm.ch/api/interpreter",
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
     "https://overpass.private.coffee/api/interpreter",
-    "https://overpass.osm.ch/api/interpreter",
 ]
 
 GEOCODE_ENDPOINTS = [
@@ -651,18 +651,18 @@ def _find_cached_osm_geojson(label_stem: str, place: str) -> list[tuple[str, str
 
 
 def _nominatim_theme_fallback(theme: str, place: str, west: float, south: float, east: float, north: float) -> dict[str, list[dict]]:
-    """Fast Nominatim + Photon fallback when public Overpass servers are throttled or busy."""
+    """Fast Nominatim + Photon fallback when public Overpass servers are throttled, 502/504, or busy."""
     queries_map: dict[str, list[str]] = {
-        "hospitals": ["hospital", "clinic", "medical", "health"],
+        "hospitals": ["hospital", "clinic", "medical"],
         "schools": ["school", "college", "university"],
-        "buildings": ["hotel", "building", "government", "hospital", "school", "bank", "office", "market"],
+        "buildings": ["hotel", "building", "government", "hospital", "school", "bank", "office"],
         "parks": ["park", "garden", "forest", "nature reserve"],
-        "rivers": ["river", "stream", "canal", "khad", "nallah"],
-        "water": ["lake", "reservoir", "pond", "water"],
-        "roads": ["highway", "road", "bridge", "marg"],
-        "major_roads": ["highway", "national highway", "state highway"],
-        "highways": ["highway", "national highway"],
-        "amenities": ["hospital", "school", "bank", "police", "post office", "bus station"],
+        "rivers": ["river", "stream", "canal", "waterway"],
+        "water": ["lake", "pond", "reservoir", "dam", "talab", "water"],
+        "roads": ["highway", "road", "expressway", "marg"],
+        "major_roads": ["highway", "national highway", "state highway", "bypass"],
+        "highways": ["highway", "national highway", "expressway"],
+        "amenities": ["hospital", "school", "bank", "police", "bus station"],
         "shops": ["market", "shop", "mall", "bazaar"],
     }
     keywords = queries_map.get(theme, [theme])
@@ -673,21 +673,22 @@ def _nominatim_theme_fallback(theme: str, place: str, west: float, south: float,
     points: list[dict] = []
     seen_ids: set[str] = set()
 
-    for kw in keywords[:4]:
-        q_str = f"{kw} {place_clean}".strip()
+    # Expand search bounds slightly to catch peri-urban features
+    pad_lon = max(0.12, (east - west) * 0.25)
+    pad_lat = max(0.12, (north - south) * 0.25)
+
+    for kw in keywords[:5]:
+        q_str = f"{kw} {place_clean}".strip() if place_clean else kw
         params = {
             "q": q_str,
             "format": "jsonv2",
             "polygon_geojson": "1",
-            "viewbox": f"{west:.5f},{north:.5f},{east:.5f},{south:.5f}",
-            "bounded": "1" if not place_clean else "0",
-            "limit": "40",
+            "limit": "25",
         }
         url = "https://nominatim.openstreetmap.org/search?" + urllib.parse.urlencode(params)
         try:
-            hits = _http_get_json(url, timeout=10)
-        except Exception as err:
-            _ = err
+            hits = _http_get_json(url, timeout=7)
+        except Exception:
             hits = []
 
         if not isinstance(hits, list):
@@ -698,13 +699,14 @@ def _nominatim_theme_fallback(theme: str, place: str, west: float, south: float,
                 continue
             lat = float(h.get("lat") or 0.0)
             lon = float(h.get("lon") or 0.0)
-            if not (west - 0.15 <= lon <= east + 0.15 and south - 0.15 <= lat <= north + 0.15):
+            # Spatial filter with padded boundary
+            if not (west - pad_lon <= lon <= east + pad_lon and south - pad_lat <= lat <= north + pad_lat):
                 continue
             seen_ids.add(oid)
             props = {
                 "osm_id": h.get("osm_id"),
                 "osm_type": h.get("osm_type"),
-                "name": str(h.get("name") or h.get("display_name") or kw).split(",")[0],
+                "name": str(h.get("name") or h.get("display_name") or kw).split(",")[0].strip(),
                 "category": str(h.get("category") or theme),
                 "type": str(h.get("type") or kw),
             }
@@ -714,10 +716,20 @@ def _nominatim_theme_fallback(theme: str, place: str, west: float, south: float,
                 polygons.append({"type": "Feature", "properties": props, "geometry": gj})
             elif gtype in ("LineString", "MultiLineString") and theme in ("rivers", "roads", "major_roads", "highways", "railways"):
                 lines.append({"type": "Feature", "properties": props, "geometry": gj})
+            elif theme in ("water", "buildings", "parks") and gtype == "Polygon":
+                polygons.append({"type": "Feature", "properties": props, "geometry": gj})
             elif theme in ("buildings", "parks") and gtype == "Point":
-                # Create a clean ~35m building/park footprint polygon around the geocoded centroid
-                d = 0.00018
+                d = 0.00025
                 ring = [[lon - d, lat - d], [lon + d, lat - d], [lon + d, lat + d], [lon - d, lat + d], [lon - d, lat - d]]
+                polygons.append({"type": "Feature", "properties": props, "geometry": {"type": "Polygon", "coordinates": [ring]}})
+            elif theme == "water" and gtype == "Point":
+                # Create a ~150m circular/octagonal water polygon around named water points if no polygon
+                d = 0.0012
+                ring = [
+                    [lon - d, lat], [lon - d * 0.7, lat + d * 0.7], [lon, lat + d], [lon + d * 0.7, lat + d * 0.7],
+                    [lon + d, lat], [lon + d * 0.7, lat - d * 0.7], [lon, lat - d], [lon - d * 0.7, lat - d * 0.7],
+                    [lon - d, lat]
+                ]
                 polygons.append({"type": "Feature", "properties": props, "geometry": {"type": "Polygon", "coordinates": [ring]}})
             else:
                 points.append({"type": "Feature", "properties": props, "geometry": {"type": "Point", "coordinates": [lon, lat]}})
