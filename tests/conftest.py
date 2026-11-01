@@ -73,9 +73,12 @@ def _install_qgis_stubs() -> None:
     ):
         setattr(core_mod, cls_name, type(cls_name, (), {}))
 
+    setattr(core_mod, "QgsColorRampShader", type("QgsColorRampShader", (), {"Type": type("Type", (), {"Interpolated": 0, "Discrete": 1, "Exact": 2}), "ColorRampItem": type("ColorRampItem", (), {"__init__": lambda self, *a: None})}))
+    setattr(core_mod, "QgsRasterBandStats", type("QgsRasterBandStats", (), {"Stats": type("Stats", (), {"All": 127})}))
+    setattr(core_mod, "QgsUnitTypes", type("QgsUnitTypes", (), {"LayoutUnit": type("LayoutUnit", (), {"LayoutMillimeters": 0})}))
     setattr(qtcore_mod, "Qt", type("Qt", (), {"AlignmentFlag": type("AlignmentFlag", (), {"AlignHCenter": 4})}))
     setattr(qtcore_mod, "QSize", type("QSize", (), {}))
-    setattr(qtcore_mod, "QVariant", type("QVariant", (), {"String": 10, "Int": 2, "Double": 6, "Bool": 1}))
+    setattr(qtcore_mod, "QVariant", type("QVariant", (), {"String": 10, "Int": 2, "Double": 6, "Bool": 1, "Type": type("Type", (), {"String": 10, "Int": 2, "Double": 6, "Bool": 1})}))
     setattr(qtgui_mod, "QColor", type("QColor", (), {"__init__": lambda self, *a: None}))
     setattr(qtgui_mod, "QFont", type("QFont", (), {"__init__": lambda self, *a: None, "Weight": type("Weight", (), {"Bold": 75})}))
     setattr(qtgui_mod, "QImage", type("QImage", (), {"Format": type("Format", (), {"Format_ARGB32_Premultiplied": 6})}))

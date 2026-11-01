@@ -2,12 +2,12 @@
 
 <img src="icons/icon.svg" width="108" height="108" alt="AutoGIS Logo" />
 
-# AutoGIS Studio (`v1.1.0`)
+# AutoGIS Studio (`v1.1.1`)
 
 **Autonomous Geospatial AI Agent, Live MCP Server & 39 Spatial Analysis Tools for QGIS**
 
 [![Official QGIS Plugin Repo](https://img.shields.io/badge/QGIS_Plugin_Repo-AutoGIS-589632?style=for-the-badge&logo=qgis&logoColor=white)](https://plugins.qgis.org/plugins/AutoGIS/)
-[![Download ZIP for QGIS](https://img.shields.io/badge/Download_Plugin_ZIP-AutoGIS.zip_(v1.1.0)-0284C7?style=for-the-badge&logo=qgis&logoColor=white)](https://github.com/sutharprin098/AutoGIS/releases/download/v1.1.0/AutoGIS.zip)
+[![Download ZIP for QGIS](https://img.shields.io/badge/Download_Plugin_ZIP-AutoGIS.zip_(v1.1.1)-0284C7?style=for-the-badge&logo=qgis&logoColor=white)](https://github.com/sutharprin098/AutoGIS/releases/download/v1.1.1/AutoGIS.zip)
 [![QGIS 3.22 - 3.40+](https://img.shields.io/badge/QGIS-3.22%20--%203.40%2B-589632?style=for-the-badge&logo=qgis&logoColor=white)](https://qgis.org)
 [![Google Earth Engine](https://img.shields.io/badge/Google_Earth_Engine-Integrated-10B981?style=for-the-badge&logo=googleearthengine&logoColor=white)](https://earthengine.google.com)
 [![XERJ Corpus Hub](https://hub.xerj.org/contributors/sutharprin098/badge.svg)](https://hub.xerj.org/contributors/sutharprin098)
@@ -20,13 +20,13 @@
 ## AutoGIS Studio Live inside QGIS Desktop
 
 <div align="center">
-  <img src="docs/autogis_screenshot.png" alt="AutoGIS Studio v1.1.0 Live in QGIS Desktop" width="100%" />
-  <p><em>AutoGIS Studio v1.1.0 running live inside QGIS Desktop — integrating Google Earth Engine satellite imagery, OpenStreetMap vectors, Live MCP Server, Offline Local AI (Ollama), and 39 spatial analysis tools with non-blocking execution.</em></p>
+  <img src="docs/autogis_screenshot.png" alt="AutoGIS Studio v1.1.1 Live in QGIS Desktop" width="100%" />
+  <p><em>AutoGIS Studio v1.1.1 running live inside QGIS Desktop — integrating Google Earth Engine satellite imagery, OpenStreetMap vectors, Live MCP Server, Offline Local AI (Ollama), and 39 spatial analysis tools with non-blocking execution.</em></p>
 </div>
 
 ---
 
-## What's New in `v1.1.0` 🚀
+## What's New in `v1.1.1` 🚀
 
 - 🔌 **Built-in Live Loopback MCP Bridge (`127.0.0.1:8765`):**
   - Exposes all 39 QGIS tools via `/status`, `/tools`, and `/call` (`/mcp`) with thread-safe Qt main-thread dispatch so external AI agents (Claude Code, Cursor, Antigravity, XERJ) can inspect and control live QGIS sessions directly.
@@ -51,9 +51,9 @@
 
 ## 1-Click Download & Direct Install in QGIS (`Install from ZIP`)
 
-You can install **AutoGIS Studio (`v1.1.0`)** directly inside QGIS in **under 30 seconds**:
+You can install **AutoGIS Studio (`v1.1.1`)** directly inside QGIS in **under 30 seconds**:
 
-### [Click Here to Download `AutoGIS.zip` (`v1.1.0`) Directly from GitHub Releases](https://github.com/sutharprin098/AutoGIS/releases/download/v1.1.0/AutoGIS.zip)
+### [Click Here to Download `AutoGIS.zip` (`v1.1.1`) Directly from GitHub Releases](https://github.com/sutharprin098/AutoGIS/releases/download/v1.1.1/AutoGIS.zip)
 *(Official Documentation & Web Portal: [https://autogis.princesite.in/](https://autogis.princesite.in/) | Contact: [sutharprince098@gmail.com](mailto:sutharprince098@gmail.com))*
 
 ### Method 1: Install from ZIP in QGIS (Recommended)

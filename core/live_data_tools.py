@@ -1184,7 +1184,7 @@ def _apply_pseudocolor_ramp(layer: QgsRasterLayer, items: list[tuple[float, str,
         from qgis.PyQt.QtGui import QColor
 
         fcn = QgsColorRampShader()
-        fcn.setColorRampType(QgsColorRampShader.Interpolated)
+        fcn.setColorRampType(QgsColorRampShader.Type.Interpolated)
         ramp_items = [
             QgsColorRampShader.ColorRampItem(val, QColor(hex_col), label)
             for val, hex_col, label in items

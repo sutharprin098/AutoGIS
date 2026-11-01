@@ -290,7 +290,7 @@ def auto_order_project_layers(iface=None, focus_place: str = "") -> dict[str, An
 
     return {
         "active_place": active_place,
-        "ordered_layers": [l.name() for l in sorted_layers],
+        "ordered_layers": [lyr.name() for lyr in sorted_layers],
     }
 
 
@@ -317,7 +317,7 @@ def tool_inspect_raster_layer(iface, args: dict[str, Any]) -> dict[str, Any]:
             try:
                 prov.setNoDataValue(b, -9999.0)
                 prov.setUseSourceNoDataValue(b, True)
-                stats = prov.bandStatistics(b, QgsRasterBandStats.All, lyr.extent(), 0)
+                stats = prov.bandStatistics(b, QgsRasterBandStats.Stats.All, lyr.extent(), 0)
                 min_v = float(stats.minimumValue) if math.isfinite(stats.minimumValue) else None
                 max_v = float(stats.maximumValue) if math.isfinite(stats.maximumValue) else None
                 mean_v = float(stats.mean) if math.isfinite(stats.mean) else None
@@ -388,7 +388,7 @@ def tool_style_raster_layer(iface, args: dict[str, Any]) -> dict[str, Any]:
     min_val = args.get("min_value")
     max_val = args.get("max_value")
     if min_val is None or max_val is None:
-        stats = prov.bandStatistics(band, QgsRasterBandStats.All, lyr.extent(), 0)
+        stats = prov.bandStatistics(band, QgsRasterBandStats.Stats.All, lyr.extent(), 0)
         if min_val is None:
             min_val = float(stats.minimumValue) if math.isfinite(stats.minimumValue) else 0.0
         if max_val is None:
@@ -410,7 +410,7 @@ def tool_style_raster_layer(iface, args: dict[str, Any]) -> dict[str, Any]:
 
     shader = QgsRasterShader()
     ramp_shader = QgsColorRampShader(min_f, max_f)
-    ramp_shader.setColorRampType(QgsColorRampShader.Interpolated)
+    ramp_shader.setColorRampType(QgsColorRampShader.Type.Interpolated)
 
     items: list[QgsColorRampShader.ColorRampItem] = []
     n = len(colors)
@@ -592,16 +592,16 @@ def tool_export_publication_map(iface, args: dict[str, Any]) -> dict[str, Any]:
     title_label = QgsLayoutItemLabel(layout)
     title_label.setText(title_text)
     title_label.setFont(QFont("Arial", 15, QFont.Weight.Bold))
-    title_label.attemptMove(QgsLayoutPoint(10, 6, QgsUnitTypes.LayoutMillimeters))
-    title_label.attemptResize(QgsLayoutSize(277, 9, QgsUnitTypes.LayoutMillimeters))
+    title_label.attemptMove(QgsLayoutPoint(10, 6, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
+    title_label.attemptResize(QgsLayoutSize(277, 9, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
     layout.addLayoutItem(title_label)
 
     # Subtitle Banner
     sub_label = QgsLayoutItemLabel(layout)
     sub_label.setText(subtitle_text)
     sub_label.setFont(QFont("Arial", 9))
-    sub_label.attemptMove(QgsLayoutPoint(10, 14, QgsUnitTypes.LayoutMillimeters))
-    sub_label.attemptResize(QgsLayoutSize(277, 6, QgsUnitTypes.LayoutMillimeters))
+    sub_label.attemptMove(QgsLayoutPoint(10, 14, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
+    sub_label.attemptResize(QgsLayoutSize(277, 6, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
     layout.addLayoutItem(sub_label)
 
     # Dual-Panel Mode if 2 thematic rasters exist (e.g. DEM + NDVI), otherwise Single-Panel
@@ -632,13 +632,13 @@ def tool_export_publication_map(iface, args: dict[str, Any]) -> dict[str, Any]:
         lbl_a = QgsLayoutItemLabel(layout)
         lbl_a.setText(f"A. {r_left.name()}")
         lbl_a.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        lbl_a.attemptMove(QgsLayoutPoint(10, 22, QgsUnitTypes.LayoutMillimeters))
-        lbl_a.attemptResize(QgsLayoutSize(100, 6, QgsUnitTypes.LayoutMillimeters))
+        lbl_a.attemptMove(QgsLayoutPoint(10, 22, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
+        lbl_a.attemptResize(QgsLayoutSize(100, 6, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
         layout.addLayoutItem(lbl_a)
 
         map_left = QgsLayoutItemMap(layout)
-        map_left.attemptMove(QgsLayoutPoint(10, 29, QgsUnitTypes.LayoutMillimeters))
-        map_left.attemptResize(QgsLayoutSize(panel_w, panel_h, QgsUnitTypes.LayoutMillimeters))
+        map_left.attemptMove(QgsLayoutPoint(10, 29, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
+        map_left.attemptResize(QgsLayoutSize(panel_w, panel_h, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
         map_left.setFrameEnabled(True)
         map_left.setExtent(panel_ext)
         map_left.setLayers(visible_vectors + [r_left] + basemap_layers)
@@ -649,13 +649,13 @@ def tool_export_publication_map(iface, args: dict[str, Any]) -> dict[str, Any]:
         lbl_b = QgsLayoutItemLabel(layout)
         lbl_b.setText(f"B. {r_right.name()}")
         lbl_b.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        lbl_b.attemptMove(QgsLayoutPoint(115, 22, QgsUnitTypes.LayoutMillimeters))
-        lbl_b.attemptResize(QgsLayoutSize(100, 6, QgsUnitTypes.LayoutMillimeters))
+        lbl_b.attemptMove(QgsLayoutPoint(115, 22, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
+        lbl_b.attemptResize(QgsLayoutSize(100, 6, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
         layout.addLayoutItem(lbl_b)
 
         map_right = QgsLayoutItemMap(layout)
-        map_right.attemptMove(QgsLayoutPoint(115, 29, QgsUnitTypes.LayoutMillimeters))
-        map_right.attemptResize(QgsLayoutSize(panel_w, panel_h, QgsUnitTypes.LayoutMillimeters))
+        map_right.attemptMove(QgsLayoutPoint(115, 29, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
+        map_right.attemptResize(QgsLayoutSize(panel_w, panel_h, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
         map_right.setFrameEnabled(True)
         map_right.setExtent(panel_ext)
         map_right.setLayers(visible_vectors + [r_right] + basemap_layers)
@@ -680,8 +680,8 @@ def tool_export_publication_map(iface, args: dict[str, Any]) -> dict[str, Any]:
             panel_ext.setXMaximum(panel_ext.xMaximum() + dw)
 
         primary_map = QgsLayoutItemMap(layout)
-        primary_map.attemptMove(QgsLayoutPoint(10, 22, QgsUnitTypes.LayoutMillimeters))
-        primary_map.attemptResize(QgsLayoutSize(panel_w, panel_h, QgsUnitTypes.LayoutMillimeters))
+        primary_map.attemptMove(QgsLayoutPoint(10, 22, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
+        primary_map.attemptResize(QgsLayoutSize(panel_w, panel_h, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
         primary_map.setFrameEnabled(True)
         primary_map.setExtent(panel_ext)
         primary_map.setLayers(visible_vectors + thematic_rasters + basemap_layers)
@@ -693,8 +693,8 @@ def tool_export_publication_map(iface, args: dict[str, Any]) -> dict[str, Any]:
     north_label.setText("N\n▲")
     north_label.setFont(QFont("Arial", 13, QFont.Weight.Bold))
     north_label.setHAlign(Qt.AlignmentFlag.AlignHCenter)
-    north_label.attemptMove(QgsLayoutPoint(272, 22, QgsUnitTypes.LayoutMillimeters))
-    north_label.attemptResize(QgsLayoutSize(15, 14, QgsUnitTypes.LayoutMillimeters))
+    north_label.attemptMove(QgsLayoutPoint(272, 22, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
+    north_label.attemptResize(QgsLayoutSize(15, 14, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
     layout.addLayoutItem(north_label)
 
     # Clean Legend on Right Sidebar (only active visible layers)
@@ -703,12 +703,12 @@ def tool_export_publication_map(iface, args: dict[str, Any]) -> dict[str, Any]:
     legend.setLinkedMap(primary_map)
     legend.setAutoUpdateModel(False)
     legend_root = legend.model().rootGroup()
-    keep_ids = {l.id() for l in (visible_vectors + thematic_rasters)}
+    keep_ids = {lyr.id() for lyr in (visible_vectors + thematic_rasters)}
     for child in list(legend_root.children()):
         if hasattr(child, "layerId") and child.layerId() not in keep_ids:
             legend_root.removeChildNode(child)
-    legend.attemptMove(QgsLayoutPoint(220, 22, QgsUnitTypes.LayoutMillimeters))
-    legend.attemptResize(QgsLayoutSize(67, 148, QgsUnitTypes.LayoutMillimeters))
+    legend.attemptMove(QgsLayoutPoint(220, 22, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
+    legend.attemptResize(QgsLayoutSize(67, 148, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
     legend.setFrameEnabled(True)
     layout.addLayoutItem(legend)
 
@@ -717,15 +717,15 @@ def tool_export_publication_map(iface, args: dict[str, Any]) -> dict[str, Any]:
     scale_bar.setStyle("Single Box")
     scale_bar.setLinkedMap(primary_map)
     scale_bar.applyDefaultSize()
-    scale_bar.attemptMove(QgsLayoutPoint(220, 174, QgsUnitTypes.LayoutMillimeters))
+    scale_bar.attemptMove(QgsLayoutPoint(220, 174, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
     layout.addLayoutItem(scale_bar)
 
     # Footer / Attribution
     footer = QgsLayoutItemLabel(layout)
-    footer.setText(f"Coordinate System: {proj.crs().authid()} | Export DPI: {dpi} | Generated by AutoGIS Studio v1.1.0")
+    footer.setText(f"Coordinate System: {proj.crs().authid()} | Export DPI: {dpi} | Generated by AutoGIS Studio v1.1.1")
     footer.setFont(QFont("Arial", 8))
-    footer.attemptMove(QgsLayoutPoint(10, 196, QgsUnitTypes.LayoutMillimeters))
-    footer.attemptResize(QgsLayoutSize(277, 6, QgsUnitTypes.LayoutMillimeters))
+    footer.attemptMove(QgsLayoutPoint(10, 196, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
+    footer.attemptResize(QgsLayoutSize(277, 6, QgsUnitTypes.LayoutUnit.LayoutMillimeters))
     layout.addLayoutItem(footer)
 
     out_dir = os.path.join(data_dir(), "publications")
@@ -1022,7 +1022,7 @@ def _style_sentinel2_lulc_raster(lyr: QgsRasterLayer) -> None:
     ]
     shader = QgsRasterShader()
     ramp = QgsColorRampShader(1.0, 11.0)
-    ramp.setColorRampType(QgsColorRampShader.Exact)
+    ramp.setColorRampType(QgsColorRampShader.Type.Exact)
     items = [
         QgsColorRampShader.ColorRampItem(val, QColor(col), label)
         for val, col, label in classes

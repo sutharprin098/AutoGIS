@@ -109,7 +109,6 @@ import tempfile as _gee_tempfile
 import urllib.request as _gee_urllib
 import urllib.parse as _gee_urlparse
 import zipfile as _gee_zipfile
-from .config import data_dir as _gee_data_dir
 
 
 def _resolve_boundary_info_threadsafe(place: str, run_on_main=None) -> tuple[list[float] | None, str, dict | None]:
