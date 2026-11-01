@@ -370,6 +370,10 @@ def auto_order_project_layers(iface=None, focus_place: str = "") -> dict[str, An
                 for other in all_layers
             ):
                 node.setItemVisibilityChecked(False)
+        elif node is not None and not other_places:
+            # If no other older place exists, ensure active thematic layers stay visible
+            if "unclipped" not in lname and "stats" not in lname and "zonal" not in lname:
+                node.setItemVisibilityChecked(True)
 
     # Reorder custom layer order on root and canvas
     sorted_layers = sorted(list(proj.mapLayers().values()), key=_layer_rank)
@@ -641,7 +645,11 @@ def tool_export_publication_map(iface, args: dict[str, Any]) -> dict[str, Any]:
 
     for lyr in list(proj.mapLayers().values()):
         node = root.findLayer(lyr.id())
-        if node is not None and not node.isVisible():
+        lname = lyr.name().lower()
+        if "stats" in lname or "zonal" in lname or "unclipped" in lname:
+            continue
+        # If active place is inferred, filter out older unrelated study places
+        if inferred_place and any(op in lname for op in ("delhi", "mumbai", "pune", "jaipur", "shimla", "kullu", "manali") if op != inferred_place.lower()):
             continue
         if isinstance(lyr, QgsRasterLayer) and lyr.isValid():
             if lyr.providerType() == "gdal" and "type=xyz" not in lyr.source().lower():
@@ -650,8 +658,7 @@ def tool_export_publication_map(iface, args: dict[str, Any]) -> dict[str, Any]:
             else:
                 basemap_layers.append(lyr)
         elif isinstance(lyr, QgsVectorLayer) and lyr.isValid():
-            if "stats" not in lyr.name().lower() and "zonal" not in lyr.name().lower():
-                visible_vectors.append(lyr)
+            visible_vectors.append(lyr)
 
     subtitle_text = str(
         args.get("subtitle")

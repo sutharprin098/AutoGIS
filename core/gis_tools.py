@@ -1001,6 +1001,14 @@ def _tool_run_processing_algorithm(iface, args: dict) -> dict:
             resolved = _resolve_layer(v)
             if resolved is not None:
                 params[k] = resolved
+            else:
+                # Fuzzy/fallback resolution across all project layers
+                v_clean = v.replace("_", " ").lower()
+                for cand in QgsProject.instance().mapLayers().values():
+                    c_name = cand.name().replace("_", " ").lower()
+                    if v_clean in c_name or c_name in v_clean:
+                        params[k] = cand
+                        break
 
     if "OUTPUT" not in params:
         params["OUTPUT"] = "TEMPORARY_OUTPUT"
