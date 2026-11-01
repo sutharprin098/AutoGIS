@@ -138,7 +138,10 @@ class AutoGISConfig:
         try:
             val = self._qs.value(self._k(key), default, type=str)
         except Exception:
-            val = self._qs.value(self._k(key), default)
+            try:
+                val = self._qs.value(self._k(key), default)
+            except Exception:
+                val = default
         res = str(val) if val is not None else default
         _MEM_CACHE[key] = res
         return res
@@ -434,6 +437,16 @@ class AutoGISConfig:
     @dock_visible.setter
     def dock_visible(self, value: bool) -> None:
         self.set_bool("dock_visible", value)
+
+    @property
+    def xerj_url(self) -> str:
+        val = (self.get_str("xerj_url", "http://127.0.0.1:9200") or "http://127.0.0.1:9200").strip().rstrip("/")
+        return val
+
+    @xerj_url.setter
+    def xerj_url(self, value: str) -> None:
+        clean = (value or "http://127.0.0.1:9200").strip().rstrip("/")
+        self.set_str("xerj_url", clean)
 
 
 class ThreadHistoryStore:

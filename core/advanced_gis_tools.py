@@ -38,7 +38,106 @@ from qgis.core import (
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QColor, QFont
 
-from .config import data_dir, log_info, log_warn
+from .config import AutoGISConfig, data_dir, log_info, log_warn
+
+XERJ_BUILTIN_GEOSPATIAL_CORPUS: list[dict[str, Any]] = [
+    {
+        "id": "pyqgis-buffer-reproject-clip",
+        "domain": "pyqgis",
+        "title": "PyQGIS Vector Reprojection, Metric Buffering, and Clipping",
+        "tags": ["buffer", "reproject", "clip", "native:buffer", "native:reprojectlayer", "native:clip", "crs", "utm"],
+        "snippet": (
+            "# Always reproject EPSG:4326 vectors to metric CRS (e.g. EPSG:3857 or UTM) before buffering in meters\n"
+            "import processing\n"
+            "reproj = processing.run('native:reprojectlayer', {'INPUT': layer, 'TARGET_CRS': 'EPSG:3857', 'OUTPUT': 'memory:'})['OUTPUT']\n"
+            "buf = processing.run('native:buffer', {'INPUT': reproj, 'DISTANCE': 300.0, 'SEGMENTS': 16, 'DISSOLVE': True, 'OUTPUT': 'memory:'})['OUTPUT']\n"
+            "clipped = processing.run('native:clip', {'INPUT': buf, 'OVERLAY': boundary_layer, 'OUTPUT': 'memory:'})['OUTPUT']"
+        ),
+    },
+    {
+        "id": "gdal-float32-ndvi-ndwi-calculus",
+        "domain": "gdal",
+        "title": "GDAL Float32 Raster Calculator for NDVI / NDWI / MNDWI with Transparent NoData",
+        "tags": ["ndvi", "ndwi", "mndwi", "rastercalculator", "gdal:rastercalculator", "float32", "nodata", "sentinel-2"],
+        "snippet": (
+            "# Force Float32 (RTYPE=5) and -9999 NoData to prevent uint16 integer underflow on Sentinel-2 bands\n"
+            "import processing\n"
+            "res = processing.run('gdal:rastercalculator', {\n"
+            "    'INPUT_A': nir_path, 'BAND_A': 1,\n"
+            "    'INPUT_B': red_path, 'BAND_B': 1,\n"
+            "    'FORMULA': '(1.0*A - 1.0*B) / (1.0*A + 1.0*B + 0.000001)',\n"
+            "    'NO_DATA': -9999.0,\n"
+            "    'RTYPE': 5,  # Float32\n"
+            "    'OUTPUT': out_tif\n"
+            "})"
+        ),
+    },
+    {
+        "id": "gee-sentinel2-clipped-index",
+        "domain": "gee",
+        "title": "Google Earth Engine Sentinel-2 SR Cloud-Masked NDVI / NDWI Clipped to Study Polygon",
+        "tags": ["gee", "earth engine", "sentinel-2", "COPERNICUS/S2_SR_HARMONIZED", "normalizedDifference", "clip", "unmask"],
+        "snippet": (
+            "import ee\n"
+            "col = (ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')\n"
+            "       .filterBounds(ee_poly)\n"
+            "       .filterDate('2025-01-01', '2026-01-01')\n"
+            "       .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)))\n"
+            "ndvi = col.median().normalizedDifference(['B8', 'B4']).rename('NDVI').toFloat().clip(ee_poly).unmask(-9999)"
+        ),
+    },
+    {
+        "id": "gee-sentinel1-sar-glof-water-mask",
+        "domain": "gee",
+        "title": "Sentinel-1 C-Band SAR (VV/VH) Glacial Lake & Flood Water Backscatter Thresholding",
+        "tags": ["sar", "sentinel-1", "glof", "flood", "water", "vv", "vh", "COPERNICUS/S1_GRD", "backscatter", "glacial lake"],
+        "snippet": (
+            "import ee\n"
+            "s1 = (ee.ImageCollection('COPERNICUS/S1_GRD')\n"
+            "      .filterBounds(ee_poly)\n"
+            "      .filterDate(start_date, end_date)\n"
+            "      .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))\n"
+            "      .filter(ee.Filter.eq('instrumentMode', 'IW'))\n"
+            "      .select('VV').median())\n"
+            "water_mask = s1.focal_median(30, 'circle', 'meters').lt(-16.0).rename('SAR_Water').toFloat().clip(ee_poly)"
+        ),
+    },
+    {
+        "id": "qgis-zonal-stats-and-hollow-boundary",
+        "domain": "pyqgis",
+        "title": "PyQGIS Zonal Statistics (native:zonalstatisticsfb) & Hollow Boundary Styling",
+        "tags": ["zonal", "statistics", "native:zonalstatisticsfb", "hollow", "boundary", "style", "transparent"],
+        "snippet": (
+            "import processing\n"
+            "out = processing.run('native:zonalstatisticsfb', {\n"
+            "    'INPUT': zones_layer, 'INPUT_RASTER': raster_layer, 'RASTER_BAND': 1,\n"
+            "    'COLUMN_PREFIX': 'zonal_', 'STATISTICS': [0, 1, 2, 4, 5, 6], 'OUTPUT': 'memory:'\n"
+            "})['OUTPUT']"
+        ),
+    },
+    {
+        "id": "stac-planetary-computer-dem-terrain",
+        "domain": "stac",
+        "title": "Copernicus DEM GLO-30 Slope, Hillshade & Topographic Wetness Index",
+        "tags": ["dem", "slope", "aspect", "hillshade", "ruggedness", "copernicus", "stac", "gdal:slope", "gdal:hillshade"],
+        "snippet": (
+            "# Compute slope in degrees from DEM and clip to study boundary\n"
+            "slope = processing.run('gdal:slope', {'INPUT': dem_layer, 'BAND': 1, 'AS_PERCENT': False, 'OUTPUT': slope_tif})['OUTPUT']\n"
+            "hill = processing.run('gdal:hillshade', {'INPUT': dem_layer, 'BAND': 1, 'Z_FACTOR': 1.5, 'AZIMUTH': 315, 'ALTITUDE': 45, 'OUTPUT': hill_tif})['OUTPUT']"
+        ),
+    },
+    {
+        "id": "ahp-mcda-raster-suitability",
+        "domain": "spatial_modeling",
+        "title": "Multi-Criteria Decision Analysis (AHP) Weighted Overlay in PyQGIS",
+        "tags": ["ahp", "mcda", "suitability", "solar", "hazard", "isolation", "weighted overlay", "composite index"],
+        "snippet": (
+            "# Weighted linear combination of normalized raster criteria [0..1]\n"
+            "formula = '(0.35 * A) + (0.30 * B) + (0.20 * C) + (0.15 * D)'\n"
+            "processing.run('gdal:rastercalculator', {'INPUT_A': crit1, 'BAND_A': 1, 'INPUT_B': crit2, 'BAND_B': 1, 'FORMULA': formula, 'RTYPE': 5, 'OUTPUT': out_tif})"
+        ),
+    },
+]
 
 RASTER_PALETTES: dict[str, list[str]] = {
     "viridis": ["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"],
@@ -1148,3 +1247,146 @@ def tool_load_india_national_gis(iface, args: dict[str, Any], run_on_main=None) 
     if callable(run_on_main):
         return run_on_main(_add)
     return _add()
+
+
+def tool_query_xerj_corpus(iface, args: dict[str, Any], run_on_main=None) -> dict[str, Any]:
+    """Query the XERJ AST-Aware Code & Geospatial Corpus Engine (local 127.0.0.1:9200 + built-in hybrid BM25 reference corpus + local workspace scan)."""
+    _ = (iface, run_on_main)
+    query_str = str(args.get("query") or "").strip()
+    if not query_str:
+        return {"error": "A non-empty 'query' string is required."}
+
+    domain_filter = str(args.get("domain") or "all").strip().lower()
+    limit = max(1, min(int(args.get("limit") or 5), 15))
+    workspace_dir = str(args.get("workspace_path") or "").strip()
+
+    cfg = AutoGISConfig()
+    xerj_base = cfg.xerj_url or "http://127.0.0.1:9200"
+
+    local_daemon_hits: list[dict[str, Any]] = []
+    daemon_online = False
+
+    # 1. Try local XERJ Rust daemon (Elasticsearch-compatible REST /_search on 127.0.0.1:9200)
+    parsed_url = urllib.parse.urlparse(xerj_base)
+    if parsed_url.scheme in ("http", "https"):
+        try:
+            search_url = f"{xerj_base.rstrip('/')}/_search?q={urllib.parse.quote(query_str)}&size={limit}"
+            req = urllib.request.Request(
+                search_url,
+                headers={"Accept": "application/json", "User-Agent": "AutoGIS-XERJ-Client/1.1"},
+            )
+            with urllib.request.urlopen(req, timeout=1.5) as resp:  # nosec B310
+                payload = json.loads(resp.read().decode("utf-8", errors="replace"))
+            daemon_online = True
+            hits_raw = (payload.get("hits") or {}).get("hits") if isinstance(payload, dict) else []
+            if isinstance(hits_raw, list):
+                for h in hits_raw[:limit]:
+                    if isinstance(h, dict):
+                        src = h.get("_source") if isinstance(h.get("_source"), dict) else h
+                        local_daemon_hits.append({
+                            "id": h.get("_id") or src.get("id") or "xerj_hit",
+                            "score": h.get("_score", 1.0),
+                            "title": src.get("title") or src.get("path") or "XERJ Indexed Entry",
+                            "domain": src.get("domain") or "local_xerj",
+                            "snippet": str(src.get("content") or src.get("snippet") or "")[:900],
+                        })
+        except Exception as err:
+            log_info(f"Local XERJ daemon ({xerj_base}) not running or unreachable; using built-in corpus: {err}")
+
+    # 2. Hybrid BM25 + Token Scoring across Built-In Geospatial Corpus (PyQGIS, GDAL, GEE, STAC, AHP)
+    tokens = [t.lower() for t in query_str.replace(",", " ").replace(":", " ").split() if len(t) >= 2]
+    scored_corpus: list[tuple[float, dict[str, Any]]] = []
+    for entry in XERJ_BUILTIN_GEOSPATIAL_CORPUS:
+        if domain_filter not in ("", "all") and entry["domain"].lower() != domain_filter:
+            continue
+        haystack_title = entry["title"].lower()
+        haystack_tags = " ".join(entry.get("tags") or []).lower()
+        haystack_snip = entry["snippet"].lower()
+        score = 0.0
+        for tok in tokens:
+            if tok in haystack_tags:
+                score += 3.5
+            if tok in haystack_title:
+                score += 2.5
+            if tok in haystack_snip:
+                score += 1.2
+        if query_str.lower() in haystack_title or query_str.lower() in haystack_tags:
+            score += 5.0
+        if score > 0:
+            scored_corpus.append((round(score, 2), entry))
+
+    scored_corpus.sort(key=lambda x: x[0], reverse=True)
+    corpus_hits = [
+        {
+            "id": item["id"],
+            "score": sc,
+            "domain": item["domain"],
+            "title": item["title"],
+            "snippet": item["snippet"],
+        }
+        for sc, item in scored_corpus[:limit]
+    ]
+
+    # If no token matched directly, return top general PyQGIS/GDAL/GEE references
+    if not corpus_hits and not local_daemon_hits:
+        corpus_hits = [
+            {
+                "id": item["id"],
+                "score": 1.0,
+                "domain": item["domain"],
+                "title": item["title"],
+                "snippet": item["snippet"],
+            }
+            for item in XERJ_BUILTIN_GEOSPATIAL_CORPUS[: min(3, limit)]
+        ]
+
+    # 3. Optional Local Workspace File & Script AST/Text Search
+    workspace_hits: list[dict[str, Any]] = []
+    if workspace_dir and os.path.isdir(workspace_dir):
+        allowed_exts = (".py", ".geojson", ".json", ".csv", ".md", ".txt", ".qml", ".qlr")
+        scanned = 0
+        for root_dir, _, files in os.walk(workspace_dir):
+            if scanned > 250 or len(workspace_hits) >= limit:
+                break
+            for fname in files:
+                if not fname.lower().endswith(allowed_exts):
+                    continue
+                scanned += 1
+                fpath = os.path.join(root_dir, fname)
+                try:
+                    if os.path.getsize(fpath) > 2_000_000:
+                        continue
+                    with open(fpath, "r", encoding="utf-8", errors="ignore") as fh:
+                        txt = fh.read(64_000)
+                    txt_low = txt.lower()
+                    f_score = sum(2.0 for t in tokens if t in fname.lower()) + sum(1.0 for t in tokens if t in txt_low)
+                    if f_score > 0:
+                        # Extract matching context window
+                        first_pos = 0
+                        for t in tokens:
+                            idx_p = txt_low.find(t)
+                            if idx_p >= 0:
+                                first_pos = max(0, idx_p - 120)
+                                break
+                        workspace_hits.append({
+                            "file": fname,
+                            "path": fpath,
+                            "score": f_score,
+                            "excerpt": txt[first_pos : first_pos + 500].strip(),
+                        })
+                except Exception as err:
+                    _ = err  # nosec B110
+        workspace_hits.sort(key=lambda x: float(x.get("score") or 0), reverse=True)
+        workspace_hits = workspace_hits[:limit]
+
+    return {
+        "status": "ok",
+        "query": query_str,
+        "xerj_endpoint": xerj_base,
+        "xerj_daemon_online": daemon_online,
+        "contributor_hub": "https://hub.xerj.org/contributors/sutharprin098",
+        "local_daemon_hits": local_daemon_hits,
+        "corpus_hits": corpus_hits,
+        "workspace_hits": workspace_hits,
+        "total_hits": len(local_daemon_hits) + len(corpus_hits) + len(workspace_hits),
+    }

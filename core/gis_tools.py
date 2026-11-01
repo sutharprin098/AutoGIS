@@ -1481,6 +1481,7 @@ from .advanced_gis_tools import (
     tool_fetch_live_hazard_feed,
     tool_inspect_raster_layer,
     tool_load_india_national_gis,
+    tool_query_xerj_corpus,
     tool_style_raster_layer,
 )
 
@@ -2235,6 +2236,35 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
                 "required": ["service"],
             },
             handler=tool_load_india_national_gis,
+        ),
+        GISToolSpec(
+            name="query_xerj_corpus",
+            description="Search the XERJ AST-Aware Code & Geospatial Reference Corpus (local 127.0.0.1:9200 XERJ Rust daemon + built-in PyQGIS/GDAL/GEE/STAC/AHP reference corpus + optional local workspace directory scan) to retrieve verified, bug-free geospatial code patterns and project context.",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Search keywords or code symbol (e.g. 'Float32 NDVI rastercalculator', 'Sentinel-1 SAR water mask', 'metric buffer clip').",
+                    },
+                    "domain": {
+                        "type": "string",
+                        "enum": ["all", "pyqgis", "gdal", "gee", "stac", "spatial_modeling"],
+                        "description": "Optional domain filter (default 'all').",
+                    },
+                    "workspace_path": {
+                        "type": "string",
+                        "description": "Optional local directory path to index/search across scripts, GeoJSON, CSV, or markdown files.",
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Max hits to return (default 5, max 15).",
+                    },
+                },
+                "required": ["query"],
+            },
+            handler=tool_query_xerj_corpus,
         ),
     ])
     return {s.name: s for s in specs}

@@ -136,7 +136,80 @@ def test_advanced_gis_catalogs_and_ollama_config():
         "export_interactive_webmap",
         "fetch_live_hazard_feed",
         "load_india_national_gis",
+        "query_xerj_corpus",
     ):
         assert expected in tools, f"Missing tool {expected}"
         assert callable(tools[expected].handler)
+
+
+def test_query_xerj_corpus_end_to_end(tmp_path, monkeypatch):
+    _ensure_qgis_stubs()
+    import http.server
+    import threading
+    from core.advanced_gis_tools import tool_query_xerj_corpus
+    from core.config import AutoGISConfig
+
+    # 1. Test Built-in Corpus + Local Workspace Indexing (when local XERJ daemon is offline)
+    sample_py = tmp_path / "glof_pipeline.py"
+    sample_py.write_text(
+        "# Custom Himachal GLOF Sentinel-1 SAR threshold\nsar_water = s1_vv.lt(-16.5)\n",
+        encoding="utf-8",
+    )
+    res_offline = tool_query_xerj_corpus(
+        None,
+        {
+            "query": "Sentinel-1 SAR water mask glof",
+            "domain": "gee",
+            "workspace_path": str(tmp_path),
+            "limit": 5,
+        },
+    )
+    assert res_offline["status"] == "ok"
+    assert len(res_offline["corpus_hits"]) >= 1
+    assert res_offline["corpus_hits"][0]["id"] == "gee-sentinel1-sar-glof-water-mask"
+    assert len(res_offline["workspace_hits"]) == 1
+    assert res_offline["workspace_hits"][0]["file"] == "glof_pipeline.py"
+
+    # 2. Test Live Local XERJ Daemon HTTP REST Search (`/_search`)
+    class _MockXERJHandler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            body = json.dumps({
+                "hits": {
+                    "hits": [
+                        {
+                            "_id": "xerj-rust-ast-01",
+                            "_score": 9.8,
+                            "_source": {
+                                "title": "PyQGIS Float32 NDVI Raster Calculator",
+                                "domain": "gdal",
+                                "snippet": "processing.run('gdal:rastercalculator', {'RTYPE': 5})",
+                            },
+                        }
+                    ]
+                }
+            }).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, format, *args):
+            return
+
+    server = http.server.HTTPServer(("127.0.0.1", 0), _MockXERJHandler)
+    port = server.server_port
+    t = threading.Thread(target=server.serve_forever, daemon=True)
+    t.start()
+    try:
+        monkeypatch.setattr(AutoGISConfig, "xerj_url", property(lambda self: f"http://127.0.0.1:{port}"))
+        res_online = tool_query_xerj_corpus(None, {"query": "Float32 NDVI rastercalculator", "limit": 3})
+        assert res_online["status"] == "ok"
+        assert res_online["xerj_daemon_online"] is True
+        assert len(res_online["local_daemon_hits"]) == 1
+        assert res_online["local_daemon_hits"][0]["id"] == "xerj-rust-ast-01"
+    finally:
+        server.shutdown()
+        server.server_close()
+
 

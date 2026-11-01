@@ -165,6 +165,16 @@ class AutoGISSettingsDialog(QDialog):
         gee_note.setStyleSheet("font-size: 10px; color: #64748B;")
         form.addRow(QLabel(""), gee_note)
 
+        # XERJ Local Search & Corpus Engine (Optional local Rust daemon)
+        xerj_host = QWidget(card)
+        xerj_row = QHBoxLayout(xerj_host)
+        xerj_row.setContentsMargins(0, 0, 0, 0)
+        xerj_row.setSpacing(6)
+        self._xerj_edit = QLineEdit(self._config.xerj_url, xerj_host)
+        self._xerj_edit.setPlaceholderText("http://127.0.0.1:9200")
+        xerj_row.addWidget(self._xerj_edit, 1)
+        form.addRow(QLabel("<b>XERJ Engine:</b>"), xerj_host)
+
         # 3. Custom Logo (Optional)
         logo_host = QWidget(card)
         logo_row = QHBoxLayout(logo_host)
@@ -385,6 +395,7 @@ class AutoGISSettingsDialog(QDialog):
             self._status_lbl.setStyleSheet("color: #DC2626; font-weight: 600;")
             self._status_lbl.setText(f"Earth Engine configuration error: {exc}")
             return
+        self._config.xerj_url = self._xerj_edit.text().strip() or "http://127.0.0.1:9200"
         self._config.custom_logo_path = self._logo_edit.text().strip()
         set_custom_logo_path(self._config.custom_logo_path)
         self._config.custom_instructions = self._custom_edit.toPlainText().strip()

@@ -42,6 +42,7 @@ class AutoGISEngine(QObject):
         "fetch_stac_earth_data",
         "fetch_live_hazard_feed",
         "load_india_national_gis",
+        "query_xerj_corpus",
         "gee_download_dem", "gee_export_image", "gee_compute_index",
         "gee_image_collection", "gee_image_preview",
     })
