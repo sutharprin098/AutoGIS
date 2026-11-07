@@ -249,6 +249,13 @@ class AutoGISPanel(QWidget):
         self._mode_combo.currentIndexChanged.connect(self._on_quick_mode_changed)
         ctrl.addWidget(self._mode_combo)
 
+        self._voice_btn = QPushButton("Voice", box)
+        self._voice_btn.setObjectName("AutoGISGhostBtn")
+        self._voice_btn.setToolTip("Voice Input / Mic (Dictate in English or Hindi)")
+        self._voice_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._voice_btn.clicked.connect(self._on_voice_input_clicked)
+        ctrl.addWidget(self._voice_btn)
+
         self._send_btn = QPushButton("Send", box)
         self._send_btn.setObjectName("AutoGISPrimaryBtn")
         self._send_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -416,6 +423,46 @@ class AutoGISPanel(QWidget):
     def _send_quick_prompt(self, prompt_text: str) -> None:
         self._input.setPlainText(prompt_text)
         self._on_send_clicked()
+
+    def _on_voice_input_clicked(self) -> None:
+        try:
+            import speech_recognition as sr
+            import threading
+
+            self._voice_btn.setText("Listening...")
+            self._voice_btn.setEnabled(False)
+
+            def _listen():
+                rec = sr.Recognizer()
+                try:
+                    with sr.Microphone() as src:
+                        rec.adjust_for_ambient_noise(src, duration=0.6)
+                        audio = rec.listen(src, timeout=6.0, phrase_time_limit=15.0)
+                    text = rec.recognize_google(audio, language="en-IN")
+                    return text
+                except Exception as exc:
+                    return f"[Voice: {exc}]"
+
+            def _worker():
+                res = _listen()
+                def _done():
+                    self._voice_btn.setText("Voice")
+                    self._voice_btn.setEnabled(True)
+                    if not res.startswith("[Voice:"):
+                        cur = self._input.toPlainText()
+                        self._input.setPlainText((cur + " " + res).strip())
+                QTimer.singleShot(0, _done)
+
+            threading.Thread(target=_worker, daemon=True).start()
+        except ImportError:
+            text, ok = QInputDialog.getText(
+                self,
+                "Voice Input / Speech-to-Text",
+                "Speech Recognition module not installed. Run 'pip install SpeechRecognition pyaudio' for live mic capture.\n\nDictate or paste speech transcription here:",
+            )
+            if ok and text:
+                cur = self._input.toPlainText()
+                self._input.setPlainText((cur + " " + text).strip())
 
     def _on_send_clicked(self) -> None:
         if self._is_running:

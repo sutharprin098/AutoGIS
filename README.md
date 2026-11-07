@@ -2,12 +2,12 @@
 
 <img src="icons/icon.svg" width="108" height="108" alt="AutoGIS Logo" />
 
-# AutoGIS Studio (`v1.1.1`)
+# AutoGIS Studio (`v1.0.4`)
 
-**Autonomous Geospatial AI Agent, Live MCP Server & 39 Spatial Analysis Tools for QGIS**
+**Autonomous Geospatial AI Agent, Live MCP Server & 58 Spatial Analysis Tools for QGIS**
 
 [![Official QGIS Plugin Repo](https://img.shields.io/badge/QGIS_Plugin_Repo-AutoGIS-589632?style=for-the-badge&logo=qgis&logoColor=white)](https://plugins.qgis.org/plugins/AutoGIS/)
-[![Download ZIP for QGIS](https://img.shields.io/badge/Download_Plugin_ZIP-AutoGIS.zip_(v1.1.1)-0284C7?style=for-the-badge&logo=qgis&logoColor=white)](https://github.com/sutharprin098/AutoGIS/releases/download/v1.1.1/AutoGIS.zip)
+[![Download ZIP for QGIS](https://img.shields.io/badge/Download_Plugin_ZIP-AutoGIS.zip_(v1.0.4)-0284C7?style=for-the-badge&logo=qgis&logoColor=white)](https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.4/AutoGIS.zip)
 [![QGIS 3.22 - 3.40+](https://img.shields.io/badge/QGIS-3.22%20--%203.40%2B-589632?style=for-the-badge&logo=qgis&logoColor=white)](https://qgis.org)
 [![Google Earth Engine](https://img.shields.io/badge/Google_Earth_Engine-Integrated-10B981?style=for-the-badge&logo=googleearthengine&logoColor=white)](https://earthengine.google.com)
 [![XERJ Corpus Hub](https://hub.xerj.org/contributors/sutharprin098/badge.svg)](https://hub.xerj.org/contributors/sutharprin098)
@@ -20,13 +20,42 @@
 ## AutoGIS Studio Live inside QGIS Desktop
 
 <div align="center">
-  <img src="docs/autogis_screenshot.png" alt="AutoGIS Studio v1.1.1 Live in QGIS Desktop" width="100%" />
-  <p><em>AutoGIS Studio v1.1.1 running live inside QGIS Desktop — integrating Google Earth Engine satellite imagery, OpenStreetMap vectors, Live MCP Server, Offline Local AI (Ollama), and 39 spatial analysis tools with non-blocking execution.</em></p>
+  <img src="docs/autogis_screenshot.png" alt="AutoGIS Studio v1.0.4 Live in QGIS Desktop" width="100%" />
+  <p><em>AutoGIS Studio v1.0.4 running live inside QGIS Desktop — integrating Google Earth Engine satellite imagery, OpenStreetMap vectors, Live MCP Server, Offline Local AI (Ollama), and 39 spatial analysis tools with non-blocking execution.</em></p>
 </div>
 
 ---
 
-## What's New in `v1.1.1` 🚀
+## What's New in 1.2.0 ✨
+
+- ⏱️ **Animated Time Series Maps (xport_temporal_animation):**
+  - Renders multi-step temporal map frames across timestamps or vector attributes into an animated **GIF** and a standalone interactive **HTML Time-Slider Player**.
+- 🏔️ **3D Terrain Visualization (isualize_3d_terrain):**
+  - Auto-launches native QGIS 3D Map View and generates an interactive standalone **3D WebGIS terrain viewer** (Three.js) with DEM elevation draping and orbit controls.
+- 📐 **Custom Grid / Graticule Generator (create_map_graticule):**
+  - Automatically calculates and generates high-precision geographic lat/long parallels & meridians with degree formatted labels (28°30' N, 77°15' E).
+- 🗺️ **Georeferencer Helper (georeference_helper):**
+  - Georeferences historical scanned maps and unreferenced raster imagery using Ground Control Points (GCPs) or bounding coordinates into GeoTIFF format.
+- 🧠 **Persistent Multi-Step Agent Memory (manage_agent_memory):**
+  - Saves long-term project memory, user preferences, and spatial findings to QgsProject custom properties and local persistent storage across sessions.
+- 🎙️ **Voice Input (Speech-to-Text) in Studio Composer:**
+  - One-click Voice button in the composer toolbar for English and Hindi voice dictation directly into the prompt box.
+- 📊 **Executive Spatial Analysis Report Generator (generate_spatial_report):**
+  - Generates comprehensive, print-ready executive PDF and HTML reports with embedded high-resolution map canvas snapshots, layer inventories, and findings.
+- 👁️ **Gemini Vision / Multimodal Map Analyzer (nalyze_map_vision):**
+  - Deep visual inspection of the live QGIS map canvas snapshot using Gemini 2.5 Flash / GPT-4o vision to detect spatial patterns, land cover, and cartographic clarity.
+- 🚂 **Indian Railways & Metro Networks (load_india_rail_and_metro):**
+  - Curated loader for Indian Railways (Broad Gauge 1676mm, major junctions, stations) and Indian Metro networks (Delhi, Mumbai, Bengaluru, Kolkata, Chennai, Hyderabad, etc.).
+- 🌦️ **IMD Weather Data (etch_imd_weather_data):**
+  - Fetches live & forecast precipitation, temperature, humidity, and wind speed grids and interpolates rainfall/temperature heatmaps across India.
+- 👥 **Census India Demographic Data (load_india_census_data):**
+  - Authoritative State & District demographic layers with choropleth graduated styling for Population, Density, Sex Ratio, and Literacy Rate.
+- 🍃 **Air Quality Live Heatmap (etch_air_quality_heatmap):**
+  - Live CPCB & OpenAQ monitoring stations with official National Air Quality Index (NAQI) color classification and IDW heatmap surfaces.
+
+---
+
+## Previous in `v1.0.4` 🚀
 
 - 🔌 **Built-in Live Loopback MCP Bridge (`127.0.0.1:8765`):**
   - Exposes all 39 QGIS tools via `/status`, `/tools`, and `/call` (`/mcp`) with thread-safe Qt main-thread dispatch so external AI agents (Claude Code, Cursor, Antigravity, XERJ) can inspect and control live QGIS sessions directly.
@@ -51,9 +80,9 @@
 
 ## 1-Click Download & Direct Install in QGIS (`Install from ZIP`)
 
-You can install **AutoGIS Studio (`v1.1.1`)** directly inside QGIS in **under 30 seconds**:
+You can install **AutoGIS Studio (`v1.0.4`)** directly inside QGIS in **under 30 seconds**:
 
-### [Click Here to Download `AutoGIS.zip` (`v1.1.1`) Directly from GitHub Releases](https://github.com/sutharprin098/AutoGIS/releases/download/v1.1.1/AutoGIS.zip)
+### [Click Here to Download `AutoGIS.zip` (`v1.0.4`) Directly from GitHub Releases](https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.4/AutoGIS.zip)
 *(Official Documentation & Web Portal: [https://autogis.princesite.in/](https://autogis.princesite.in/) | Contact: [sutharprince098@gmail.com](mailto:sutharprince098@gmail.com))*
 
 ### Method 1: Install from ZIP in QGIS (Recommended)

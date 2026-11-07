@@ -1492,6 +1492,19 @@ from .advanced_gis_tools import (
     tool_query_xerj_corpus,
     tool_style_raster_layer,
 )
+from .extended_gis_tools import (
+    tool_analyze_map_vision,
+    tool_create_map_graticule,
+    tool_export_temporal_animation,
+    tool_fetch_air_quality_heatmap,
+    tool_fetch_imd_weather_data,
+    tool_generate_spatial_report,
+    tool_georeference_helper,
+    tool_load_india_census_data,
+    tool_load_india_rail_and_metro,
+    tool_manage_agent_memory,
+    tool_visualize_3d_terrain,
+)
 
 def _gee_dem(iface, args: dict, run_on_main=None) -> dict:
     return tool_gee_download_dem(args, iface=iface, run_on_main=run_on_main)
@@ -2273,6 +2286,172 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
                 "required": ["query"],
             },
             handler=tool_query_xerj_corpus,
+        ),
+        GISToolSpec(
+            name="export_temporal_animation",
+            description="Render animated time-series map frames across temporal steps or layer attributes, compiling into an animated GIF and an interactive HTML time-slider viewer.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "layer_name": {"type": "string", "description": "Optional vector/raster layer name with temporal attributes."},
+                    "time_field": {"type": "string", "description": "Optional attribute field containing dates, years, or time steps."},
+                    "duration_ms": {"type": "integer", "description": "Duration per frame in milliseconds (default 500)."},
+                    "total_steps": {"type": "integer", "description": "Maximum number of time steps/frames (default 12, max 60)."},
+                    "title_prefix": {"type": "string", "description": "Title prefix overlay on frames (default 'Time Series')."},
+                    "output_path": {"type": "string", "description": "Optional target path for .gif file."},
+                },
+            },
+            handler=tool_export_temporal_animation,
+        ),
+        GISToolSpec(
+            name="visualize_3d_terrain",
+            description="Auto-launch QGIS 3D Map View and export a standalone interactive 3D WebGIS terrain viewer with DEM hillshade elevation draping and orbit controls.",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "dem_layer": {"type": "string", "description": "Name or ID of DEM/elevation raster layer."},
+                    "vertical_scale": {"type": "number", "description": "Vertical Z-exaggeration scale factor (default 1.5)."},
+                    "drape_layer": {"type": "string", "description": "Optional satellite or vector layer name to drape on 3D terrain."},
+                },
+            },
+            handler=tool_visualize_3d_terrain,
+        ),
+        GISToolSpec(
+            name="create_map_graticule",
+            description="Generate a high-precision geographic lat/long graticule grid layer with formatted degree labels (e.g. '28°30\' N', '77°15\' E') across the study area.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "interval_deg": {"type": "number", "description": "Graticule spacing in degrees (e.g. 1.0, 0.5, 0.1, auto-calculated if omitted)."},
+                    "color": {"type": "string", "description": "Hex color for graticule lines (default '#475569')."},
+                    "layer_name": {"type": "string", "description": "Display name for the graticule layer."},
+                    "bbox": {"type": "array", "items": {"type": "number"}, "description": "Optional [xmin, ymin, xmax, ymax] EPSG:4326 bounding box."},
+                },
+            },
+            handler=tool_create_map_graticule,
+        ),
+        GISToolSpec(
+            name="georeference_helper",
+            description="Georeference unreferenced scanned maps or historical aerial raster images using GCPs (Ground Control Points) or corner bounding coordinates into a GeoTIFF.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "image_path": {"type": "string", "description": "Full path to the raw scanned map or image file."},
+                    "bounding_box": {"type": "array", "items": {"type": "number"}, "description": "Corner coordinates [west, south, east, north] in target CRS."},
+                    "target_crs": {"type": "string", "description": "Target Coordinate Reference System (default 'EPSG:4326')."},
+                    "gcps": {
+                        "type": "array",
+                        "description": "List of GCPs: [{'pixel_x': ..., 'pixel_y': ..., 'map_x': ..., 'map_y': ...}].",
+                        "items": {"type": "object"},
+                    },
+                },
+                "required": ["image_path"],
+            },
+            handler=tool_georeference_helper,
+        ),
+        GISToolSpec(
+            name="manage_agent_memory",
+            description="Store, query, list, or clear persistent multi-step agent memory, user preferences, and spatial findings across QGIS sessions and projects.",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "action": {"type": "string", "enum": ["save", "query", "list", "clear"], "description": "Memory operation to perform."},
+                    "key": {"type": "string", "description": "Memory key, topic, or search term."},
+                    "value": {"type": "string", "description": "Content or findings to remember (for 'save')."},
+                    "query": {"type": "string", "description": "Search query for memory recall."},
+                },
+                "required": ["action"],
+            },
+            handler=tool_manage_agent_memory,
+        ),
+        GISToolSpec(
+            name="generate_spatial_report",
+            description="Generate a publication-grade spatial analysis executive report in HTML and print-ready PDF with high-res map canvas snapshot, layer stats, findings, and recommendations.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "report_title": {"type": "string", "description": "Title of the executive report."},
+                    "summary": {"type": "string", "description": "Executive summary paragraph."},
+                    "findings": {"type": "array", "items": {"type": "string"}, "description": "Bullet points of key spatial observations."},
+                    "recommendations": {"type": "array", "items": {"type": "string"}, "description": "Actionable strategic recommendations."},
+                    "include_map_canvas": {"type": "boolean", "description": "Include current map canvas snapshot (default true)."},
+                },
+                "required": ["report_title"],
+            },
+            handler=tool_generate_spatial_report,
+        ),
+        GISToolSpec(
+            name="analyze_map_vision",
+            description="Analyze the live QGIS map canvas snapshot or an uploaded satellite/aerial image using Gemini Vision / multimodal AI to detect spatial patterns, land cover, and cartographic clarity.",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "prompt": {"type": "string", "description": "Visual analysis prompt or question."},
+                    "image_path": {"type": "string", "description": "Optional specific image path (captures live QGIS map canvas if omitted)."},
+                },
+            },
+            handler=tool_analyze_map_vision,
+        ),
+        GISToolSpec(
+            name="load_india_rail_and_metro",
+            description="Load Indian Railways (Broad Gauge 1676mm network, junctions, passenger stations) and Indian Metro systems (Delhi, Mumbai, Bengaluru, Kolkata, Chennai, Hyderabad, etc.) into QGIS.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "network_type": {"type": "string", "enum": ["all", "railway_broad_gauge", "railway_stations", "metro_routes", "metro_stations"], "description": "Rail or metro network category."},
+                    "city_or_region": {"type": "string", "description": "City or region name (e.g. 'Delhi', 'Mumbai', 'Bengaluru', 'India')."},
+                    "bbox": {"type": "array", "items": {"type": "number"}, "description": "Optional [xmin, ymin, xmax, ymax] EPSG:4326 bounding box filter."},
+                },
+            },
+            handler=tool_load_india_rail_and_metro,
+        ),
+        GISToolSpec(
+            name="fetch_imd_weather_data",
+            description="Fetch live and forecast IMD/Open-Meteo weather data across India (precipitation, temperature, humidity, wind) and load as an observation grid/heatmap in QGIS.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "parameter": {"type": "string", "enum": ["rainfall_precipitation", "temperature_2m", "humidity", "wind_speed", "all"], "description": "Meteorological parameter to map."},
+                    "region": {"type": "string", "description": "Target region or city name."},
+                    "bbox": {"type": "array", "items": {"type": "number"}, "description": "Optional [xmin, ymin, xmax, ymax] EPSG:4326 bounding box."},
+                },
+            },
+            handler=tool_fetch_imd_weather_data,
+        ),
+        GISToolSpec(
+            name="load_india_census_data",
+            description="Load authoritative Census India demographic data (population, population density, sex ratio, literacy rate) and render choropleth maps across Indian states and districts.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "indicator": {"type": "string", "enum": ["literacy", "population", "density", "sex_ratio", "all"], "description": "Census demographic indicator to map."},
+                    "filter_state": {"type": "string", "description": "Optional filter for a specific state (e.g. 'Maharashtra', 'Uttar Pradesh', 'Gujarat')."},
+                },
+            },
+            handler=tool_load_india_census_data,
+        ),
+        GISToolSpec(
+            name="fetch_air_quality_heatmap",
+            description="Fetch live CPCB and OpenAQ air quality monitoring feeds and generate NAQI color-coded station points and pollution heatmap layers in QGIS.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "pollutant": {"type": "string", "enum": ["pm25", "pm10", "aqi", "all"], "description": "Pollutant or AQI metric."},
+                    "city_or_bbox": {"type": "string", "description": "City name or target region."},
+                },
+            },
+            handler=tool_fetch_air_quality_heatmap,
         ),
     ])
     return {s.name: s for s in specs}

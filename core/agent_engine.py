@@ -13,6 +13,7 @@ from qgis.PyQt.QtCore import QCoreApplication, QObject, QTimer, pyqtSignal
 
 from .config import DEFAULT_BASE_URL, DEFAULT_MODEL, FALLBACK_CHAIN, AutoGISConfig, log_info, log_warn
 from .document_tools import summarize_attached_path
+from .extended_gis_tools import _read_persistent_memory
 from .gis_tools import GISToolSpec, _tool_get_project_overview, build_autogis_tools
 
 MAX_AUTONOMOUS_STEPS = 30
@@ -45,6 +46,11 @@ class AutoGISEngine(QObject):
         "query_xerj_corpus",
         "gee_download_dem", "gee_export_image", "gee_compute_index",
         "gee_image_collection", "gee_image_preview",
+        "load_india_rail_and_metro",
+        "fetch_imd_weather_data",
+        "load_india_census_data",
+        "fetch_air_quality_heatmap",
+        "analyze_map_vision",
     })
 
     def __init__(self, iface, config: AutoGISConfig, parent=None) -> None:
@@ -171,6 +177,15 @@ class AutoGISEngine(QObject):
 
         custom = self._config.custom_instructions.strip()
         custom_block = f"\nUser Preferences: {custom}\n" if custom else ""
+
+        # Persistent Multi-step Agent Memory
+        try:
+            persisted_mem = _read_persistent_memory()
+            if persisted_mem:
+                mem_items = [f"- {k}: {v.get('value')}" for k, v in list(persisted_mem.items())[:8]]
+                custom_block += "\nActive Agent Memory:\n" + "\n".join(mem_items) + "\n"
+        except Exception:
+            pass
 
         return (
             "You are **AutoGIS**, an Autonomous Geospatial AI Agent built into QGIS.\n"
