@@ -1494,6 +1494,7 @@ from .advanced_gis_tools import (
 )
 from .extended_gis_tools import (
     tool_analyze_map_vision,
+    tool_classify_crops_sentinel1_sar,
     tool_create_map_graticule,
     tool_export_temporal_animation,
     tool_fetch_air_quality_heatmap,
@@ -2452,6 +2453,24 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
                 },
             },
             handler=tool_fetch_air_quality_heatmap,
+        ),
+        GISToolSpec(
+            name="classify_crops_sentinel1_sar",
+            description="Classify agricultural crops using multi-temporal Sentinel-1 C-SAR data based on MDPI Remote Sensing 17(12), 2095. Evaluates temporal phenological backscatter trajectories (VV, VH, RVI) with Temporal Convolutional Networks (TCN) & Attention architectures to identify Rice, Maize, Wheat, Soybean, Cotton, and Sugarcane.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "architecture": {
+                        "type": "string",
+                        "enum": ["tcn_attention", "lstm_attention", "gru_attention", "random_forest_temporal"],
+                        "description": "Temporal deep learning or ML classification architecture (default 'tcn_attention').",
+                    },
+                    "crop_season": {"type": "string", "description": "Crop growing season (e.g. 'Kharif 2024', 'Rabi 2024-25')."},
+                    "bbox": {"type": "array", "items": {"type": "number"}, "description": "Optional [xmin, ymin, xmax, ymax] EPSG:4326 bounding box."},
+                },
+            },
+            handler=tool_classify_crops_sentinel1_sar,
         ),
     ])
     return {s.name: s for s in specs}

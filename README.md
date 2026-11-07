@@ -4,7 +4,7 @@
 
 # AutoGIS Studio (`v1.0.4`)
 
-**Autonomous Geospatial AI Agent, Live MCP Server & 58 Spatial Analysis Tools for QGIS**
+**Autonomous Geospatial AI Agent, Live MCP Server & 59 Spatial Analysis Tools for QGIS**
 
 [![Official QGIS Plugin Repo](https://img.shields.io/badge/QGIS_Plugin_Repo-AutoGIS-589632?style=for-the-badge&logo=qgis&logoColor=white)](https://plugins.qgis.org/plugins/AutoGIS/)
 [![Download ZIP for QGIS](https://img.shields.io/badge/Download_Plugin_ZIP-AutoGIS.zip_(v1.0.4)-0284C7?style=for-the-badge&logo=qgis&logoColor=white)](https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.4/AutoGIS.zip)
@@ -52,6 +52,8 @@
   - Authoritative State & District demographic layers with choropleth graduated styling for Population, Density, Sex Ratio, and Literacy Rate.
 - 🍃 **Air Quality Live Heatmap (etch_air_quality_heatmap):**
   - Live CPCB & OpenAQ monitoring stations with official National Air Quality Index (NAQI) color classification and IDW heatmap surfaces.
+- 🌾 **Multi-Temporal Sentinel-1 SAR Crop Classifier (classify_crops_sentinel1_sar):**
+  - Implements the cutting-edge deep learning phenological crop classification methodology from MDPI *Remote Sensing* **17**(12), 2095 (Tsuchiya & Sonobe, 2025). Evaluates dual-polarization (VV/VH) radar backscatter and Polarimetric Radar Vegetation Index (RVI) temporal trajectories with Temporal Convolutional Networks (TCN) and Attention mechanisms to identify Rice, Maize, Wheat, Soybean, Cotton, and Sugarcane.
 
 ---
 

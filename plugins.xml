@@ -1,8 +1,8 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 <plugins>
     <pyqgis_plugin name="AutoGIS" version="1.0.4">
-        <description><![CDATA[Autonomous Geospatial AI Agent, Live MCP Bridge & Spatial Analysis Studio for QGIS with Google Earth Engine (GEE) & 58 Tools]]></description>
-        <about><![CDATA[AutoGIS is an open-source, standalone Autonomous Geospatial AI Agent, Live MCP Server, and Spatial Analysis Studio for QGIS. Connect Cloud AI (Gemini, Claude, ChatGPT, DeepSeek, OpenRouter) or fully Offline Local AI (Ollama / LM Studio) to Google Earth Engine (GEE), live OpenStreetMap vectors, Indian Railways, Metros, IMD weather rasters, Census India choropleths, CPCB live air quality, 3D terrain draping, animated time series, 300 DPI publication print layouts, and PyQGIS workflows across 58 autonomous tools.]]></about>
+        <description><![CDATA[Autonomous Geospatial AI Agent, Live MCP Bridge & Spatial Analysis Studio for QGIS with Google Earth Engine (GEE) & 59 Tools]]></description>
+        <about><![CDATA[AutoGIS is an open-source, standalone Autonomous Geospatial AI Agent, Live MCP Server, and Spatial Analysis Studio for QGIS. Connect Cloud AI (Gemini, Claude, ChatGPT, DeepSeek, OpenRouter) or fully Offline Local AI (Ollama / LM Studio) to Google Earth Engine (GEE), live OpenStreetMap vectors, Indian Railways, Metros, IMD weather rasters, Census India choropleths, CPCB live air quality, 3D terrain draping, animated time series, 300 DPI publication print layouts, and PyQGIS workflows across 59 autonomous tools.]]></about>
         <version>1.0.4</version>
         <qgis_minimum_version>3.22.0</qgis_minimum_version>
         <qgis_maximum_version>4.99.0</qgis_maximum_version>

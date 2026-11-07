@@ -8,6 +8,7 @@ import pytest
 from core.gis_tools import build_autogis_tools
 from core.extended_gis_tools import (
     tool_analyze_map_vision,
+    tool_classify_crops_sentinel1_sar,
     tool_create_map_graticule,
     tool_export_temporal_animation,
     tool_fetch_air_quality_heatmap,
@@ -35,6 +36,7 @@ def test_all_extended_tools_registered():
         "fetch_imd_weather_data",
         "load_india_census_data",
         "fetch_air_quality_heatmap",
+        "classify_crops_sentinel1_sar",
     ]
     for name in expected_new_tools:
         assert name in tools, f"Missing tool in registry: {name}"
@@ -247,3 +249,26 @@ def test_fetch_air_quality_heatmap():
     assert "category" in first_st
     assert "color" in first_st
     assert first_st["color"].startswith("#")
+
+
+def test_classify_crops_sentinel1_sar():
+    res = tool_classify_crops_sentinel1_sar(
+        None,
+        {
+            "architecture": "tcn_attention",
+            "crop_season": "Kharif 2024",
+            "bbox": [77.2, 28.4, 77.5, 28.7],
+        },
+    )
+    assert res["status"] == "classified"
+    assert "MDPI Remote Sensing 17(12), 2095" in res["methodology"]
+    assert res["total_cropland_ha"] > 0
+    assert len(res["crops_identified"]) > 0
+    assert os.path.exists(res["geojson_layer"])
+    assert os.path.exists(res["interactive_report_html"])
+    with open(res["interactive_report_html"], "r", encoding="utf-8") as f:
+        html_content = f.read()
+    assert "MDPI REMOTE SENSING" in html_content
+    assert "Radar Vegetation Index" in html_content
+    assert "Chart" in html_content
+
