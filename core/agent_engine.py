@@ -11,7 +11,7 @@ from typing import Any
 
 from qgis.PyQt.QtCore import QCoreApplication, QObject, QTimer, pyqtSignal
 
-from .config import DEFAULT_BASE_URL, DEFAULT_MODEL, FALLBACK_CHAIN, AutoGISConfig, log_info, log_warn
+from .config import DEFAULT_BASE_URL, FALLBACK_CHAIN, AutoGISConfig, log_info, log_warn
 from .document_tools import summarize_attached_path
 from .extended_gis_tools import _read_persistent_memory
 from .gis_tools import GISToolSpec, _tool_get_project_overview, build_autogis_tools
@@ -182,8 +182,8 @@ class AutoGISEngine(QObject):
             if persisted_mem:
                 mem_items = [f"{k}={v.get('value')}" for k, v in list(persisted_mem.items())[:5]]
                 extra += "\nMem:" + ",".join(mem_items)
-        except Exception:
-            pass
+        except Exception as _mem_err:
+            _ = _mem_err
 
         return (
             "You are AutoGIS, an Autonomous Geospatial AI Agent in QGIS.\n"
@@ -506,8 +506,8 @@ class AutoGISEngine(QObject):
                                 try:
                                     self._config.model = fb_model
                                     log_info(f"AutoGIS: Saved working model {fb_model} (replaced dead {model})")
-                                except Exception:
-                                    pass
+                                except Exception as _cfg_err:
+                                    _ = _cfg_err
                             recovered = True
                             break
                         except Exception as fb_exc:

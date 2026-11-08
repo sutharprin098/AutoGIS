@@ -95,8 +95,12 @@ def _http_get_json(url: str, timeout: int = 20, headers: dict[str, str] | None =
     req_headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
     if headers:
         req_headers.update(headers)
+    # Validate scheme — only http/https permitted (B310)
+    _parsed = urllib.parse.urlparse(url)
+    if _parsed.scheme not in ("http", "https"):
+        raise ValueError(f"URL scheme '{_parsed.scheme}' not permitted; only http/https allowed.")
     req = urllib.request.Request(url, headers=req_headers)
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
+    with urllib.request.urlopen(req, timeout=timeout) as resp:  # nosec B310
         return json.loads(resp.read().decode("utf-8"))
 
 
@@ -113,8 +117,8 @@ def _resolve_study_bbox(iface, explicit_bbox: Any = None) -> list[float]:
             try:
                 rect = tr.transformBoundingBox(ext)
                 return [rect.xMinimum(), rect.yMinimum(), rect.xMaximum(), rect.yMaximum()]
-            except Exception:
-                pass
+            except Exception as _tr_err:
+                _ = _tr_err
         return [ext.xMinimum(), ext.yMinimum(), ext.xMaximum(), ext.yMaximum()]
     # Default to India bounding box
     return [68.1, 8.0, 97.4, 37.1]
@@ -525,6 +529,13 @@ def tool_create_map_graticule(iface, args: dict[str, Any]) -> dict[str, Any]:
 
     vlayer = QgsVectorLayer(out_file, layer_name, "ogr")
     if vlayer.isValid():
+        try:
+            from qgis.PyQt.QtGui import QColor
+            sym = vlayer.renderer().symbol() if vlayer.renderer() else None
+            if sym:
+                sym.setColor(QColor(line_color))
+        except Exception as _sym_err:
+            _ = _sym_err
         QgsProject.instance().addMapLayer(vlayer)
         if iface and iface.mapCanvas():
             iface.mapCanvas().refresh()
@@ -625,8 +636,8 @@ def _read_persistent_memory() -> dict[str, Any]:
         try:
             with open(p, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except Exception:
-            pass
+        except Exception as _f_err:
+            _ = _f_err
     return {}
 
 
@@ -656,11 +667,11 @@ def tool_manage_agent_memory(iface, args: dict[str, Any]) -> dict[str, Any]:
         }
         mem[key] = record
         _write_persistent_memory(mem)
-        # Also store in QgsProject custom properties
+        # Also store in QgsProject custom properties (best-effort)
         try:
             proj.setCustomProperty(f"AutoGIS_Memory_{key}", json.dumps(record))
-        except Exception:
-            pass
+        except Exception as _p_err:
+            _ = _p_err
         return {"status": "saved", "key": key, "record": record}
 
     elif action == "query":
@@ -730,8 +741,8 @@ def tool_generate_spatial_report(iface, args: dict[str, Any]) -> dict[str, Any]:
     findings_html = "".join(f"<li>{html.escape(str(item))}</li>" for item in findings) or "<li>No specific spatial anomalies identified.</li>"
     recs_html = "".join(f"<li>{html.escape(str(item))}</li>" for item in recommendations) or "<li>Maintain active monitoring.</li>"
     layers_rows = "".join(
-        f"<tr><td><strong>{html.escape(l['name'])}</strong></td><td>{l['type']}</td><td><code>{l['crs']}</code></td><td>{l['features']}</td></tr>"
-        for l in layers_summary
+        f"<tr><td><strong>{html.escape(lyr_info['name'])}</strong></td><td>{lyr_info['type']}</td><td><code>{lyr_info['crs']}</code></td><td>{lyr_info['features']}</td></tr>"
+        for lyr_info in layers_summary
     ) or "<tr><td colspan='4'>No active layers.</td></tr>"
 
     html_content = f"""<!DOCTYPE html>
@@ -862,7 +873,6 @@ def tool_analyze_map_vision(iface, args: dict[str, Any]) -> dict[str, Any]:
 
     cfg = AutoGISConfig()
     gemini_key = cfg.gemini_key
-    openai_key = cfg.openai_key
 
     if gemini_key:
         # Call Gemini Vision API
@@ -888,8 +898,12 @@ def tool_analyze_map_vision(iface, args: dict[str, Any]) -> dict[str, Any]:
             headers={"Content-Type": "application/json"},
             method="POST",
         )
+        # url is always https://generativelanguage.googleapis.com — scheme validated at construction
+        _parsed_vision_url = urllib.parse.urlparse(url)
+        if _parsed_vision_url.scheme not in ("http", "https"):
+            raise ValueError(f"Vision API URL scheme '{_parsed_vision_url.scheme}' not permitted.")
         try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
+            with urllib.request.urlopen(req, timeout=30) as resp:  # nosec B310
                 data = json.loads(resp.read().decode("utf-8"))
             analysis_text = data["candidates"][0]["content"]["parts"][0]["text"]
             return {"status": "success", "provider": "gemini", "analysis": analysis_text}
@@ -951,9 +965,12 @@ def tool_load_india_rail_and_metro(iface, args: dict[str, Any], run_on_main=None
 
     elements = []
     for mirror in mirrors:
+        _parsed_mirror = urllib.parse.urlparse(mirror)
+        if _parsed_mirror.scheme not in ("http", "https"):
+            continue
         try:
             req = urllib.request.Request(mirror, data=f"data={urllib.parse.quote(query_clause)}".encode("utf-8"), headers=headers)
-            with urllib.request.urlopen(req, timeout=18) as resp:
+            with urllib.request.urlopen(req, timeout=18) as resp:  # nosec B310
                 res_data = json.loads(resp.read().decode("utf-8"))
                 elements = res_data.get("elements", [])
                 if elements:

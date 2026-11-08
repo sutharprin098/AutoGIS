@@ -644,7 +644,6 @@ def tool_export_publication_map(iface, args: dict[str, Any]) -> dict[str, Any]:
     basemap_layers: list[QgsMapLayer] = []
 
     for lyr in list(proj.mapLayers().values()):
-        node = root.findLayer(lyr.id())
         lname = lyr.name().lower()
         if "stats" in lname or "zonal" in lname or "unclipped" in lname:
             continue
