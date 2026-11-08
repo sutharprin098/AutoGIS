@@ -24,11 +24,16 @@ PROVIDERS: list[tuple[str, str, str]] = [
 PROVIDER_ENDPOINTS: dict[str, str] = {pid: url for pid, _, url in PROVIDERS}
 
 FALLBACK_CHAIN: list[str] = [
+    # Free OpenRouter models first — fastest verified working models
+    "nvidia/nemotron-3.5-lightning:free",      # ~2.1s, tool_calls verified ✓
+    "nvidia/nemotron-3-ultra-550b-a55b:free",  # ~0.9s, tool_calls verified ✓
+    "cohere/command-r-plus-08-2024:free",      # Cohere free fallback
+    "meta-llama/llama-3.3-70b-instruct:free",  # Llama free fallback
+    # Paid models (only reached if user has respective API key)
     "google/gemini-2.5-flash",
     "openai/gpt-4o-mini",
     "anthropic/claude-haiku-4.5",
     "deepseek/deepseek-chat",
-    "nvidia/nemotron-3-ultra-550b-a55b:free",
 ]
 
 PROVIDER_MODELS: dict[str, list[tuple[str, str]]] = {
@@ -52,11 +57,11 @@ PROVIDER_MODELS: dict[str, list[tuple[str, str]]] = {
         ("deepseek/deepseek-reasoner", "DeepSeek R1"),
     ],
     "openrouter": [
-        ("nvidia/nemotron-3-ultra-550b-a55b:free", "Nemotron 3 Ultra (Free)"),
-        ("nvidia/nemotron-3.5-lightning:free", "Nemotron 3.5 Fast (Free)"),
-        ("google/gemma-4-31b-it:free", "Gemma 4 31B (Free)"),
-        ("deepseek/deepseek-chat-v3-0324:free", "DeepSeek V3 (Free)"),
+        ("nvidia/nemotron-3.5-lightning:free", "⚡ Nemotron 3.5 Lightning (Free)"),    # fastest, default
+        ("nvidia/nemotron-3-ultra-550b-a55b:free", "Nemotron 3 Ultra 550B (Free)"),
         ("meta-llama/llama-3.3-70b-instruct:free", "Llama 3.3 70B (Free)"),
+        ("google/gemma-3-27b-it:free", "Gemma 3 27B (Free)"),
+        ("mistralai/mistral-7b-instruct:free", "Mistral 7B (Free)"),
         ("google/gemini-2.5-flash", "Gemini 2.5 Flash"),
         ("openai/gpt-4o-mini", "GPT-4o Mini"),
         ("anthropic/claude-sonnet-4.5", "Claude Sonnet 4.5"),
@@ -74,6 +79,13 @@ PROVIDER_MODELS: dict[str, list[tuple[str, str]]] = {
 
 CURATED_MODELS: list[tuple[str, str]] = [
     ("", "Select Model"),
+    # --- Free Models (OpenRouter) ---
+    ("nvidia/nemotron-3.5-lightning:free", "⚡ Nemotron 3.5 Lightning (Free) [Recommended]"),
+    ("nvidia/nemotron-3-ultra-550b-a55b:free", "Nemotron 3 Ultra 550B (Free)"),
+    ("meta-llama/llama-3.3-70b-instruct:free", "Llama 3.3 70B (Free)"),
+    ("google/gemma-3-27b-it:free", "Gemma 3 27B (Free)"),
+    ("mistralai/mistral-7b-instruct:free", "Mistral 7B (Free)"),
+    # --- Paid Models ---
     ("google/gemini-2.5-flash", "Gemini 2.5 Flash"),
     ("google/gemini-2.5-pro", "Gemini 2.5 Pro"),
     ("google/gemini-2.0-flash", "Gemini 2.0 Flash"),
@@ -86,11 +98,7 @@ CURATED_MODELS: list[tuple[str, str]] = [
     ("deepseek/deepseek-reasoner", "DeepSeek R1"),
     ("qwen/qwen-2.5-72b-instruct", "Qwen 2.5 72B"),
     ("meta-llama/llama-3.3-70b-instruct", "Llama 3.3 70B"),
-    ("nvidia/nemotron-3-ultra-550b-a55b:free", "Nemotron 3 Ultra (Free)"),
-    ("nvidia/nemotron-3.5-lightning:free", "Nemotron 3.5 Fast (Free)"),
-    ("google/gemma-4-31b-it:free", "Gemma 4 31B (Free)"),
-    ("deepseek/deepseek-chat-v3-0324:free", "DeepSeek V3 (Free)"),
-    ("meta-llama/llama-3.3-70b-instruct:free", "Llama 3.3 70B (Free)"),
+    # --- Local (Ollama) ---
     ("ollama/qwen2.5-coder:14b", "Local: Qwen 2.5 Coder 14B (Ollama)"),
     ("ollama/qwen2.5-coder:7b", "Local: Qwen 2.5 Coder 7B (Ollama)"),
     ("ollama/llama3.3:latest", "Local: Llama 3.3 (Ollama)"),

@@ -402,15 +402,17 @@ class AutoGISEngine(QObject):
                 # Free OpenRouter models occasionally emit an empty stream (0 tokens, 0 tool_calls) mid-workflow.
                 # Retry once after a brief pause, and if still empty, try fallback models before giving up.
                 if not text_acc.strip() and not tool_calls and run_id not in self._cancelled_runs:
-                    log_info(f"Model {model} returned an empty stream; retrying once after 1.2s...")
+                    log_info(f"Model {model} returned an empty stream; retrying once after 0.3s...")
                     self._post("status", run_id, f"Retrying {model.split('/')[-1]}...")
-                    time.sleep(1.2)
+                    time.sleep(0.3)
                     text_acc, reasoning_acc, tool_calls = self._stream_once(
                         run_id, api_key, base_url, model, max_tokens, messages, tools
                     )
                     if not text_acc.strip() and not tool_calls and auto_fallback and or_key:
                         for fb_model in FALLBACK_CHAIN:
                             if fb_model == model and provider == "openrouter":
+                                continue
+                            if not fb_model.endswith(":free") and not or_key:
                                 continue
                             try:
                                 log_info(f"Model {model} returned empty stream twice; falling back to {fb_model}")
@@ -445,7 +447,13 @@ class AutoGISEngine(QObject):
                         recovered = False
 
                 if not recovered and auto_fallback and or_key and he.code in (400, 401, 402, 403, 404, 429, 500, 502, 503):
-                    for fb_model in FALLBACK_CHAIN:
+                    # For 404, the configured model is dead — try free models first
+                    fb_chain = list(FALLBACK_CHAIN)
+                    if he.code == 404:
+                        free_first = [m for m in fb_chain if m.endswith(":free")]
+                        paid = [m for m in fb_chain if not m.endswith(":free")]
+                        fb_chain = free_first + paid
+                    for fb_model in fb_chain:
                         if fb_model == model and provider == "openrouter":
                             continue
                         try:
@@ -454,6 +462,13 @@ class AutoGISEngine(QObject):
                             text_acc, reasoning_acc, tool_calls = self._stream_once(
                                 run_id, or_key, DEFAULT_BASE_URL, fb_model, min(max_tokens, 2048), messages, tools
                             )
+                            # Dead model (404) — persist the working fallback so user doesn't see this again
+                            if he.code == 404:
+                                try:
+                                    self._config.model = fb_model
+                                    log_info(f"AutoGIS: Saved working model {fb_model} (replaced dead {model})")
+                                except Exception:
+                                    pass
                             recovered = True
                             break
                         except Exception as fb_exc:
