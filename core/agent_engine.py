@@ -155,50 +155,45 @@ class AutoGISEngine(QObject):
     def _build_system_prompt(self) -> str:
         try:
             ov = _tool_get_project_overview(self._iface, {})
-            # Token-efficient compact serialization (saves ~65% tokens on large projects)
             lyrs = ov.get("layers") or []
             compact_lyrs = []
-            for layer_item in lyrs[:40]:
-                tag = f"{layer_item.get('name')}[{layer_item.get('geometry')},{layer_item.get('crs')},{layer_item.get('units')}]"
-                if "feature_count" in layer_item:
-                    tag += f"({layer_item['feature_count']} feats"
-                    if layer_item.get("fields"):
-                        tag += f", fields:{','.join(layer_item['fields'][:6])}"
+            for li in lyrs[:20]:  # limit to 20 layers max
+                tag = f"{li.get('name')}[{li.get('geometry')},{li.get('crs')}]"
+                if "feature_count" in li:
+                    tag += f"({li['feature_count']}f"
+                    if li.get("fields"):
+                        tag += f",{','.join(li['fields'][:4])}"
                     tag += ")"
                 compact_lyrs.append(tag)
-            ctx_summary = (
-                f"Project: {ov.get('project_file')} | CRS: {ov.get('crs')} ({ov.get('crs_units')}) | "
-                f"Active: {ov.get('active_layer')} | Layers ({ov.get('layer_count')}): "
-                + "; ".join(compact_lyrs)
+            ctx = (
+                f"CRS:{ov.get('crs')} Active:{ov.get('active_layer')} "
+                f"Layers({ov.get('layer_count')}):{';'.join(compact_lyrs)}"
             )
             if ov.get("crs_mismatches"):
-                ctx_summary += f" | CRS Mismatches: {', '.join(ov['crs_mismatches'][:8])}"
+                ctx += f" CRS_mismatch:{','.join(ov['crs_mismatches'][:4])}"
         except Exception as exc:
-            ctx_summary = f"Project context unavailable: {exc}"
+            ctx = f"unavailable:{exc}"
 
         custom = self._config.custom_instructions.strip()
-        custom_block = f"\nUser Preferences: {custom}\n" if custom else ""
+        extra = f"\nPrefs:{custom}" if custom else ""
 
-        # Persistent Multi-step Agent Memory
         try:
             persisted_mem = _read_persistent_memory()
             if persisted_mem:
-                mem_items = [f"- {k}: {v.get('value')}" for k, v in list(persisted_mem.items())[:8]]
-                custom_block += "\nActive Agent Memory:\n" + "\n".join(mem_items) + "\n"
+                mem_items = [f"{k}={v.get('value')}" for k, v in list(persisted_mem.items())[:5]]
+                extra += "\nMem:" + ",".join(mem_items)
         except Exception:
             pass
 
         return (
-            "You are **AutoGIS**, an Autonomous Geospatial AI Agent built into QGIS.\n"
-            f"Live QGIS State: {ctx_summary}\n"
-            f"{custom_block}"
-            "Core Rules:\n"
-            "1. **CRS Intelligence (CRITICAL)**: Always check project and layer CRS (`EPSG`, projected meters vs geographic degrees). "
-            "`spatial_buffer` and `spatial_overlay` automatically reproject/align CRSs to metric UTM/Project CRS, and for custom `run_processing_algorithm` or `execute_pyqgis` always verify CRS alignment (`native:reprojectlayer`) before distance/area calculations.\n"
-            "2. **Fast Step-by-Step Execution**: For multi-step workflows (2+ actions), call `update_agent_plan` to track phases (`pending`/`in_progress`/`completed`), and ALWAYS combine `update_agent_plan` with actual execution tool calls in the same turn (you may also batch multiple independent tool calls, such as multiple `fetch_osm_features` calls, in a single turn). Never waste a turn calling only `update_agent_plan`, and NEVER stop or report completion while any step in your plan is still `pending` or `in_progress`.\n"
-            "3. **Universal Geospatial Workflow (NO TASK-SPECIFIC HARDCODING)**: Treat every user request as a general geospatial goal, not as a predefined recipe. Do not assume a specific index, city, dataset, layer name, CRS, or output layout unless the user specifies it. Inspect the current project and available inputs first. For QGIS operations, discover algorithms with `search_processing_algorithms`, inspect exact parameters with `get_algorithm_help`, and run suitable algorithms through `run_processing_algorithm`. For Earth Engine, use the user's configured credentials and choose datasets, bands and filters based on the request; use available GEE tools where they fit. Use STAC only as a disclosed alternative when GEE is unavailable or the user permits it.\n"
-            "4. **Autonomous Execution and Verification (DO NOT DUMP CODE)**: Orchestrate a complete workflow using generic tools. Use `execute_pyqgis` only when generic QGIS Processing tools cannot express the operation; do not create or rely on one-off hardcoded implementations for NDVI or any other named analysis. Never tell the user to run code manually. Before processing, inspect the AOI, source data, CRS, resolution, NoData and output destination. Clip raster/vector outputs to the actual AOI polygon when available; use a bbox only when no polygon exists and disclose that. Preserve original user layers. Keep intermediate downloads, bands, temporary rasters and scratch layers out of the visible project unless requested. Add only final deliverables, use meaningful names, apply suitable styling, and make NoData transparent outside the AOI. On reruns, replace only prior AutoGIS-generated outputs for the same task; never delete user-owned layers. If a step fails, diagnose/retry safely or return the actual error—never claim success from partial/raw inputs. Verify output validity, dimensions/feature count, CRS, resolution and path before reporting completion.\n"
-            "5. **Concise & Token-Efficient**: Keep responses clear, professional, direct, and without emojis."
+            "You are AutoGIS, an Autonomous Geospatial AI Agent in QGIS.\n"
+            f"QGIS:{ctx}{extra}\n"
+            "Rules:\n"
+            "1. CRS: Check EPSG always; spatial_buffer/spatial_overlay auto-reproject; for run_processing_algorithm verify CRS alignment first.\n"
+            "2. Plans: For 2+ steps call update_agent_plan AND execution tools in same turn. Never stop while steps are pending/in_progress.\n"
+            "3. No hardcoding: Inspect project first. Use search_processing_algorithms+get_algorithm_help before run_processing_algorithm. Use GEE tools when available.\n"
+            "4. Execute don't describe: Use tools, never dump code for user to run. Clip to AOI polygon. Preserve user layers. Verify outputs before reporting done.\n"
+            "5. Concise responses, no emojis."
         )
 
     def start_user_turn(self, user_text: str, attachments: list[str] | None = None,
@@ -298,16 +293,43 @@ class AutoGISEngine(QObject):
         )
         worker.start()
 
+    # Models that perform slow extended chain-of-thought reasoning — suppress it via OpenRouter param
+    _REASONING_MODELS: frozenset[str] = frozenset({
+        "deepseek/deepseek-r1",
+        "deepseek/deepseek-r1:free",
+        "qwq-32b",
+        "o1",
+        "o3",
+        "nvidia/nemotron-3-ultra-550b-a55b",
+        "nvidia/nemotron-3-ultra-550b-a55b:free",
+    })
+
     def _stream_once(self, run_id: str, api_key: str, base_url: str, model: str,
                      max_tokens: int, messages: list[dict], tools: list[dict]) -> tuple[str, str, list[dict]]:
+        is_openrouter = "openrouter.ai" in base_url
+        is_free_model = model.endswith(":free")
+
         payload: dict[str, Any] = {
             "model": model,
             "messages": messages,
-            "max_tokens": max_tokens,
+            # Cap free model tokens to avoid long slow responses; paid models keep user setting
+            "max_tokens": min(max_tokens, 1536) if is_free_model else max_tokens,
             "stream": True,
         }
         if tools:
             payload["tools"] = tools
+
+        # OpenRouter: disable extended chain-of-thought reasoning for ALL free models
+        # (reasoning = 60s+ "Reasoning..." freeze with no useful output for GIS tasks)
+        if is_openrouter and is_free_model:
+            payload["reasoning"] = {"exclude": True}
+        # For known reasoning models on paid tier, also disable to keep responses fast
+        elif is_openrouter and any(rm in model for rm in self._REASONING_MODELS):
+            payload["reasoning"] = {"max_tokens": 300}
+
+        # OpenRouter compression — reduces input token cost and latency
+        if is_openrouter:
+            payload["transforms"] = ["middle-out"]
 
         req = urllib.request.Request(
             f"{base_url}/chat/completions",
@@ -324,14 +346,18 @@ class AutoGISEngine(QObject):
         text_acc = ""
         reasoning_acc = ""
         tc_map: dict[int, dict[str, str]] = {}
-        short_model = model.split("/")[-1] if "/" in model else model
         last_status_at = time.monotonic()
+        first_token_at: float | None = None
+        REASONING_TIMEOUT = 45.0   # bail out if reasoning takes >45s with no content
 
         if hasattr(req, "full_url"):
             _parsed_req_url = urllib.parse.urlparse(req.full_url)
             if _parsed_req_url.scheme not in ("http", "https"):
                 raise ValueError(f"Disallowed URL scheme: {_parsed_req_url.scheme}")
-        with urllib.request.urlopen(req, timeout=120) as resp:  # nosec B310
+
+        # Shorter timeout for free models — they should respond in <30s or we fall back
+        conn_timeout = 55 if is_free_model else 120
+        with urllib.request.urlopen(req, timeout=conn_timeout) as resp:  # nosec B310
             for raw_line in resp:
                 if run_id in self._cancelled_runs:
                     break
@@ -359,18 +385,31 @@ class AutoGISEngine(QObject):
                 r_delta = delta.get("reasoning") or delta.get("reasoning_content")
                 if r_delta:
                     reasoning_acc += str(r_delta)
-                    self._post("reasoning", run_id, str(r_delta))
+                    # Only surface reasoning to UI if it's a deliberate reasoning model
+                    if any(rm in model for rm in self._REASONING_MODELS):
+                        self._post("reasoning", run_id, str(r_delta))
                     now = time.monotonic()
-                    if not text_acc and (now - last_status_at) >= 0.7:
+                    if not text_acc and (now - last_status_at) >= 1.5:
                         last_status_at = now
-                        self._post("status", run_id, "Reasoning...")
+                        elapsed = int(now - (first_token_at or now))
+                        self._post("status", run_id, f"Thinking... ({elapsed}s)")
+                    # Abort runaway reasoning early for free models
+                    if is_free_model and first_token_at and (time.monotonic() - first_token_at) > REASONING_TIMEOUT:
+                        log_warn(f"Model {model} reasoning exceeded {REASONING_TIMEOUT}s — aborting stream")
+                        break
 
                 c_delta = delta.get("content")
                 if c_delta:
+                    if first_token_at is None:
+                        first_token_at = time.monotonic()
+                        self._post("status", run_id, "")
                     text_acc += str(c_delta)
                     self._post("token", run_id, str(c_delta))
 
                 for tc in (delta.get("tool_calls") or []):
+                    if first_token_at is None:
+                        first_token_at = time.monotonic()
+                        self._post("status", run_id, "")
                     idx = tc.get("index", 0)
                     if idx not in tc_map:
                         tc_map[idx] = {
