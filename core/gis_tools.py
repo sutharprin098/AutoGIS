@@ -1483,64 +1483,207 @@ def _tool_capture_map_canvas(iface, args: dict) -> dict:
     }
 
 
-def _tool_execute_pyqgis(iface, args: dict) -> dict:
+def _tool_execute_pyqgis(iface, args: dict) -> dict:  # noqa: C901
+    """Execute user-provided PyQGIS code with pre-flight AST validation and rich error context."""
+    import ast
     code = str(args.get("code") or "").strip()
     if not code:
         return {"error": "No Python code provided."}
 
-    stdout_buf = io.StringIO()
-    import qgis.core
-    import qgis.gui
+    # ── 1. Syntax check (immediate feedback before any exec) ─────────────────
     try:
-        import processing
+        compiled = compile(code, "<AutoGIS_PyQGIS>", "exec")
+    except SyntaxError as syn:
+        return {
+            "error": f"SyntaxError on line {syn.lineno}: {syn.msg}",
+            "hint": "Fix the syntax error above. Use inspect_layer / list_layers to verify layer names first.",
+            "line": syn.lineno,
+            "text": syn.text,
+        }
+
+    # ── 2. AST-level dangerous pattern warnings ───────────────────────────────
+    _DANGEROUS = {"os.system", "subprocess", "eval", "exec", "open"}
+    try:
+        tree = ast.parse(code)
+        warnings_list = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                func = node.func
+                if isinstance(func, ast.Attribute) and func.attr in ("system", "popen", "run", "Popen"):
+                    warnings_list.append(f"Line {node.lineno}: Potentially dangerous call ({func.attr})")
+        if warnings_list:
+            log_warn("AutoGIS execute_pyqgis warnings: " + "; ".join(warnings_list))
+    except Exception:  # ast parse can fail on exotic encodings
+        warnings_list = []
+
+    # ── 3. Build safe execution namespace ─────────────────────────────────────
+    stdout_buf = io.StringIO()
+    import qgis.core  # noqa: F401
+    import qgis.gui   # noqa: F401
+    try:
+        import processing as _processing
     except ImportError:
-        processing = None
+        _processing = None
 
     try:
-        import numpy as np
+        import numpy as _np
     except ImportError:
-        np = None
+        _np = None
+
+    try:
+        import qgis.core as _qgis_core
+        _qgis_version_int = getattr(getattr(_qgis_core, "Qgis", None), "QGIS_VERSION_INT", 0)
+    except Exception:
+        _qgis_version_int = 0
+
+    _proj = QgsProject.instance()
+    _canvas = iface.mapCanvas() if iface else None
+
+    # Helper: resolve a layer by name safely (injected as get_layer)
+    def _get_layer(name: str):
+        matches = _proj.mapLayersByName(str(name))
+        if matches:
+            return matches[0]
+        # Try case-insensitive fallback
+        name_lc = name.lower()
+        for lyr in _proj.mapLayers().values():
+            if lyr.name().lower() == name_lc:
+                return lyr
+        raise NameError(
+            f"Layer '{name}' not found in project. "
+            f"Available: {[l.name() for l in _proj.mapLayers().values()]}"
+        )
+
+    # Helper: get all layers as dict
+    def _all_layers():
+        return {lyr.name(): lyr for lyr in _proj.mapLayers().values()}
 
     env: dict[str, Any] = {
         "__builtins__": __builtins__,
+        # QGIS objects
         "iface": iface,
         "QgsProject": QgsProject,
-        "project": QgsProject.instance(),
+        "project": _proj,
+        "canvas": _canvas,
         "qgis": qgis,
-        "processing": processing,
-        "np": np,
-        "numpy": np,
+        "qgis_version_int": _qgis_version_int,
+        # Processing
+        "processing": _processing,
+        # Numpy
+        "np": _np,
+        "numpy": _np,
+        # Stdlib
         "os": os,
         "sys": sys,
         "json": json,
         "math": math,
         "time": time,
+        # QGIS Classes (commonly needed)
         "QgsVectorLayer": QgsVectorLayer,
         "QgsRasterLayer": QgsRasterLayer,
         "QgsFeature": QgsFeature,
         "QgsField": QgsField,
         "QgsExpression": QgsExpression,
         "QgsCoordinateReferenceSystem": QgsCoordinateReferenceSystem,
+        "QgsCoordinateTransform": QgsCoordinateTransform,
+        "QgsRectangle": QgsRectangle,
+        "QgsWkbTypes": QgsWkbTypes,
+        "QgsMapLayer": QgsMapLayer,
+        "QgsFeatureRequest": QgsFeatureRequest,
+        "QgsGraduatedSymbolRenderer": QgsGraduatedSymbolRenderer,
+        "QgsCategorizedSymbolRenderer": QgsCategorizedSymbolRenderer,
+        "QgsSingleSymbolRenderer": QgsSingleSymbolRenderer,
+        "QgsSymbol": QgsSymbol,
+        "QgsMarkerSymbol": QgsMarkerSymbol,
+        "QgsLineSymbol": QgsLineSymbol,
+        "QgsFillSymbol": QgsFillSymbol,
+        "QgsRendererCategory": QgsRendererCategory,
+        "QgsRendererRange": QgsRendererRange,
+        "QgsPalLayerSettings": QgsPalLayerSettings,
+        "QgsVectorLayerSimpleLabeling": QgsVectorLayerSimpleLabeling,
+        "QgsTextFormat": QgsTextFormat,
+        "QgsVectorFileWriter": QgsVectorFileWriter,
         "QColor": QColor,
+        "QFont": QFont,
+        "QSize": QSize,
+        # Layer helpers (safe alternatives to raw QGIS calls)
+        "get_layer": _get_layer,
+        "all_layers": _all_layers,
+        # Result slot
         "result": None,
     }
 
+    # ── 4. Execute with rich error reporting ──────────────────────────────────
     try:
         with contextlib.redirect_stdout(stdout_buf):
-            exec(compile(code, "<AutoGIS_PyQGIS>", "exec"), env, env)  # nosec B102
-        if iface and iface.mapCanvas():
-            iface.mapCanvas().refresh()
-        return {
+            exec(compiled, env, env)  # nosec B102
+        if _canvas:
+            _canvas.refresh()
+        resp: dict[str, Any] = {
             "status": "executed",
             "stdout": stdout_buf.getvalue()[:8000],
             "result": _safe_val(env.get("result")),
         }
-    except Exception as exc:
+        if warnings_list:
+            resp["warnings"] = warnings_list
+        return resp
+
+    except NameError as exc:
+        tb = traceback.format_exc()
+        lineno = _extract_lineno(tb, "<AutoGIS_PyQGIS>")
         return {
             "error": str(exc),
-            "traceback": traceback.format_exc()[-2000:],
+            "error_type": "NameError",
+            "line": lineno,
+            "hint": (
+                "Use get_layer('layer_name') to safely resolve layers. "
+                "Call list_layers tool first to check available layer names."
+            ),
+            "traceback": tb[-2000:],
             "stdout": stdout_buf.getvalue()[:4000],
         }
+    except AttributeError as exc:
+        tb = traceback.format_exc()
+        lineno = _extract_lineno(tb, "<AutoGIS_PyQGIS>")
+        return {
+            "error": str(exc),
+            "error_type": "AttributeError",
+            "line": lineno,
+            "hint": (
+                f"This QGIS API method may not exist in QGIS version {_qgis_version_int}. "
+                "Use inspect_layer or get_algorithm_help to verify available methods."
+            ),
+            "traceback": tb[-2000:],
+            "stdout": stdout_buf.getvalue()[:4000],
+        }
+    except ImportError as exc:
+        tb = traceback.format_exc()
+        return {
+            "error": str(exc),
+            "error_type": "ImportError",
+            "hint": "Module not installed in QGIS Python environment. Use processing tool instead.",
+            "traceback": tb[-2000:],
+            "stdout": stdout_buf.getvalue()[:4000],
+        }
+    except Exception as exc:
+        tb = traceback.format_exc()
+        lineno = _extract_lineno(tb, "<AutoGIS_PyQGIS>")
+        return {
+            "error": str(exc),
+            "error_type": type(exc).__name__,
+            "line": lineno,
+            "hint": "Check the traceback. Use list_layers / inspect_layer tools to verify layer state.",
+            "traceback": tb[-2000:],
+            "stdout": stdout_buf.getvalue()[:4000],
+        }
+
+
+def _extract_lineno(tb_text: str, filename: str) -> int | None:
+    """Extract the line number from a traceback string for a given filename."""
+    import re
+    pattern = rf'File "{re.escape(filename)}", line (\d+)'
+    matches = re.findall(pattern, tb_text)
+    return int(matches[-1]) if matches else None
 
 
 def _tool_save_project(iface, args: dict) -> dict:

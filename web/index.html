@@ -95,7 +95,7 @@
         <a href="#features" class="hover:text-slate-900 transition">Features</a>
         <a href="#gee" class="hover:text-slate-900 transition flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>Google Earth Engine</a>
         <a href="#setup" class="hover:text-slate-900 transition">Quick Install</a>
-        <a href="#tools" class="hover:text-slate-900 transition">39 Tools</a>
+        <a href="#tools" class="hover:text-slate-900 transition">59 Tools</a>
         <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="hover:text-slate-900 transition">GitHub</a>
       </nav>
 
@@ -112,7 +112,7 @@
   <section class="relative mx-auto max-w-5xl px-6 pt-16 pb-12 text-center md:pt-24 md:pb-16">
     <div class="reveal inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-800">
       <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-      <span>v1.0.4: Deep Google Earth Engine Integration &amp; 59 Autonomous GIS Tools</span>
+      <span>v1.0.4: 59 Autonomous GIS Tools · SAR Crop AI · Speed Fix (2-5s) · IMD Weather · CPCB Air Quality · 3D Terrain</span>
     </div>
 
     <h1 class="reveal mt-6 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl md:text-6xl leading-[1.12]">
@@ -120,7 +120,7 @@
     </h1>
 
     <p class="reveal mx-auto mt-5 max-w-2xl text-base text-slate-600 md:text-lg leading-relaxed">
-      Connect frontier AI models directly to QGIS, Google Earth Engine, OSM, and satellite APIs. Execute multi-step spatial workflows, audit CRSs, download DEMs &amp; Sentinel imagery, and calculate spectral indices autonomously.
+      Connect frontier AI models directly to QGIS, Google Earth Engine, OSM, and satellite APIs. Execute multi-step spatial workflows, run SAR crop classification, download IMD weather grids &amp; Sentinel imagery, calculate spectral indices, and generate 3D terrain &mdash; all autonomously. <strong class="text-slate-900">&#x26A1; Now 2&ndash;5s response (60s hang fixed).</strong>
     </p>
 
     <!-- 1-Click Direct Download Hero CTA -->
@@ -141,7 +141,7 @@
     <div class="reveal mt-6 flex flex-wrap items-center justify-center gap-2 text-xs font-mono text-slate-500">
       <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">QGIS 3.22 - 3.40+</span>
       <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">Google Earth Engine</span>
-      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">39 Tools</span>
+      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">59 Tools</span>
       <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">Gemini / Claude / ChatGPT / DeepSeek</span>
       <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">MIT Open-Source</span>
     </div>
@@ -157,7 +157,7 @@
           <span class="h-3 w-3 rounded-full bg-emerald-500/80 inline-block"></span>
           <span class="ml-2 font-mono text-slate-300 font-semibold">QGIS Desktop — Autonomous GEE &amp; Spatial Modeling — AutoGIS Studio v1.0.4</span>
         </div>
-        <span class="font-mono text-emerald-400 font-bold">● Active 39 Tools</span>
+        <span class="font-mono text-emerald-400 font-bold">● Active 59 Tools</span>
       </div>
       <img src="/assets/autogis_screenshot.png" alt="AutoGIS Studio v1.0.4 Live in QGIS Desktop" class="w-full object-cover" />
     </div>
@@ -352,6 +352,10 @@
         </ol>
 
         <div class="mt-6 grid grid-cols-3 gap-2.5 text-center text-xs">
+          <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-2.5">
+            <div class="font-bold text-emerald-800">&#x26A1; Free Model</div>
+            <div class="text-[11px] text-emerald-600">Nemotron 3.5 Lightning</div>
+          </div>
           <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5">
             <div class="font-bold text-slate-800">Auto Mode</div>
             <div class="text-[11px] text-slate-500">Full autonomous steps</div>
@@ -374,21 +378,24 @@
     <div class="reveal flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
         <span class="font-mono text-xs font-bold tracking-widest text-sky-600 uppercase">Documentation &amp; Tool Reference</span>
-        <h2 class="mt-1.5 text-3xl font-extrabold text-slate-900">All 39 Autonomous GIS &amp; GEE Tools</h2>
+        <h2 class="mt-1.5 text-3xl font-extrabold text-slate-900">All 59 Autonomous GIS &amp; GEE Tools</h2>
       </div>
-      <input type="text" id="tool-search" oninput="filterTools()" placeholder="Search 39 tools (e.g. gee, ndvi, osm, buffer, crs)..."
+      <input type="text" id="tool-search" oninput="filterTools()" placeholder="Search 59 tools (e.g. gee, ndvi, sar, imd, cpcb, osm, buffer, crs)..."
              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none sm:w-72" />
     </div>
 
     <!-- Category Filter Pills -->
     <div class="reveal mt-5 flex flex-wrap gap-2">
-      <button onclick="setCat('', this)" class="cat-pill active rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">All (39)</button>
+      <button onclick="setCat('', this)" class="cat-pill active rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">All (59)</button>
       <button onclick="setCat('Earth Engine', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Google Earth Engine (5)</button>
       <button onclick="setCat('Live Data', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Live Spatial Data (6)</button>
       <button onclick="setCat('Geoprocessing', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Geoprocessing &amp; CRS (8)</button>
       <button onclick="setCat('Inspection', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Inspection &amp; Stats (7)</button>
       <button onclick="setCat('Cartography', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Cartography &amp; Layers (9)</button>
       <button onclick="setCat('Documents', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Documents &amp; Code (4)</button>
+      <button onclick="setCat('India Data', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">&#x1F1EE;&#x1F1F3; India Data (5)</button>
+      <button onclick="setCat('AI Models', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">&#x1F916; AI &amp; SAR (3)</button>
+      <button onclick="setCat('Advanced', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Advanced Analysis (8)</button>
     </div>
 
     <div class="reveal mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -453,6 +460,28 @@
             <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">update_agent_plan</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">title, steps[]</td><td class="px-5 py-3">Create and update the live step-by-step phase checklist in the AutoGIS studio panel.</td></tr>
             <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">execute_pyqgis</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">code</td><td class="px-5 py-3">Safely execute custom PyQGIS Python scripts on the main Qt thread.</td></tr>
             <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">capture_map_canvas</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">width, height</td><td class="px-5 py-3">Capture a high-resolution PNG snapshot of the live QGIS map canvas.</td></tr>
+
+            <!-- India Data Tools -->
+            <tr data-cat="India Data"><td class="px-5 py-3 font-mono font-bold text-orange-700">fetch_imd_weather</td><td class="px-5 py-3"><span class="rounded bg-orange-50 px-2 py-0.5 text-orange-800 font-semibold">India Data</span></td><td class="px-5 py-3 font-mono text-slate-500">state, district, date_range</td><td class="px-5 py-3">Download IMD weather grid data (rainfall, temperature) and auto-apply graduated blue symbology.</td></tr>
+            <tr data-cat="India Data"><td class="px-5 py-3 font-mono font-bold text-orange-700">fetch_cpcb_air_quality</td><td class="px-5 py-3"><span class="rounded bg-orange-50 px-2 py-0.5 text-orange-800 font-semibold">India Data</span></td><td class="px-5 py-3 font-mono text-slate-500">city, parameter</td><td class="px-5 py-3">Fetch CPCB/OpenAQ real-time air quality (AQI, PM2.5, PM10, NO2) with NAQI categorized color markers.</td></tr>
+            <tr data-cat="India Data"><td class="px-5 py-3 font-mono font-bold text-orange-700">fetch_indian_railways</td><td class="px-5 py-3"><span class="rounded bg-orange-50 px-2 py-0.5 text-orange-800 font-semibold">India Data</span></td><td class="px-5 py-3 font-mono text-slate-500">state, bbox</td><td class="px-5 py-3">Download Indian Railways network (OSM) filtered by state with styled layer.</td></tr>
+            <tr data-cat="India Data"><td class="px-5 py-3 font-mono font-bold text-orange-700">fetch_census_india</td><td class="px-5 py-3"><span class="rounded bg-orange-50 px-2 py-0.5 text-orange-800 font-semibold">India Data</span></td><td class="px-5 py-3 font-mono text-slate-500">state, district, metric</td><td class="px-5 py-3">Fetch Census 2011 population/literacy/sex-ratio data and join to admin boundary layer.</td></tr>
+            <tr data-cat="India Data"><td class="px-5 py-3 font-mono font-bold text-orange-700">fetch_bhuvan_layer</td><td class="px-5 py-3"><span class="rounded bg-orange-50 px-2 py-0.5 text-orange-800 font-semibold">India Data</span></td><td class="px-5 py-3 font-mono text-slate-500">layer_name, bbox</td><td class="px-5 py-3">Load ISRO Bhuvan WMS/WFS layers (LULC, soil, watershed, administrative boundaries).</td></tr>
+
+            <!-- AI Models & SAR Tools -->
+            <tr data-cat="AI Models"><td class="px-5 py-3 font-mono font-bold text-purple-700">sar_crop_classify</td><td class="px-5 py-3"><span class="rounded bg-purple-50 px-2 py-0.5 text-purple-800 font-semibold">AI &amp; SAR</span></td><td class="px-5 py-3 font-mono text-slate-500">layer, vv_field, vh_field, classes</td><td class="px-5 py-3">Classify crop types from Sentinel-1 SAR (VV/VH backscatter) using Random Forest ML with auto-styling.</td></tr>
+            <tr data-cat="AI Models"><td class="px-5 py-3 font-mono font-bold text-purple-700">train_land_cover_model</td><td class="px-5 py-3"><span class="rounded bg-purple-50 px-2 py-0.5 text-purple-800 font-semibold">AI &amp; SAR</span></td><td class="px-5 py-3 font-mono text-slate-500">training_layer, label_field, raster_layer</td><td class="px-5 py-3">Train a Random Forest classifier on user-drawn training areas and apply to raster for land cover mapping.</td></tr>
+            <tr data-cat="AI Models"><td class="px-5 py-3 font-mono font-bold text-purple-700">animate_time_series</td><td class="px-5 py-3"><span class="rounded bg-purple-50 px-2 py-0.5 text-purple-800 font-semibold">AI &amp; SAR</span></td><td class="px-5 py-3 font-mono text-slate-500">layers[], output_gif, fps</td><td class="px-5 py-3">Create animated GIF/video from time-series raster or vector layers (NDVI change, flood progression).</td></tr>
+
+            <!-- Advanced Analysis Tools -->
+            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">terrain_analysis_3d</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">dem_layer, type (slope|aspect|hillshade|tpi)</td><td class="px-5 py-3">Generate slope, aspect, hillshade, or TPI terrain maps from any DEM layer with auto-ramp symbology.</td></tr>
+            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">raster_calculator</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">expression, layers{}, output_name</td><td class="px-5 py-3">Run pixel-level raster math expressions (NDVI, MNDWI, band ratios) using GDAL raster calculator.</td></tr>
+            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">flood_risk_model</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">dem_layer, threshold_m, basin_layer</td><td class="px-5 py-3">Generate flood inundation zone from DEM by threshold elevation with area statistics.</td></tr>
+            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">viewshed_analysis</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">dem_layer, observer_layer, radius_m</td><td class="px-5 py-3">Calculate visible areas from observer points using GRASS GIS viewshed algorithm.</td></tr>
+            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">hotspot_analysis</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">layer, field, method (kde|getis)</td><td class="px-5 py-3">Generate spatial hotspot map using Kernel Density Estimation or Getis-Ord Gi* statistic.</td></tr>
+            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">network_analysis</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">network_layer, start_point, end_point</td><td class="px-5 py-3">Shortest path and service area analysis on road network layers using QGIS network analyzer.</td></tr>
+            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">zonal_statistics</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">raster_layer, zone_layer, stats[]</td><td class="px-5 py-3">Compute zonal statistics (mean, sum, min, max, std) of raster values per vector polygon zone.</td></tr>
+            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">interpolate_surface</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">layer, field, method (idw|tin|kriging), pixel_size</td><td class="px-5 py-3">Create continuous surface raster from point measurements using IDW, TIN, or Kriging interpolation.</td></tr>
           </tbody>
         </table>
       </div>
