@@ -1,11 +1,11 @@
 # AutoGIS Studio — Autonomous Geospatial AI Agent for QGIS
 
-[![Version](https://img.shields.io/badge/version-1.0.4-blue)](https://github.com/sutharprin098/AutoGIS/releases/tag/v1.0.4)
+[![Version](https://img.shields.io/badge/version-1.0.5-blue)](https://github.com/sutharprin098/AutoGIS/releases/tag/v1.0.5)
 [![QGIS](https://img.shields.io/badge/QGIS-3.22%2B-green)](https://qgis.org)
 [![License](https://img.shields.io/badge/license-GPL--3.0-orange)](LICENSE)
 [![Downloads](https://img.shields.io/github/downloads/sutharprin098/AutoGIS/total)](https://github.com/sutharprin098/AutoGIS/releases)
 
-**AutoGIS** is an open-source, fully autonomous Geospatial AI Agent, Live MCP Server, and Spatial Analysis Studio built into QGIS. Connect any AI model — cloud or offline — to your GIS data and automate complex workflows with 59 built-in tools.
+**AutoGIS** is an open-source, fully autonomous Geospatial AI Agent, Live MCP Server, and Spatial Analysis Studio built into QGIS. Connect any AI model — cloud or offline — to your GIS data and automate complex workflows with 60 built-in tools.
 
 ---
 
@@ -38,7 +38,7 @@ AutoGIS does all of that in one shot.
 
 ---
 
-## 🛠️ 59 Autonomous Tools (v1.0.4)
+## 🛠️ 60 Autonomous Tools (v1.0.5)
 
 ### 🌍 Data Acquisition
 | Tool | Description |
@@ -134,7 +134,7 @@ AutoGIS does all of that in one shot.
 3. Search for **AutoGIS** → Click **Install**
 
 ### Method 2: Manual ZIP Install
-1. Download `AutoGIS.zip` from [Releases](https://github.com/sutharprin098/AutoGIS/releases/tag/v1.0.4)
+1. Download `AutoGIS.zip` from [Releases](https://github.com/sutharprin098/AutoGIS/releases/tag/v1.0.5)
 2. QGIS → **Plugins → Manage and Install Plugins → Install from ZIP**
 3. Select the downloaded `AutoGIS.zip` → **Install Plugin**
 
@@ -206,7 +206,7 @@ AutoGIS exposes a **Model Context Protocol (MCP)** server so you can call AutoGI
 
 ---
 
-## 🌾 Sentinel-1 SAR Crop Classification (New in v1.0.4)
+## 🌾 Sentinel-1 SAR Crop Classification (New in v1.0.5)
 
 AutoGIS implements the multi-temporal SAR crop classification methodology from:
 
@@ -226,7 +226,7 @@ AutoGIS implements the multi-temporal SAR crop classification methodology from:
 
 ---
 
-## 📡 Indian Datasets (New in v1.0.4)
+## 📡 Indian Datasets (New in v1.0.5)
 
 | Dataset | Source | Coverage |
 |---|---|---|

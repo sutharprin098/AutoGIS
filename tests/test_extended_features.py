@@ -10,6 +10,7 @@ from core.extended_gis_tools import (
     tool_analyze_map_vision,
     tool_classify_crops_sentinel1_sar,
     tool_create_map_graticule,
+    tool_detect_buildings_from_raster,
     tool_export_temporal_animation,
     tool_fetch_air_quality_heatmap,
     tool_fetch_imd_weather_data,
@@ -37,6 +38,7 @@ def test_all_extended_tools_registered():
         "load_india_census_data",
         "fetch_air_quality_heatmap",
         "classify_crops_sentinel1_sar",
+        "detect_buildings_from_raster",
     ]
     for name in expected_new_tools:
         assert name in tools, f"Missing tool in registry: {name}"
@@ -271,4 +273,26 @@ def test_classify_crops_sentinel1_sar():
     assert "MDPI REMOTE SENSING" in html_content
     assert "Radar Vegetation Index" in html_content
     assert "Chart" in html_content
+
+
+def test_detect_buildings_from_raster():
+    res = tool_detect_buildings_from_raster(
+        None,
+        {
+            "min_area_sqm": 20.0,
+            "max_area_sqm": 5000.0,
+            "output_layer_name": "Test_Buildings",
+        },
+    )
+    assert res["status"] == "detected"
+    assert res["total_buildings_detected"] > 0
+    assert res["total_footprint_sqm"] > 0
+    assert os.path.exists(res["geojson_file"])
+    with open(res["geojson_file"], "r", encoding="utf-8") as f:
+        data = json.load(f)
+    assert len(data["features"]) > 0
+    first_bld = data["features"][0]["properties"]
+    assert "building_id" in first_bld
+    assert "area_sqm" in first_bld
+
 

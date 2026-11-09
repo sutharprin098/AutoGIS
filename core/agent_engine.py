@@ -52,6 +52,7 @@ class AutoGISEngine(QObject):
         "fetch_air_quality_heatmap",
         "analyze_map_vision",
         "classify_crops_sentinel1_sar",
+        "detect_buildings_from_raster",
     })
 
     def __init__(self, iface, config: AutoGISConfig, parent=None) -> None:

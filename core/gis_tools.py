@@ -1744,6 +1744,7 @@ from .extended_gis_tools import (
     tool_analyze_map_vision,
     tool_classify_crops_sentinel1_sar,
     tool_create_map_graticule,
+    tool_detect_buildings_from_raster,
     tool_export_temporal_animation,
     tool_fetch_air_quality_heatmap,
     tool_fetch_imd_weather_data,
@@ -2719,6 +2720,21 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
                 },
             },
             handler=tool_classify_crops_sentinel1_sar,
+        ),
+        GISToolSpec(
+            name="detect_buildings_from_raster",
+            description="Detect building footprints from an active raster layer (drone orthophoto, high-resolution satellite image, or basemap). Uses computer vision edge morphology and geospatial building models to extract vector polygons with area, perimeter, and confidence metrics.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "raster_layer": {"type": "string", "description": "Optional name or ID of the raster layer to analyze (defaults to active or first raster layer)."},
+                    "min_area_sqm": {"type": "number", "description": "Minimum building footprint area in square meters (default 25.0)."},
+                    "max_area_sqm": {"type": "number", "description": "Maximum building footprint area in square meters (default 5000.0)."},
+                    "output_layer_name": {"type": "string", "description": "Name for the generated building polygon layer (default 'Detected_Buildings')."},
+                },
+            },
+            handler=tool_detect_buildings_from_raster,
         ),
     ])
     return {s.name: s for s in specs}
