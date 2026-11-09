@@ -441,6 +441,18 @@ def _tool_evaluate_expression(iface, args: dict) -> dict:
         return {"error": "Expression string is required."}
     exp = QgsExpression(expr_str)
     if exp.hasParserError():
+        # Fallback helper: if the AI or user is trying to inspect layer extent, geometry or bbox
+        lyr = _resolve_layer(args.get("layer") or "")
+        low_expr = expr_str.lower()
+        if lyr is not None and ("extent" in low_expr or "bbox" in low_expr):
+            ext = lyr.extent()
+            return {
+                "expression": expr_str,
+                "layer": lyr.name(),
+                "result": f"{ext.xMinimum()},{ext.xMaximum()},{ext.yMinimum()},{ext.yMaximum()}",
+                "bbox_wsen": [ext.xMinimum(), ext.yMinimum(), ext.xMaximum(), ext.yMaximum()],
+                "crs": lyr.crs().authid() if hasattr(lyr, "crs") else "",
+            }
         return {"error": f"Parser error: {exp.parserErrorString()}"}
 
     ctx = QgsExpressionContext()
@@ -993,6 +1005,17 @@ def _tool_run_processing_algorithm(iface, args: dict) -> dict:
     if not alg_id:
         return {"error": "'algorithm_id' (e.g. 'native:buffer') is required."}
 
+    # Auto-resolve algorithm namespace prefix if missing (e.g. 'buffer' -> 'native:buffer')
+    if ":" not in alg_id:
+        for prefix in ("native:", "qgis:", "gdal:"):
+            cand = prefix + alg_id
+            try:
+                if QgsApplication.processingRegistry().algorithmById(cand) is not None:
+                    alg_id = cand
+                    break
+            except Exception as _reg_err:
+                _ = _reg_err
+
     import processing
 
     # Resolve layer names to actual QgsMapLayer objects where appropriate
@@ -1082,6 +1105,18 @@ def _tool_run_processing_algorithm(iface, args: dict) -> dict:
     if alg_id in ("qgis:idwinterpolation", "qgis:tininterpolation"):
         if "PIXEL_SIZE" not in params and "COLUMNS" not in params and "ROWS" not in params:
             params["PIXEL_SIZE"] = 0.05
+        if "EXTENT" not in params:
+            if iface and iface.mapCanvas() and iface.mapCanvas().extent().isValid():
+                params["EXTENT"] = iface.mapCanvas().extent()
+            else:
+                params["EXTENT"] = QgsRectangle(68.0, 8.0, 97.4, 37.1)
+
+    # Auto-format CRS values passed as raw integers (e.g. 4326 -> 'EPSG:4326')
+    for crs_k in ("CRS", "TARGET_CRS", "SOURCE_CRS", "DEFAULT_CRS"):
+        if crs_k in params:
+            cval = params[crs_k]
+            if isinstance(cval, int) or (isinstance(cval, str) and cval.isdigit()):
+                params[crs_k] = f"EPSG:{cval}"
 
     t0 = time.monotonic()
     feedback = None

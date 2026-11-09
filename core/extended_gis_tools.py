@@ -1107,6 +1107,19 @@ def tool_fetch_imd_weather_data(iface, args: dict[str, Any], run_on_main=None) -
     def _load_layer():
         lyr = QgsVectorLayer(out_file, "IMD_Weather_Grid", "ogr")
         if lyr.isValid():
+            try:
+                from qgis.core import QgsGraduatedSymbolRenderer, QgsRendererRange, QgsMarkerSymbol
+                target_field = "rainfall_mm" if "rain" in param else "temp_c"
+                ranges = [
+                    QgsRendererRange(0.0, 2.0, QgsMarkerSymbol.createSimple({"color": "#E0F2FE", "size": "4.0", "outline_color": "#0284C7"}), "0-2 mm (Trace)"),
+                    QgsRendererRange(2.0, 10.0, QgsMarkerSymbol.createSimple({"color": "#7DD3FC", "size": "4.8", "outline_color": "#0284C7"}), "2-10 mm (Light)"),
+                    QgsRendererRange(10.0, 25.0, QgsMarkerSymbol.createSimple({"color": "#38BDF8", "size": "5.6", "outline_color": "#0369A1"}), "10-25 mm (Moderate)"),
+                    QgsRendererRange(25.0, 50.0, QgsMarkerSymbol.createSimple({"color": "#0284C7", "size": "6.4", "outline_color": "#075985"}), "25-50 mm (Heavy)"),
+                    QgsRendererRange(50.0, 999.0, QgsMarkerSymbol.createSimple({"color": "#1E3A8A", "size": "7.5", "outline_color": "#0F172A"}), ">50 mm (Very Heavy)"),
+                ]
+                lyr.setRenderer(QgsGraduatedSymbolRenderer(target_field, ranges))
+            except Exception as _r_err:
+                _ = _r_err
             QgsProject.instance().addMapLayer(lyr)
         if iface and iface.mapCanvas():
             iface.mapCanvas().refresh()
@@ -1254,6 +1267,19 @@ def tool_fetch_air_quality_heatmap(iface, args: dict[str, Any], run_on_main=None
     def _load_aqi():
         lyr = QgsVectorLayer(out_file, "CPCB_Live_Air_Quality", "ogr")
         if lyr.isValid():
+            try:
+                from qgis.core import QgsCategorizedSymbolRenderer, QgsRendererCategory, QgsMarkerSymbol
+                cats = [
+                    QgsRendererCategory("Good", QgsMarkerSymbol.createSimple({"color": "#00B050", "size": "4.0", "outline_color": "#008035"}), "Good (0-50)"),
+                    QgsRendererCategory("Satisfactory", QgsMarkerSymbol.createSimple({"color": "#92D050", "size": "4.5", "outline_color": "#659A2C"}), "Satisfactory (51-100)"),
+                    QgsRendererCategory("Moderate", QgsMarkerSymbol.createSimple({"color": "#FFFF00", "size": "5.0", "outline_color": "#B8B800"}), "Moderate (101-200)"),
+                    QgsRendererCategory("Poor", QgsMarkerSymbol.createSimple({"color": "#FF9900", "size": "5.5", "outline_color": "#B86E00"}), "Poor (201-300)"),
+                    QgsRendererCategory("Very Poor", QgsMarkerSymbol.createSimple({"color": "#FF0000", "size": "6.0", "outline_color": "#990000"}), "Very Poor (301-400)"),
+                    QgsRendererCategory("Severe", QgsMarkerSymbol.createSimple({"color": "#C00000", "size": "6.5", "outline_color": "#660000"}), "Severe (>400)"),
+                ]
+                lyr.setRenderer(QgsCategorizedSymbolRenderer("category", cats))
+            except Exception as _aqi_r_err:
+                _ = _aqi_r_err
             QgsProject.instance().addMapLayer(lyr)
         if iface and iface.mapCanvas():
             iface.mapCanvas().refresh()
