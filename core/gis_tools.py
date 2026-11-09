@@ -1013,6 +1013,76 @@ def _tool_run_processing_algorithm(iface, args: dict) -> dict:
     if "OUTPUT" not in params:
         params["OUTPUT"] = "TEMPORARY_OUTPUT"
 
+    # Auto-sanitize EXTENT parameter (converts bbox lists, comma strings, or layer names into valid QgsRectangle)
+    for ext_key in ("EXTENT", "extent", "OUTPUT_EXTENT"):
+        if ext_key in params:
+            ext_val = params[ext_key]
+            if isinstance(ext_val, (list, tuple)) and len(ext_val) == 4:
+                try:
+                    p = [float(x) for x in ext_val]
+                    xmin = min(p[0], p[2])
+                    xmax = max(p[0], p[2])
+                    ymin = min(p[1], p[3])
+                    ymax = max(p[1], p[3])
+                    params[ext_key] = QgsRectangle(xmin, ymin, xmax, ymax)
+                except Exception as _ext_err:
+                    _ = _ext_err
+            elif isinstance(ext_val, str):
+                ext_str = ext_val.strip()
+                if "," in ext_str:
+                    try:
+                        parts = [float(x.strip()) for x in ext_str.split(",") if x.strip()]
+                        if len(parts) == 4:
+                            xmin = min(parts[0], parts[2])
+                            xmax = max(parts[0], parts[2])
+                            ymin = min(parts[1], parts[3])
+                            ymax = max(parts[1], parts[3])
+                            params[ext_key] = QgsRectangle(xmin, ymin, xmax, ymax)
+                    except Exception as _ext_err:
+                        _ = _ext_err
+                else:
+                    ext_lyr = _resolve_layer(ext_str)
+                    if ext_lyr is not None and hasattr(ext_lyr, "extent"):
+                        params[ext_key] = ext_lyr.extent()
+
+    # Auto-format INTERPOLATION_DATA for qgis:idwinterpolation and qgis:tininterpolation
+    for interp_key in ("INTERPOLATION_DATA", "interpolation_data"):
+        if interp_key in params:
+            raw_interp = params[interp_key]
+            if isinstance(raw_interp, dict):
+                raw_interp = [raw_interp]
+            if isinstance(raw_interp, list):
+                s_parts = []
+                for entry in raw_interp:
+                    if isinstance(entry, dict):
+                        l_target = entry.get("layer") or entry.get("layer_name") or ""
+                        f_target = entry.get("field") or entry.get("attribute") or ""
+                        type_code = int(entry.get("type", 0))  # 0: points, 1: struct lines, 2: break lines
+                        l_obj = _resolve_layer(str(l_target)) if l_target else None
+                        if l_obj is not None:
+                            f_idx = -1
+                            if f_target and isinstance(l_obj, QgsVectorLayer):
+                                f_idx = l_obj.fields().indexOf(str(f_target))
+                                if f_idx < 0:
+                                    for idx_i, fld in enumerate(l_obj.fields()):
+                                        if fld.name().lower() == str(f_target).lower():
+                                            f_idx = idx_i
+                                            break
+                            use_attr = 0 if f_idx >= 0 else 1
+                            src = l_obj.source() or l_obj.id()
+                            s_parts.append(f"{src}::~::{use_attr}::~::{max(0, f_idx)}::~::{type_code}")
+                    elif isinstance(entry, (list, tuple)) and len(entry) >= 4:
+                        s_parts.append(f"{entry[0]}::~::{entry[1]}::~::{entry[2]}::~::{entry[3]}")
+                    elif isinstance(entry, str):
+                        s_parts.append(entry.rstrip(";"))
+                if s_parts:
+                    params[interp_key] = ";".join(s_parts) + ";"
+
+    # Default pixel size for IDW / TIN rasterization if missing
+    if alg_id in ("qgis:idwinterpolation", "qgis:tininterpolation"):
+        if "PIXEL_SIZE" not in params and "COLUMNS" not in params and "ROWS" not in params:
+            params["PIXEL_SIZE"] = 0.05
+
     t0 = time.monotonic()
     feedback = None
     try:
