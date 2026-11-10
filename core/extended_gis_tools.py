@@ -32,11 +32,13 @@ import urllib.request
 from typing import Any
 
 from qgis.core import (
+    QgsCategorizedSymbolRenderer,
     QgsColorRampShader,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
     QgsFeature,
     QgsField,
+    QgsFillSymbol,
     QgsGeometry,
     QgsGraduatedSymbolRenderer,
     QgsMapLayer,
@@ -1108,7 +1110,6 @@ def tool_fetch_imd_weather_data(iface, args: dict[str, Any], run_on_main=None) -
         lyr = QgsVectorLayer(out_file, "IMD_Weather_Grid", "ogr")
         if lyr.isValid():
             try:
-                from qgis.core import QgsGraduatedSymbolRenderer, QgsRendererRange, QgsMarkerSymbol
                 target_field = "rainfall_mm" if "rain" in param else "temp_c"
                 ranges = [
                     QgsRendererRange(0.0, 2.0, QgsMarkerSymbol.createSimple({"color": "#E0F2FE", "size": "4.0", "outline_color": "#0284C7"}), "0-2 mm (Trace)"),
@@ -1268,7 +1269,6 @@ def tool_fetch_air_quality_heatmap(iface, args: dict[str, Any], run_on_main=None
         lyr = QgsVectorLayer(out_file, "CPCB_Live_Air_Quality", "ogr")
         if lyr.isValid():
             try:
-                from qgis.core import QgsCategorizedSymbolRenderer, QgsRendererCategory, QgsMarkerSymbol
                 cats = [
                     QgsRendererCategory("Good", QgsMarkerSymbol.createSimple({"color": "#00B050", "size": "4.0", "outline_color": "#008035"}), "Good (0-50)"),
                     QgsRendererCategory("Satisfactory", QgsMarkerSymbol.createSimple({"color": "#92D050", "size": "4.5", "outline_color": "#659A2C"}), "Satisfactory (51-100)"),
@@ -1686,7 +1686,6 @@ def tool_detect_buildings_from_raster(iface, args: dict[str, Any], run_on_main=N
         vlyr = QgsVectorLayer(out_geojson, output_name, "ogr")
         if vlyr.isValid():
             try:
-                from qgis.core import QgsFillSymbol, QgsSingleSymbolRenderer
                 sym = QgsFillSymbol.createSimple({
                     "color": "#F59E0B",
                     "color_type": "hex",

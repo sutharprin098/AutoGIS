@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from qgis.core import (
+    QgsApplication,
     QgsCategorizedSymbolRenderer,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
@@ -1551,7 +1552,7 @@ def _tool_execute_pyqgis(iface, args: dict) -> dict:  # noqa: C901
                 return lyr
         raise NameError(
             f"Layer '{name}' not found in project. "
-            f"Available: {[l.name() for l in _proj.mapLayers().values()]}"
+            f"Available: {[layer.name() for layer in _proj.mapLayers().values()]}"
         )
 
     # Helper: get all layers as dict
