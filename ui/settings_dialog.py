@@ -175,6 +175,21 @@ class AutoGISSettingsDialog(QDialog):
         xerj_row.addWidget(self._xerj_edit, 1)
         form.addRow(QLabel("<b>XERJ Engine:</b>"), xerj_host)
 
+        # Geospatial Agentic Services (GAS 1.0.0)
+        gas_host = QWidget(card)
+        gas_row = QHBoxLayout(gas_host)
+        gas_row.setContentsMargins(0, 0, 0, 0)
+        gas_row.setSpacing(6)
+        self._gas_server_edit = QLineEdit(self._config.gas_server_url, gas_host)
+        self._gas_server_edit.setPlaceholderText("https://www.geospatial-agentic-services.online")
+        gas_row.addWidget(self._gas_server_edit, 1)
+        form.addRow(QLabel("<b>GAS Server:</b>"), gas_host)
+
+        self._gas_key_edit = QLineEdit(self._config.gibd_api_key or self._config.gas_api_key, card)
+        self._gas_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self._gas_key_edit.setPlaceholderText("Optional GIBD / GAS API Key (defaults to active AI key)")
+        form.addRow(QLabel("<b>GAS / GIBD Key:</b>"), self._gas_key_edit)
+
         # 3. Custom Logo (Optional)
         logo_host = QWidget(card)
         logo_row = QHBoxLayout(logo_host)
@@ -396,6 +411,12 @@ class AutoGISSettingsDialog(QDialog):
             self._status_lbl.setText(f"Earth Engine configuration error: {exc}")
             return
         self._config.xerj_url = self._xerj_edit.text().strip() or "http://127.0.0.1:9200"
+        self._config.gas_server_url = (
+            self._gas_server_edit.text().strip() or "https://www.geospatial-agentic-services.online"
+        )
+        gas_key_val = self._gas_key_edit.text().strip()
+        self._config.gibd_api_key = gas_key_val
+        self._config.gas_api_key = gas_key_val
         self._config.custom_logo_path = self._logo_edit.text().strip()
         set_custom_logo_path(self._config.custom_logo_path)
         self._config.custom_instructions = self._custom_edit.toPlainText().strip()

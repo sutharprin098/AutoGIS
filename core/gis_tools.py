@@ -1756,6 +1756,13 @@ from .extended_gis_tools import (
     tool_manage_agent_memory,
     tool_visualize_3d_terrain,
 )
+from .gas_tools import (
+    tool_gas_describe_agent,
+    tool_gas_discover_agents,
+    tool_gas_execute_task,
+    tool_gas_manage_task,
+    tool_gas_registry_search,
+)
 
 def _gee_dem(iface, args: dict, run_on_main=None) -> dict:
     return tool_gee_download_dem(args, iface=iface, run_on_main=run_on_main)
@@ -2736,6 +2743,140 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
                 },
             },
             handler=tool_detect_buildings_from_raster,
+        ),
+        GISToolSpec(
+            name="gas_discover_agents",
+            description="Discover and search published Geospatial Agentic Services (GAS 1.0.0) agents from a GAS server (GetCapabilities) or the GAS Registry (e.g. vector_analysis_agent, spatial_statistics_agent, raster_agent, usgs_earthquake_agent, geospatial_workflow_planning_agent).",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "keyword": {"type": "string", "description": "Optional search keyword (e.g. 'hotspot', 'earthquake', 'gwr', 'vector', 'raster')."},
+                    "source": {"type": "string", "enum": ["server", "registry"], "description": "Discovery source: 'server' (GetCapabilities) or 'registry' (default 'server')."},
+                    "server_url": {"type": "string", "description": "Optional GAS server base URL (defaults to configured GAS server)."},
+                    "include_descriptions": {"type": "boolean", "description": "Fetch full DescribeAgent profiles for all agents (default false)."},
+                },
+            },
+            handler=tool_gas_discover_agents,
+        ),
+        GISToolSpec(
+            name="gas_describe_agent",
+            description="Fetch the GAS 1.0.0 DescribeAgent capability document and live GetAgentStatus for a specific Geospatial Agentic Service (skills, inputs, outputs, parameters, credentials, and conformance).",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "agent_id": {
+                        "type": "string",
+                        "description": "GAS agent ID (e.g. 'vector_analysis_agent', 'spatial_statistics_agent', 'usgs_earthquake_agent', 'geospatial_data_retrieval_agent', 'geospatial_workflow_planning_agent').",
+                    },
+                    "server_url": {"type": "string", "description": "Optional GAS server base URL."},
+                    "include_status": {"type": "boolean", "description": "Also query GetAgentStatus (/agents/{agent_id}/status, default true)."},
+                },
+                "required": ["agent_id"],
+            },
+            handler=tool_gas_describe_agent,
+        ),
+        GISToolSpec(
+            name="gas_execute_task",
+            description="Execute a task on a Geospatial Agentic Services (GAS 1.0.0) agent via ExecuteTask (sync, stream, or async mode). Automatically encodes local QGIS layers or files as input_datasets, downloads returned spatial artifacts (GeoJSON, GPKG, GeoTIFF, CSV, HTML), and loads them into QGIS.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "agent_id": {
+                        "type": "string",
+                        "description": "Target GAS agent ID (e.g. 'usgs_earthquake_agent', 'spatial_statistics_agent', 'vector_analysis_agent', 'geospatial_workflow_planning_agent').",
+                    },
+                    "instructions": {
+                        "type": "string",
+                        "description": "Natural-language task instructions for the GAS agent.",
+                    },
+                    "mode": {
+                        "type": "string",
+                        "enum": ["sync", "stream", "async"],
+                        "description": "Execution mode: 'sync' (default), 'stream' (NDJSON progress events), or 'async'.",
+                    },
+                    "input_datasets": {
+                        "type": "array",
+                        "description": "Optional list of QGIS layer names, local file paths, HTTP/HTTPS dataset URLs, or base64-encoded dataset objects.",
+                        "items": {"type": "string"},
+                    },
+                    "artifact_delivery": {
+                        "type": "string",
+                        "enum": ["URL", "Encoded"],
+                        "description": "Artifact delivery mode: 'URL' (default) or 'Encoded'.",
+                    },
+                    "parameters": {
+                        "type": "object",
+                        "description": "Optional GAS execution parameters dictionary.",
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "Optional model override for the GAS agent.",
+                    },
+                    "auto_load_to_qgis": {
+                        "type": "boolean",
+                        "description": "Automatically download and load returned vector/raster artifacts into QGIS (default true).",
+                    },
+                    "wait_for_completion": {
+                        "type": "boolean",
+                        "description": "When mode='async', poll GetTaskStatus until terminal and return GetTaskResult (default false).",
+                    },
+                    "server_url": {
+                        "type": "string",
+                        "description": "Optional GAS server base URL override.",
+                    },
+                    "timeout": {
+                        "type": "integer",
+                        "description": "Request timeout in seconds (default 180).",
+                    },
+                },
+                "required": ["agent_id", "instructions"],
+            },
+            handler=tool_gas_execute_task,
+        ),
+        GISToolSpec(
+            name="gas_manage_task",
+            description="Manage an asynchronous Geospatial Agentic Services (GAS 1.0.0) task: check status (GetTaskStatus), fetch final result (GetTaskResult), poll until completion ('wait'), or cancel a running task (CancelTask).",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "enum": ["status", "result", "wait", "cancel"],
+                        "description": "Operation to perform on the GAS task.",
+                    },
+                    "agent_id": {"type": "string", "description": "GAS agent ID that created the task."},
+                    "task_id": {"type": "string", "description": "Task ID returned by ExecuteTask."},
+                    "auto_load_to_qgis": {"type": "boolean", "description": "Auto-load artifacts into QGIS when fetching result (default true)."},
+                    "server_url": {"type": "string", "description": "Optional GAS server base URL."},
+                    "timeout": {"type": "integer", "description": "Timeout in seconds (default 120)."},
+                },
+                "required": ["action", "agent_id", "task_id"],
+            },
+            handler=tool_gas_manage_task,
+        ),
+        GISToolSpec(
+            name="gas_registry_search",
+            description="Search the distributed Geospatial Agentic Services (GAS) Registry across multiple institutions (Penn State GIBD, Emory, GMU STC, etc.) to list registered servers, discover agents, or inspect registry metadata.",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "enum": ["list_agents", "list_servers", "agent_detail"],
+                        "description": "Registry operation (default 'list_agents').",
+                    },
+                    "keyword": {"type": "string", "description": "Optional keyword filter across agent IDs, descriptions, and providers."},
+                    "registry_id": {"type": "string", "description": "Registry agent ID for 'agent_detail' (e.g. 'vector_analysis_agent@www.geospatial-agentic-services.online')."},
+                    "server_url": {"type": "string", "description": "Optional source_base_url filter when listing agents."},
+                    "registry_url": {"type": "string", "description": "Optional GAS Registry URL override."},
+                },
+            },
+            handler=tool_gas_registry_search,
         ),
     ])
     return {s.name: s for s in specs}

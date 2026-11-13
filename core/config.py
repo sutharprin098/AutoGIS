@@ -194,6 +194,10 @@ class AutoGISConfig:
             "gee_project_id",
             "gee_service_account",
             "gee_key_file",
+            "gas_server_url",
+            "gas_registry_url",
+            "gas_api_key",
+            "gibd_api_key",
         )
         for k in keys:
             _MEM_CACHE[k] = ""
@@ -455,6 +459,52 @@ class AutoGISConfig:
     def xerj_url(self, value: str) -> None:
         clean = (value or "http://127.0.0.1:9200").strip().rstrip("/")
         self.set_str("xerj_url", clean)
+
+    @property
+    def gas_server_url(self) -> str:
+        val = (
+            self.get_str("gas_server_url", "https://www.geospatial-agentic-services.online")
+            or "https://www.geospatial-agentic-services.online"
+        ).strip().rstrip("/")
+        return val
+
+    @gas_server_url.setter
+    def gas_server_url(self, value: str) -> None:
+        clean = (
+            value or "https://www.geospatial-agentic-services.online"
+        ).strip().rstrip("/")
+        self.set_str("gas_server_url", clean)
+
+    @property
+    def gas_registry_url(self) -> str:
+        val = (
+            self.get_str("gas_registry_url", "https://www.geospatial-agentic-services.online/registry")
+            or "https://www.geospatial-agentic-services.online/registry"
+        ).strip().rstrip("/")
+        return val
+
+    @gas_registry_url.setter
+    def gas_registry_url(self, value: str) -> None:
+        clean = (
+            value or "https://www.geospatial-agentic-services.online/registry"
+        ).strip().rstrip("/")
+        self.set_str("gas_registry_url", clean)
+
+    @property
+    def gas_api_key(self) -> str:
+        return self.get_str("gas_api_key", "")
+
+    @gas_api_key.setter
+    def gas_api_key(self, value: str) -> None:
+        self.set_str("gas_api_key", value)
+
+    @property
+    def gibd_api_key(self) -> str:
+        return self.get_str("gibd_api_key", "")
+
+    @gibd_api_key.setter
+    def gibd_api_key(self, value: str) -> None:
+        self.set_str("gibd_api_key", value)
 
 
 class ThreadHistoryStore:

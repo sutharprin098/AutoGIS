@@ -1,24 +1,26 @@
-<?xml version = '1.0' encoding = 'UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <plugins>
-    <pyqgis_plugin name="AutoGIS" version="1.0.5">
-        <description><![CDATA[Autonomous Geospatial AI Agent, Live MCP Bridge & Spatial Analysis Studio for QGIS with Google Earth Engine (GEE) & 60 Tools]]></description>
-        <about><![CDATA[AutoGIS is an open-source, standalone Autonomous Geospatial AI Agent, Live MCP Server, and Spatial Analysis Studio for QGIS. Connect Cloud AI (Gemini, Claude, ChatGPT, DeepSeek, OpenRouter) or fully Offline Local AI (Ollama / LM Studio) to Google Earth Engine (GEE), live OpenStreetMap vectors, Indian Railways, Metros, IMD weather rasters, Census India choropleths, CPCB live air quality, 3D terrain draping, animated time series, 300 DPI publication print layouts, and PyQGIS workflows across 60 autonomous tools.]]></about>
-        <version>1.0.5</version>
-        <qgis_minimum_version>3.22.0</qgis_minimum_version>
-        <qgis_maximum_version>4.99.0</qgis_maximum_version>
-        <homepage>https://autogis.princesite.in/</homepage>
-        <file_name>AutoGIS.zip</file_name>
-        <icon>https://raw.githubusercontent.com/sutharprin098/AutoGIS/main/icons/icon.png</icon>
-        <author_name>Prince Suthar</author_name>
-        <author_email>sutharprince098@gmail.com</author_email>
-        <download_url>https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.5/AutoGIS.zip</download_url>
-        <uploaded_by>sutharprin098</uploaded_by>
-        <create_date>2026-10-28</create_date>
-        <update_date>2026-11-09</update_date>
-        <experimental>False</experimental>
-        <deprecated>False</deprecated>
-        <tracker>https://github.com/sutharprin098/AutoGIS/issues</tracker>
-        <repository>https://github.com/sutharprin098/AutoGIS</repository>
-        <tags>autogis,gis,mcp,earth engine,gee,remote sensing,spatial analysis,automation,pyqgis,osm,stac,routing,cartography,ollama,india,weather,census,air quality,3d terrain,time series,voice,building detection</tags>
-    </pyqgis_plugin>
+  <pyqgis_plugin name="AutoGIS Studio" version="1.0.6" plugin_id="autogis_studio">
+    <description><![CDATA[Autonomous Geospatial AI Agent for QGIS — 65 Tools across Google Earth Engine, Geospatial Agentic Services (GAS 1.0.0), Sentinel-1 SAR Crop Classification, Raster Building Extraction, India Datasets (Railways, IMD, Census, CPCB), 3D Terrain, Time Series Animation, Multi-LLM OpenRouter Engine, and Live MCP/GAS Server Bridge]]></description>
+    <about><![CDATA[AutoGIS Studio is an enterprise-grade, multi-agent geospatial intelligence platform built directly inside QGIS Desktop (3.22–4.x, Qt5 & Qt6 compatible). Powered by 65 autonomous tools, it connects to OpenRouter (300+ LLMs including free tier Nvidia Nemotron 3.5 Lightning with instant 2-5s response), OpenAI, Google Gemini, Anthropic Claude, Groq, DeepSeek, or local Ollama models. Features include: Native Google Earth Engine (GEE) integration, Geospatial Agentic Services (GAS 1.0.0) standard client & live QGIS server bridge (GetCapabilities, DescribeAgent, ExecuteTask sync/stream, Registry discovery, automatic QGIS layer packaging & spatial artifact auto-loading), Raster Building Footprint Extraction, Sentinel-1 SAR Random Forest crop classification, live OpenStreetMap Overpass vector fetching, Open-Meteo elevation grids, Natural Earth boundaries, India-specific datasets (Indian Railways, IMD Gridded Rainfall/Temp, CPCB Air Quality Index, Census 2011, ISRO Bhuvan WMS/WFS), 3D Terrain Analysis, Flood Inundation Modeling, Viewshed, Hotspot KDE/Gi*, Shortest Path Network Analysis, Zonal Statistics, Surface Interpolation, Animated Time-Series GIFs, PDF/Excel/CSV/DOCX document parsing, automated CRS verification, smart vector symbology, high-DPI PNG map exports, and a bullet-proof PyQGIS console with pre-flight AST validation and safe helper functions.]]></about>
+    <version>1.0.6</version>
+    <trusted>True</trusted>
+    <qgis_minimum_version>3.22.0</qgis_minimum_version>
+    <qgis_maximum_version>4.99.0</qgis_maximum_version>
+    <homepage>https://autogis.princesite.in/</homepage>
+    <file_name>AutoGIS.zip</file_name>
+    <icon>https://autogis.princesite.in/assets/icon.svg</icon>
+    <author_name>Prince Suthar</author_name>
+    <download_url>https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.6/AutoGIS.zip</download_url>
+    <uploaded_by>sutharprin098</uploaded_by>
+    <create_date>2026-03-19</create_date>
+    <update_date>2026-11-13</update_date>
+    <experimental>False</experimental>
+    <deprecated>False</deprecated>
+    <tracker>https://github.com/sutharprin098/AutoGIS/issues</tracker>
+    <repository>https://github.com/sutharprin098/AutoGIS</repository>
+    <tags>ai,agent,llm,geoprocessing,automation,openrouter,osm,cartography,spatial-analysis,pyqgis,mcp,crs,earth-engine,gee,sar,sentinel,remote-sensing,ndvi,lulc,india,terrain,flood,hotspot,interpolation,building-detection,gas,geospatial-agentic-services</tags>
+    <external_dependencies>None (pure Python standard library + native PyQGIS)</external_dependencies>
+    <server>False</server>
+  </pyqgis_plugin>
 </plugins>

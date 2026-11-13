@@ -1,11 +1,11 @@
 # AutoGIS Studio — Autonomous Geospatial AI Agent for QGIS
 
-[![Version](https://img.shields.io/badge/version-1.0.5-blue)](https://github.com/sutharprin098/AutoGIS/releases/tag/v1.0.5)
+[![Version](https://img.shields.io/badge/version-1.0.6-blue)](https://github.com/sutharprin098/AutoGIS/releases/tag/v1.0.6)
 [![QGIS](https://img.shields.io/badge/QGIS-3.22%2B-green)](https://qgis.org)
 [![License](https://img.shields.io/badge/license-GPL--3.0-orange)](LICENSE)
 [![Downloads](https://img.shields.io/github/downloads/sutharprin098/AutoGIS/total)](https://github.com/sutharprin098/AutoGIS/releases)
 
-**AutoGIS** is an open-source, fully autonomous Geospatial AI Agent, Live MCP Server, and Spatial Analysis Studio built into QGIS. Connect any AI model — cloud or offline — to your GIS data and automate complex workflows with 60 built-in tools.
+**AutoGIS** is an open-source, fully autonomous Geospatial AI Agent, Live MCP & GAS 1.0.0 Server, and Spatial Analysis Studio built into QGIS. Connect any AI model — cloud or offline — to your GIS data and automate complex workflows with 65 built-in tools.
 
 ---
 
@@ -38,7 +38,16 @@ AutoGIS does all of that in one shot.
 
 ---
 
-## 🛠️ 60 Autonomous Tools (v1.0.5)
+## 🛠️ 65 Autonomous Tools (v1.0.6)
+
+### 🤝 Geospatial Agentic Services (GAS 1.0.0)
+| Tool | Description |
+|---|---|
+| `gas_discover_agents` | Discover published GAS agents via `GetCapabilities` or the GAS Registry |
+| `gas_describe_agent` | Inspect `DescribeAgent` capabilities, skills, schemas, and `GetAgentStatus` |
+| `gas_execute_task` | Execute tasks on remote/local GAS agents (`sync`, `stream`, `async`) & auto-load artifacts into QGIS |
+| `gas_manage_task` | Poll `GetTaskStatus`, fetch `GetTaskResult`, wait, or `CancelTask` |
+| `gas_registry_search` | Query distributed GAS Registry servers and multi-institution agents |
 
 ### 🌍 Data Acquisition
 | Tool | Description |

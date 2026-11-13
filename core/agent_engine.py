@@ -53,6 +53,11 @@ class AutoGISEngine(QObject):
         "analyze_map_vision",
         "classify_crops_sentinel1_sar",
         "detect_buildings_from_raster",
+        "gas_discover_agents",
+        "gas_describe_agent",
+        "gas_execute_task",
+        "gas_manage_task",
+        "gas_registry_search",
     })
 
     def __init__(self, iface, config: AutoGISConfig, parent=None) -> None:
@@ -192,7 +197,7 @@ class AutoGISEngine(QObject):
             "Rules:\n"
             "1. CRS: Check EPSG always; spatial_buffer/spatial_overlay auto-reproject; for run_processing_algorithm verify CRS alignment first.\n"
             "2. Plans: For 2+ steps call update_agent_plan AND execution tools in same turn. Never stop while steps are pending/in_progress.\n"
-            "3. No hardcoding: Inspect project first. Use search_processing_algorithms+get_algorithm_help before run_processing_algorithm. EXTENT can be passed directly as layer name or [w,s,e,n]. Use get_layer_info to inspect layers. Use GEE tools when available.\n"
+            "3. No hardcoding: Inspect project first. Use search_processing_algorithms+get_algorithm_help before run_processing_algorithm. EXTENT can be passed directly as layer name or [w,s,e,n]. Use get_layer_info to inspect layers. Use GEE tools or GAS (Geospatial Agentic Services: gas_discover_agents, gas_describe_agent, gas_execute_task, gas_manage_task, gas_registry_search) when requested.\n"
             "4. Execute don't describe: Use tools, never dump code for user to run. Clip to AOI polygon. Preserve user layers. Verify outputs before reporting done.\n"
             "5. execute_pyqgis rules: ALWAYS call list_layers first. Use get_layer('name') helper (pre-injected). Check qgis_version_int before QGIS 3.30+ APIs. On NameError retry with get_layer(); on AttributeError use Processing algorithm instead.\n"
             "6. Concise responses, no emojis."
