@@ -92,8 +92,9 @@
       </a>
 
       <nav class="hidden md:flex items-center gap-7 text-xs font-semibold text-slate-600">
-        <a href="#features" class="hover:text-slate-900 transition">Features</a>
+        <a href="#gas" class="hover:text-slate-900 transition flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>GAS 1.0.0 Agents</a>
         <a href="#gee" class="hover:text-slate-900 transition flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>Google Earth Engine</a>
+        <a href="#features" class="hover:text-slate-900 transition">Features</a>
         <a href="#setup" class="hover:text-slate-900 transition">Quick Install</a>
         <a href="#tools" class="hover:text-slate-900 transition">65 Tools</a>
         <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="hover:text-slate-900 transition">GitHub</a>
@@ -164,11 +165,74 @@
     </div>
   </section>
 
+  <!-- Dedicated Geospatial Agentic Services (GAS 1.0.0) Showcase Section -->
+  <section id="gas" class="border-t border-slate-200 bg-gradient-to-b from-indigo-50/40 to-white py-16">
+    <div class="mx-auto max-w-6xl px-6">
+      <div class="reveal text-center">
+        <span class="font-mono text-xs font-bold tracking-widest text-indigo-600 uppercase">New in Release v1.0.6 · 5 New Tools</span>
+        <h2 class="mt-2 text-3xl font-extrabold text-slate-900 sm:text-4xl">Geospatial Agentic Services (GAS 1.0.0) Integration</h2>
+        <p class="mx-auto mt-3 max-w-2xl text-sm text-slate-600">
+          AutoGIS v1.0.6 implements the open <strong>GAS 1.0.0 standard</strong> (Penn State GIBD Lab) as both a native QGIS client and a local server bridge &mdash; enabling seamless discovery, live NDJSON streaming, automatic QGIS layer packaging, and auto-loading of remote spatial artifacts.
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div class="reveal saas-card rounded-2xl p-6 border-indigo-100">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">01</div>
+          <h3 class="mt-4 text-base font-bold text-slate-900">Agent Discovery &amp; GetCapabilities</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Use <code class="font-mono text-[11px] text-indigo-700">gas_discover_agents</code> and <code class="font-mono text-[11px] text-indigo-700">gas_describe_agent</code> to query any GAS 1.0.0 server, inspect agent skills, input/output schemas, parameter rules, and live runtime health.
+          </p>
+        </div>
+
+        <div class="reveal saas-card rounded-2xl p-6 border-indigo-100">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">02</div>
+          <h3 class="mt-4 text-base font-bold text-slate-900">Sync &amp; Live NDJSON Streaming</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Execute distributed geospatial operations via <code class="font-mono text-[11px] text-indigo-700">gas_execute_task</code> in synchronous (<code class="font-mono text-[11px]">sync</code>) or real-time NDJSON streaming (<code class="font-mono text-[11px]">stream</code>) modes with full lifecycle progress events.
+          </p>
+        </div>
+
+        <div class="reveal saas-card rounded-2xl p-6 border-indigo-100">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">03</div>
+          <h3 class="mt-4 text-base font-bold text-slate-900">Zero-Friction QGIS Layer Packaging</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Pass any loaded QGIS vector or raster layer name in <code class="font-mono text-[11px] text-indigo-700">layer_inputs</code> &mdash; AutoGIS automatically exports and base64-encodes it into a canonical GAS <code class="font-mono text-[11px]">input_datasets</code> payload.
+          </p>
+        </div>
+
+        <div class="reveal saas-card rounded-2xl p-6 border-indigo-100">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">04</div>
+          <h3 class="mt-4 text-base font-bold text-slate-900">Auto-Load Spatial Artifacts to Canvas</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Returned GeoJSON, GeoPackage, Shapefile, GeoTIFF, CSV, and KML outputs are automatically downloaded and loaded directly onto the active QGIS map canvas with smart styling.
+          </p>
+        </div>
+
+        <div class="reveal saas-card rounded-2xl p-6 border-indigo-100">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">05</div>
+          <h3 class="mt-4 text-base font-bold text-slate-900">Global Registry &amp; Async Task Control</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Search the global community agent store with <code class="font-mono text-[11px] text-indigo-700">gas_registry_search</code> and poll, fetch results, or cancel long-running jobs using <code class="font-mono text-[11px] text-indigo-700">gas_manage_task</code>.
+          </p>
+        </div>
+
+        <div class="reveal saas-card rounded-2xl p-6 border-indigo-100">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">06</div>
+          <h3 class="mt-4 text-base font-bold text-slate-900">Built-in Local GAS 1.0.0 &amp; MCP Server</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            AutoGIS exposes a compliant GAS 1.0.0 and MCP bridge on <code class="font-mono text-[11px] text-indigo-700">127.0.0.1:8765</code>, turning your live QGIS Desktop session into an interoperable agent for external orchestrators.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Dedicated Google Earth Engine (GEE) Showcase Section -->
   <section id="gee" class="border-y border-slate-200 bg-gradient-to-b from-white to-slate-50 py-16">
     <div class="mx-auto max-w-6xl px-6">
       <div class="reveal text-center">
-        <span class="font-mono text-xs font-bold tracking-widest text-emerald-600 uppercase">New in Release v1.0.6</span>
+        <span class="font-mono text-xs font-bold tracking-widest text-emerald-600 uppercase">Cloud Satellite Catalog</span>
         <h2 class="mt-2 text-3xl font-extrabold text-slate-900 sm:text-4xl">Deep Google Earth Engine (GEE) Integration</h2>
         <p class="mx-auto mt-3 max-w-2xl text-sm text-slate-600">
           AutoGIS now communicates natively with Google Earth Engine's multi-petabyte satellite catalog. Download DEMs, query Sentinel-2/Landsat collections, export multispectral bands, and calculate cloud-free spectral indices directly into your active QGIS canvas.
@@ -412,6 +476,13 @@
             </tr>
           </thead>
           <tbody id="tools-tbody" class="divide-y divide-slate-100 text-slate-700">
+            <!-- Geospatial Agentic Services (GAS 1.0.0) Tools -->
+            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_discover_agents</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">query, domain, server_url</td><td class="px-5 py-3">Discover remote or local Geospatial Agentic Services (GAS 1.0.0) agents via GetCapabilities with keyword and domain filtering.</td></tr>
+            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_describe_agent</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">agent_id, include_status, server_url</td><td class="px-5 py-3">Inspect a GAS 1.0.0 agent's full metadata, operations, input/output schemas, parameter schemas, and live runtime health.</td></tr>
+            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_execute_task</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">agent_id, operation, parameters, layer_inputs, mode</td><td class="px-5 py-3">Execute a GAS 1.0.0 agent operation in sync or NDJSON stream mode, auto-packaging QGIS layers and auto-loading output spatial artifacts into QGIS.</td></tr>
+            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_manage_task</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">agent_id, task_id, action (status|result|cancel)</td><td class="px-5 py-3">Poll asynchronous GAS task status, fetch completed task results (and load layers into QGIS), or cancel running tasks.</td></tr>
+            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_registry_search</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">query, domain, agent_id, registry_url</td><td class="px-5 py-3">Search the global Geospatial Agentic Services (GAS) Registry (/api/agents) for registered community spatial agents.</td></tr>
+
             <!-- Google Earth Engine Tools -->
             <tr data-cat="Earth Engine"><td class="px-5 py-3 font-mono font-bold text-emerald-700">gee_download_dem</td><td class="px-5 py-3"><span class="rounded bg-emerald-50 px-2 py-0.5 text-emerald-800 font-semibold">Earth Engine</span></td><td class="px-5 py-3 font-mono text-slate-500">place, bbox, dataset (srtm|copernicus), scale</td><td class="px-5 py-3">Download digital elevation models directly from Earth Engine and load them as a GeoTIFF layer in QGIS.</td></tr>
             <tr data-cat="Earth Engine"><td class="px-5 py-3 font-mono font-bold text-emerald-700">gee_compute_index</td><td class="px-5 py-3"><span class="rounded bg-emerald-50 px-2 py-0.5 text-emerald-800 font-semibold">Earth Engine</span></td><td class="px-5 py-3 font-mono text-slate-500">index (ndvi|ndwi|nbr), place, start_date, end_date</td><td class="px-5 py-3">Calculate Normalized Difference Vegetation (NDVI), Water (NDWI), or Burn (NBR) rasters on GEE and stream to QGIS.</td></tr>
@@ -485,13 +556,6 @@
             <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">network_analysis</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">network_layer, start_point, end_point</td><td class="px-5 py-3">Shortest path and service area analysis on road network layers using QGIS network analyzer.</td></tr>
             <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">zonal_statistics</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">raster_layer, zone_layer, stats[]</td><td class="px-5 py-3">Compute zonal statistics (mean, sum, min, max, std) of raster values per vector polygon zone.</td></tr>
             <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">interpolate_surface</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">layer, field, method (idw|tin|kriging), pixel_size</td><td class="px-5 py-3">Create continuous surface raster from point measurements using IDW, TIN, or Kriging interpolation.</td></tr>
-
-            <!-- Geospatial Agentic Services (GAS 1.0.0) Tools -->
-            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_discover_agents</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">query, domain, server_url</td><td class="px-5 py-3">Discover remote or local Geospatial Agentic Services (GAS 1.0.0) agents via GetCapabilities with keyword and domain filtering.</td></tr>
-            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_describe_agent</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">agent_id, include_status, server_url</td><td class="px-5 py-3">Inspect a GAS 1.0.0 agent's full metadata, operations, input/output schemas, parameter schemas, and live runtime health.</td></tr>
-            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_execute_task</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">agent_id, operation, parameters, layer_inputs, mode</td><td class="px-5 py-3">Execute a GAS 1.0.0 agent operation in sync or NDJSON stream mode, auto-packaging QGIS layers and auto-loading output spatial artifacts into QGIS.</td></tr>
-            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_manage_task</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">agent_id, task_id, action (status|result|cancel)</td><td class="px-5 py-3">Poll asynchronous GAS task status, fetch completed task results (and load layers into QGIS), or cancel running tasks.</td></tr>
-            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_registry_search</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">query, domain, agent_id, registry_url</td><td class="px-5 py-3">Search the global Geospatial Agentic Services (GAS) Registry (/api/agents) for registered community spatial agents.</td></tr>
           </tbody>
         </table>
       </div>
