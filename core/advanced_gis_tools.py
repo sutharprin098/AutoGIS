@@ -1409,8 +1409,19 @@ _GLOBAL_DATACUBE = StreamingDatacube()
 _GLOBAL_MCDM_ENGINE = AutonomousMCDMEngine()
 
 
-def tool_verigeo_verify_workflow(params: dict[str, Any]) -> dict[str, Any]:
+
+def _normalize_args(iface_or_params: Any = None, args: dict[str, Any] | None = None, **kwargs) -> tuple[Any, dict[str, Any]]:
+    """Helper to support both agent engine and standalone calling conventions."""
+    if isinstance(iface_or_params, dict) and args is None:
+        return None, iface_or_params
+    params = args if isinstance(args, dict) else kwargs
+    if not params and isinstance(iface_or_params, dict):
+        params = iface_or_params
+    return iface_or_params, params or {}
+
+def tool_verigeo_verify_workflow(iface_or_params: Any = None, args: dict[str, Any] | None = None, run_on_main: Any = None, **kwargs) -> dict[str, Any]:
     """Run VeriGeo Neuro-Symbolic Verification and Topological Repair on spatial layers."""
+    _, params = _normalize_args(iface_or_params, args, **kwargs)
     bridge = VeriGeoBridge()
     layer_name = params.get("layer_name", "")
     operator = params.get("operator", "buffer")
@@ -1448,8 +1459,9 @@ def tool_verigeo_verify_workflow(params: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def tool_verigeo_maup_and_physics_guard(params: dict[str, Any]) -> dict[str, Any]:
+def tool_verigeo_maup_and_physics_guard(iface_or_params: Any = None, args: dict[str, Any] | None = None, run_on_main: Any = None, **kwargs) -> dict[str, Any]:
     """Audits MAUP (Modifiable Areal Unit Problem) risk, Moran's I spatial autocorrelation, and physical conservation laws."""
+    _, params = _normalize_args(iface_or_params, args, **kwargs)
     bridge = VeriGeoBridge()
     domain = params.get("domain", "hydrology")
     metrics = params.get("physical_metrics", {"precipitation_mm": 100.0, "runoff_mm": 40.0, "evapotranspiration_mm": 30.0, "infiltration_mm": 20.0})
@@ -1473,8 +1485,9 @@ def tool_verigeo_maup_and_physics_guard(params: dict[str, Any]) -> dict[str, Any
     }
 
 
-def tool_datacube_manage_100_layers(params: dict[str, Any]) -> dict[str, Any]:
+def tool_datacube_manage_100_layers(iface_or_params: Any = None, args: dict[str, Any] | None = None, run_on_main: Any = None, **kwargs) -> dict[str, Any]:
     """Registers, inspects, and streams 100+ raster and vector layers out-of-core without memory crashes."""
+    _, params = _normalize_args(iface_or_params, args, **kwargs)
     import numpy as np
     action = params.get("action", "register_synthetic_100")
     target_crs = params.get("target_crs", "EPSG:32643")
@@ -1513,8 +1526,9 @@ def tool_datacube_manage_100_layers(params: dict[str, Any]) -> dict[str, Any]:
     return {"status": "ok", "datacube_summary": _GLOBAL_DATACUBE.get_summary()}
 
 
-def tool_autonomous_mcdm_100plus(params: dict[str, Any]) -> dict[str, Any]:
+def tool_autonomous_mcdm_100plus(iface_or_params: Any = None, args: dict[str, Any] | None = None, run_on_main: Any = None, **kwargs) -> dict[str, Any]:
     """Executes 100+ Criteria Multi-Criteria Decision Making (AHP + Shannon Entropy + Fuzzy TOPSIS + Sensitivity)."""
+    _, params = _normalize_args(iface_or_params, args, **kwargs)
     alpha = float(params.get("ahp_entropy_alpha", 0.5))
     samples = int(params.get("simulated_samples", 1000))
     mc_runs = int(params.get("monte_carlo_iterations", 30))
@@ -1531,8 +1545,9 @@ def tool_autonomous_mcdm_100plus(params: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def tool_autonomous_datalake_crawl(params: dict[str, Any]) -> dict[str, Any]:
+def tool_autonomous_datalake_crawl(iface_or_params: Any = None, args: dict[str, Any] | None = None, run_on_main: Any = None, **kwargs) -> dict[str, Any]:
     """Zero-Input Autonomous Earth Data Lake Crawler: Geocodes region, queries STAC + NASA Climate + OSM, and auto-assembles 100+ criteria."""
+    _, params = _normalize_args(iface_or_params, args, **kwargs)
     from .autonomous_datalake import AutonomousDataLakeCrawler
     place_name = params.get("place_name", "Rajasthan, India")
     crawler = AutonomousDataLakeCrawler()
@@ -1547,8 +1562,9 @@ def tool_autonomous_datalake_crawl(params: dict[str, Any]) -> dict[str, Any]:
 
 
 
-def tool_xerj_document_intelligence(params: dict[str, Any]) -> dict[str, Any]:
+def tool_xerj_document_intelligence(iface_or_params: Any = None, args: dict[str, Any] | None = None, run_on_main: Any = None, **kwargs) -> dict[str, Any]:
     """AI Document Router & Deep Spatial Extraction (Xerj AI vs Primary LLM). Only routes to Xerj AI if user has provided Xerj API key."""
+    _, params = _normalize_args(iface_or_params, args, **kwargs)
     from .config import AutoGISConfig
     from .xerj_ai_router import AIDocumentRouter, XerjAIClient
 

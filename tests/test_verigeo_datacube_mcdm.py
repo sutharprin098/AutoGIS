@@ -247,3 +247,38 @@ def test_tool_xerj_document_intelligence_execution():
     assert res["status"] == "ok"
     assert "routing_evaluation" in res
     assert "assigned_reason" in res
+
+
+def test_agent_engine_tool_signature_compatibility():
+    """Verify that all new tools can be called using agent_engine's calling signature:
+    handler(iface, args, run_on_main=...) without TypeError."""
+    from core.advanced_gis_tools import (
+        tool_verigeo_verify_workflow,
+        tool_verigeo_maup_and_physics_guard,
+        tool_datacube_manage_100_layers,
+        tool_autonomous_mcdm_100plus,
+        tool_autonomous_datalake_crawl,
+        tool_xerj_document_intelligence,
+    )
+    from core.extended_gis_tools import tool_analyze_map_vision
+
+    dummy_iface = None
+    dummy_run_on_main = lambda fn: None
+
+    r1 = tool_verigeo_verify_workflow(dummy_iface, {"layer_name": "delhi_buffered"}, run_on_main=dummy_run_on_main)
+    assert r1.get("status") == "ok"
+
+    r2 = tool_verigeo_maup_and_physics_guard(dummy_iface, {"domain": "hydrology"}, run_on_main=dummy_run_on_main)
+    assert r2.get("status") == "ok"
+
+    r3 = tool_datacube_manage_100_layers(dummy_iface, {"action": "summary"}, run_on_main=dummy_run_on_main)
+    assert r3.get("status") == "ok"
+
+    r4 = tool_autonomous_mcdm_100plus(dummy_iface, {"ahp_entropy_alpha": 0.5, "simulated_samples": 50}, run_on_main=dummy_run_on_main)
+    assert r4.get("status") == "ok"
+
+    r5 = tool_autonomous_datalake_crawl(dummy_iface, {"place_name": "Delhi"}, run_on_main=dummy_run_on_main)
+    assert r5.get("status") == "ok"
+
+    r6 = tool_xerj_document_intelligence(dummy_iface, {"text": "Delhi master plan"}, run_on_main=dummy_run_on_main)
+    assert r6.get("status") == "ok"

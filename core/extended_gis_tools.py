@@ -838,7 +838,7 @@ def tool_generate_spatial_report(iface, args: dict[str, Any]) -> dict[str, Any]:
 # 7. GEMINI VISION (MAP & SATELLITE IMAGE ANALYZER)
 # ============================================================================
 
-def tool_analyze_map_vision(iface, args: dict[str, Any]) -> dict[str, Any]:
+def tool_analyze_map_vision(iface, args: dict[str, Any], run_on_main: Any = None, **kwargs) -> dict[str, Any]:
     """Analyze current map canvas snapshot or uploaded satellite image with multimodal AI vision."""
     prompt = str(args.get("prompt") or "Analyze this GIS map: identify spatial patterns, land use, infrastructure, and anomalies.").strip()
     image_path = str(args.get("image_path") or "").strip()

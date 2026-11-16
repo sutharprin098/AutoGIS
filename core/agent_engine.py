@@ -725,7 +725,13 @@ class AutoGISEngine(QObject):
             def _bg_worker(r=run_id, c=calls, idx=start_idx, call_id=cid, name=cname, args=cargs, s=spec, start_t=t0) -> None:
                 err_flag = False
                 try:
-                    out = s.handler(self._iface, args, run_on_main=self.run_on_main_thread)
+                    try:
+                        out = s.handler(self._iface, args, run_on_main=self.run_on_main_thread)
+                    except TypeError as te:
+                        if "run_on_main" in str(te):
+                            out = s.handler(self._iface, args)
+                        else:
+                            raise
                     if isinstance(out, dict) and "error" in out:
                         err_flag = True
                 except Exception as exc:
