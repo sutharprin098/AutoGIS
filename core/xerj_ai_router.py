@@ -1,15 +1,17 @@
 """Xerj AI Client & Autonomous AI Document Router for AutoGIS Studio.
 
 Key Capabilities:
-1. Xerj AI Client: Communicates with Xerj AI endpoints (Cloud https://api.xerj.ai/v1 or local daemon http://127.0.0.1:9200)
-   for chat completions, geospatial embeddings, and deep document extraction.
-2. AI Document Routing Decision Engine:
+1. Xerj AI Client: Connected to official XERJ Platform (https://platform.xerj.ai/v1) powering
+   the `xerj-reader-1` checked program reader.
+2. Answers & Document Extraction: Runs typed symbolic extraction (/v1/answers) with confidence
+   metrics, character offsets, and exact quotes.
+3. AI Document Routing Decision Engine:
    - If user has NOT provided a Xerj API Key: Automatically routes document reading to Primary LLM.
    - If user HAS provided a Xerj API Key: The AI Decision Engine inspects document contents,
      spatial entity density, coordinate systems, and geospatial terminology to decide whether
-     Xerj AI Document Intelligence or the Primary LLM should read and parse the file.
-3. Document Intelligence Parser: Extracts coordinate tables, spatial boundaries, LOR/academic credentials,
-   and environmental constraints into structured GeoJSON/JSON payloads.
+     Xerj AI Document Intelligence (xerj-reader-1) or the Primary LLM should read and parse the file.
+4. Document Intelligence Parser: Extracts coordinate tables, spatial boundaries, LOR/academic credentials,
+   and environmental constraints into structured typed payloads.
 """
 
 from __future__ import annotations
@@ -23,6 +25,7 @@ import urllib.request
 from typing import Any, Dict, List, Optional, Tuple
 
 USER_AGENT = "AutoGIS-XerjAIRouter/1.0.7 (+https://github.com/sutharprin098/AutoGIS)"
+DEFAULT_XERJ_BASE_URL = "https://platform.xerj.ai/v1"
 
 SPATIAL_KEYWORDS = frozenset({
     "crs", "epsg", "utm", "wgs84", "projection", "latitude", "longitude", "lat", "lon",
@@ -35,27 +38,32 @@ SPATIAL_KEYWORDS = frozenset({
 
 
 class XerjAIClient:
-    """Client for Xerj AI Cloud and Local Daemon services."""
+    """Client for official Xerj AI Platform (xerj-reader-1) and Local Daemon services."""
 
     def __init__(self, api_key: str = "", base_url: str = ""):
         self.api_key = api_key.strip()
-        self.base_url = (base_url or "https://api.xerj.ai/v1").rstrip("/")
+        self.base_url = (base_url or DEFAULT_XERJ_BASE_URL).rstrip("/")
 
     @property
     def is_configured(self) -> bool:
         """User has provided an active Xerj AI API key or connected local daemon."""
         return bool(self.api_key) or "127.0.0.1" in self.base_url or "localhost" in self.base_url
 
-    def query_completion(self, messages: List[Dict[str, str]], model: str = "xerj/geo-reasoner") -> Dict[str, Any]:
-        """Calls Xerj AI OpenAI-compatible chat completion endpoint."""
+    def query_answers(
+        self,
+        document: str,
+        questions: List[str],
+        model: str = "xerj-reader-1"
+    ) -> Dict[str, Any]:
+        """Calls official Xerj Reader API (/v1/answers) with typed symbolic extraction."""
         if not self.is_configured:
             return {"error": "Xerj AI API key is not configured in AutoGIS Settings."}
 
-        url = f"{self.base_url}/chat/completions"
+        url = f"{self.base_url}/answers"
         payload = {
             "model": model,
-            "messages": messages,
-            "temperature": 0.2,
+            "document": document[:100000],  # up to 100k chars
+            "questions": questions[:20],
         }
         headers = {
             "Content-Type": "application/json",
@@ -64,42 +72,66 @@ class XerjAIClient:
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
 
-        req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers=headers,
+            method="POST"
+        )
 
         try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
+            with urllib.request.urlopen(req, timeout=15) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-                choice = data.get("choices", [{}])[0]
                 return {
                     "status": "SUCCESS",
                     "provider": "xerj_ai",
                     "model": model,
-                    "content": choice.get("message", {}).get("content", ""),
-                    "raw_response": data,
+                    "answers": data.get("data", []),
+                    "usage": data.get("usage", {}),
+                    "latency_ms": data.get("latency_ms", 0),
                 }
         except Exception as e:
             return {
                 "status": "FALLBACK_OFFLINE",
                 "provider": "xerj_ai",
                 "model": model,
-                "note": f"Xerj AI network endpoint unavailable ({e}); simulated local extraction active.",
+                "note": f"Xerj AI endpoint error ({e}); simulated local extraction active.",
             }
 
-    def parse_document_intelligence(self, text_content: str, filename: str = "") -> Dict[str, Any]:
-        """Deep spatial semantic entity extraction powered by Xerj AI."""
-        # Detect coordinates, CRS codes, layer names, and tabular numbers
+    def parse_document_intelligence(
+        self,
+        text_content: str,
+        filename: str = "",
+        user_query: str = ""
+    ) -> Dict[str, Any]:
+        """Deep spatial semantic entity extraction powered by Xerj AI xerj-reader-1."""
+        # 1. Regex fallback / local extraction
         coord_matches = re.findall(r"[-+]?\d{1,3}\.\d{3,}\s*[, ]\s*[-+]?\d{1,3}\.\d{3,}", text_content)
         epsg_matches = re.findall(r"\bEPSG[:\s]*(\d{4,5})\b", text_content, re.IGNORECASE)
         solar_ghi_matches = re.findall(r"(\d+(?:\.\d+)?)\s*(?:kWh/m2|W/m2|GHI)", text_content, re.IGNORECASE)
 
+        # 2. Live Xerj AI API extraction if key is present
+        live_api_result = None
+        if self.api_key:
+            questions = [
+                "Where is the geographical location, area, or boundary?",
+                "What is the coordinate system, projection, or EPSG code?",
+                "What are the main spatial dimensions, capacity, or measurements?",
+            ]
+            if user_query:
+                questions.append(user_query[:250])
+
+            live_api_result = self.query_answers(document=text_content, questions=questions)
+
         return {
-            "parser": "Xerj AI Spatial Document Intelligence",
+            "parser": "Xerj AI Spatial Document Intelligence (xerj-reader-1)",
             "filename": filename,
             "detected_coordinates_count": len(coord_matches),
             "sample_coordinates": coord_matches[:8],
             "detected_epsg_codes": list(set(epsg_matches)),
             "detected_solar_metrics": solar_ghi_matches[:5],
             "spatial_entity_density_rating": "VERY_HIGH" if len(coord_matches) > 10 else ("HIGH" if len(coord_matches) > 2 else "MODERATE"),
+            "live_xerj_reader_results": live_api_result,
         }
 
 
@@ -139,7 +171,6 @@ class AIDocumentRouter:
 
         # Decision Logic
         if not has_xerj_key:
-            # Rule: User has NOT provided Xerj API key -> Primary LLM handles it
             return {
                 "decision": "PRIMARY_LLM",
                 "reader": primary_llm_name,
@@ -151,19 +182,22 @@ class AIDocumentRouter:
                 "file_type": ext,
             }
 
-        # Rule: User HAS provided Xerj API key -> AI Decision Engine evaluates document
         client = XerjAIClient(api_key=xerj_api_key, base_url=xerj_base_url)
 
-        # High spatial score or GIS file type (GeoPDF, GeoJSON, CSV with coords, Environmental PDF)
+        # High spatial score or GIS file type
         is_geo_heavy = spatial_score >= 0.25 or ext in (".geojson", ".kml", ".gpkg", ".shp", ".tif", ".tiff")
 
         if is_geo_heavy:
             decision = "XERJ_AI"
             reason = (
                 f"High geospatial entity density detected (score: {spatial_score}, keywords: {len(matched_keywords)}). "
-                f"AI router assigned document to Xerj AI Document Intelligence Engine for deep spatial parsing."
+                f"AI router assigned document to Xerj AI xerj-reader-1 for typed symbolic parsing."
             )
-            intelligence_payload = client.parse_document_intelligence(text_content, filename=filename)
+            intelligence_payload = client.parse_document_intelligence(
+                text_content=text_content,
+                filename=filename,
+                user_query=user_query
+            )
         else:
             decision = "PRIMARY_LLM"
             reason = (
@@ -174,7 +208,7 @@ class AIDocumentRouter:
 
         return {
             "decision": decision,
-            "reader": "Xerj AI" if decision == "XERJ_AI" else primary_llm_name,
+            "reader": "Xerj AI (xerj-reader-1)" if decision == "XERJ_AI" else primary_llm_name,
             "reason": reason,
             "has_xerj_key": True,
             "spatial_score": spatial_score,
