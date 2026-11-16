@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoGIS Studio Tech Stack &amp; Scientific Integrations — VeriGeo, Xerj AI, GAS, Datacube &amp; GEE</title>
+  <meta name="description" content="Comprehensive technical breakdown of AutoGIS Studio: VeriGeo verification, Xerj AI document intelligence, 100+ layer datacubes, GAS 1.0.0, PyQGIS, and Earth observation APIs." />
+  <link rel="icon" type="image/svg+xml" href="/assets/icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #F8FAFC; color: #0F172A; font-family: 'Inter', system-ui, sans-serif; overflow-x: hidden; }
+    .light-grid {
+      background-size: 48px 48px;
+      background-image:
+        linear-gradient(to right, rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+    }
+    .nav-blur {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid #E2E8F0;
+    }
+    .stack-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 1rem;
+      padding: 1.75rem;
+      box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.05);
+      transition: all 0.25s ease;
+    }
+    .stack-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px -6px rgba(15, 23, 42, 0.09);
+      border-color: #CBD5E1;
+    }
+  </style>
+</head>
+<body class="light-grid antialiased">
+
+  <!-- Minimal Sticky Navigation Header -->
+  <header class="nav-blur sticky top-0 z-50 transition-all">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
+      <a href="/" class="flex items-center gap-3">
+        <img src="/assets/icon.svg" alt="AutoGIS Logo" class="h-8 w-8" />
+        <div class="flex items-baseline gap-2">
+          <span class="font-extrabold tracking-tight text-slate-900 text-lg">AutoGIS</span>
+          <span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono text-[11px] font-bold text-sky-700">Studio v1.0.7</span>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-7 text-xs font-semibold text-slate-600">
+        <a href="/" class="hover:text-slate-900 transition">Home</a>
+        <a href="/architecture" class="hover:text-slate-900 transition flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>Architecture &amp; Workflow Graph</a>
+        <a href="/tech-stack" class="text-sky-600 font-bold">Tech Stack</a>
+        <a href="/#tools" class="hover:text-slate-900 transition">71 Tools</a>
+        <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="hover:text-slate-900 transition">GitHub</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.7/AutoGIS.zip"
+           class="inline-flex items-center justify-center rounded-xl bg-sky-600 px-4 py-2 font-mono text-xs font-bold text-white shadow-sm transition hover:bg-sky-500 hover:shadow-md">
+          Download ZIP (v1.0.7)
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Header -->
+  <section class="mx-auto max-w-5xl px-6 pt-14 pb-10 text-center">
+    <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3.5 py-1 text-xs font-semibold text-sky-800">
+      <span class="h-2 w-2 rounded-full bg-sky-500"></span>
+      <span>Comprehensive Technology &amp; Scientific Protocol Directory</span>
+    </div>
+    <h1 class="mt-5 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl leading-tight">
+      What Powers AutoGIS Studio?
+    </h1>
+    <p class="mx-auto mt-4 max-w-3xl text-base text-slate-600 md:text-lg">
+      A transparent look at the technologies, AI models, remote sensing pipelines, and neuro-symbolic verification protocols integrated into AutoGIS.
+    </p>
+  </section>
+
+  <!-- Tech Stack Grid -->
+  <main class="mx-auto max-w-6xl px-6 pb-24">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-7">
+
+      <!-- 1. VeriGeo Protocol -->
+      <div class="stack-card border-l-4 border-l-emerald-500">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="rounded-lg bg-emerald-100 p-2 text-emerald-800 font-mono text-xs font-bold">NS-VGP 1.0</span>
+          <h2 class="text-xl font-bold text-slate-900">VeriGeo Neuro-Symbolic Verification</h2>
+        </div>
+        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+          Open-source scientific guardian created to eliminate silent GIS hallucinations. Verifies projections, topology, scale aggregation, and conservation laws.
+        </p>
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex items-start gap-2">
+            <span class="text-emerald-600 font-bold">✓</span>
+            <div><strong>MAUP &amp; Ecological Fallacy:</strong> Audits scale-dependent correlation reversals and uses Tobler’s smooth pycnophylactic interpolation.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-emerald-600 font-bold">✓</span>
+            <div><strong>Topological Auto-Repair:</strong> Detects sliver polygons ($circ &lt; 0.05$), closes open rings, and snaps micro-gaps.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-emerald-600 font-bold">✓</span>
+            <div><strong>Physical Conservation:</strong> Validates mass/energy balance in hydrology ($\sum Out \le Precip$) and biomass ($\text{NPP} \le 3500\text{ g C/m}^2/\text{yr}$).</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Source: <a href="https://github.com/sutharprin098/VeriGeo" class="text-sky-600 hover:underline">sutharprin098/VeriGeo</a></span>
+          <span class="text-emerald-600 font-semibold">10/10 Tests Passed</span>
+        </div>
+      </div>
+
+      <!-- 2. Xerj AI -->
+      <div class="stack-card border-l-4 border-l-indigo-500">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="rounded-lg bg-indigo-100 p-2 text-indigo-800 font-mono text-xs font-bold">XERJ.AI</span>
+          <h2 class="text-xl font-bold text-slate-900">Xerj AI Document Intelligence</h2>
+        </div>
+        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+          Official integration with the <strong>XERJ Platform</strong> powering the <code>xerj-reader-1</code> model for typed symbolic extraction and checked programs.
+        </p>
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex items-start gap-2">
+            <span class="text-indigo-600 font-bold">✓</span>
+            <div><strong>Autonomous Document Router:</strong> Evaluates spatial entity density; routes spatial PDFs/DOCX to Xerj Reader-1 and general text to Primary LLM.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-indigo-600 font-bold">✓</span>
+            <div><strong>Checked Programs:</strong> Returns typed numbers, currencies, coordinates, and exact character-span evidence quotes.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-indigo-600 font-bold">✓</span>
+            <div><strong>Ultra-Low Latency:</strong> Verified production execution in <strong>230–310 ms</strong>.</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Endpoint: <code>platform.xerj.ai/v1/answers</code></span>
+          <span class="text-indigo-600 font-semibold">Native Provider</span>
+        </div>
+      </div>
+
+      <!-- 3. Cloud-Native 100+ Layer Datacube -->
+      <div class="stack-card border-l-4 border-l-amber-500">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="rounded-lg bg-amber-100 p-2 text-amber-800 font-mono text-xs font-bold">OOM-FREE</span>
+          <h2 class="text-xl font-bold text-slate-900">100+ Layer Out-of-Core Datacube</h2>
+        </div>
+        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+          Handles 100+ multi-gigabyte rasters and complex vector boundaries simultaneously without memory crashes.
+        </p>
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex items-start gap-2">
+            <span class="text-amber-600 font-bold">✓</span>
+            <div><strong>Chunked Tile Streaming:</strong> Evaluates criteria in $512 \times 512$ pixel windows with a constant memory footprint under <strong>50MB RAM</strong>.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-amber-600 font-bold">✓</span>
+            <div><strong>Automated Grid Harmonization:</strong> Snaps heterogeneous resolutions (10m, 30m, 1km) to a common metric UTM grid with categorical vs continuous resampling.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-amber-600 font-bold">✓</span>
+            <div><strong>DuckDB &amp; GeoParquet:</strong> High-performance out-of-core spatial vector indexing.</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Architecture: Dask / Xarray / COG</span>
+          <span class="text-amber-600 font-semibold">98.4% RAM Efficient</span>
+        </div>
+      </div>
+
+      <!-- 4. Autonomous MCDM Engine -->
+      <div class="stack-card border-l-4 border-l-purple-500">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="rounded-lg bg-purple-100 p-2 text-purple-800 font-mono text-xs font-bold">MCDM</span>
+          <h2 class="text-xl font-bold text-slate-900">Autonomous Spatial MCDM Solver</h2>
+        </div>
+        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+          High-dimensional multi-criteria decision making capable of ranking sites across 100+ competing criteria.
+        </p>
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex items-start gap-2">
+            <span class="text-purple-600 font-bold">✓</span>
+            <div><strong>5-Pillar Tree Decomposition:</strong> Environmental, Technical, Economic, Social, and Climate Risk.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-purple-600 font-bold">✓</span>
+            <div><strong>Hybrid Weighting:</strong> Combines domain-expert AHP ($CR &lt; 0.10$) with data-driven <strong>Shannon Entropy (EWM)</strong>.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-purple-600 font-bold">✓</span>
+            <div><strong>Fuzzy TOPSIS &amp; Sensitivity:</strong> Evaluates Ideal Best ($A^+$) and Ideal Worst ($A^-$) with Monte Carlo robustness perturbation ($\pm 15\%$).</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Algorithms: AHP + EWM + TOPSIS</span>
+          <span class="text-purple-600 font-semibold">Monte Carlo Verified</span>
+        </div>
+      </div>
+
+      <!-- 5. Geospatial Agentic Services (GAS 1.0.0) -->
+      <div class="stack-card border-l-4 border-l-rose-500">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="rounded-lg bg-rose-100 p-2 text-rose-800 font-mono text-xs font-bold">OGC / GAS</span>
+          <h2 class="text-xl font-bold text-slate-900">Geospatial Agentic Services (GAS 1.0.0)</h2>
+        </div>
+        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+          Standardized protocol by GIBD Lab connecting distributed AI agents to QGIS.
+        </p>
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex items-start gap-2">
+            <span class="text-rose-600 font-bold">✓</span>
+            <div><strong>Agent Discovery:</strong> Discovers published remote agents across university and institutional registries.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-rose-600 font-bold">✓</span>
+            <div><strong>Execution Modes:</strong> Supports synchronous execution, live SSE token streaming, and asynchronous polling.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-rose-600 font-bold">✓</span>
+            <div><strong>Bidirectional Bridge:</strong> AutoGIS can execute tasks on remote GAS agents and act as a GAS 1.0.0 server itself.</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Standards: GIBD Lab GAS 1.0.0</span>
+          <span class="text-rose-600 font-semibold">5 Native Tools</span>
+        </div>
+      </div>
+
+      <!-- 6. Earth Observation & Open Data Lake -->
+      <div class="stack-card border-l-4 border-l-teal-500">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="rounded-lg bg-teal-100 p-2 text-teal-800 font-mono text-xs font-bold">STAC / OSM</span>
+          <h2 class="text-xl font-bold text-slate-900">Autonomous Earth Observation Lake</h2>
+        </div>
+        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+          Zero-input regional data crawler connecting the world's leading open spatial repositories.
+        </p>
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex items-start gap-2">
+            <span class="text-teal-600 font-bold">✓</span>
+            <div><strong>STAC Satellites:</strong> Queries Microsoft Planetary Computer &amp; AWS Earth-Search for Sentinel-2, Sentinel-1 SAR, Copernicus 30m DEM, and ESA WorldCover.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-teal-600 font-bold">✓</span>
+            <div><strong>NASA POWER API:</strong> Fetches 10-year climatological Solar GHI ($\text{kWh/m}^2/\text{day}$), temperature, and wind speed.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-teal-600 font-bold">✓</span>
+            <div><strong>OpenStreetMap Overpass:</strong> Extracts high-voltage power transmission lines, substations, and national park boundaries.</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Data: Sentinel-2 · GLO-30 · NASA · OSM</span>
+          <span class="text-teal-600 font-semibold">Zero-Upload Ingestion</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Supported AI Models Table -->
+    <section class="mt-16 stack-card">
+      <h2 class="text-2xl font-bold text-slate-900 mb-2">Supported Foundation Models &amp; AI Providers</h2>
+      <p class="text-sm text-slate-600 mb-6">AutoGIS Studio is provider-neutral. Bring your own API key or run 100% offline with local open-weight models.</p>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 font-mono text-slate-500">
+              <th class="py-2.5">Provider</th>
+              <th class="py-2.5">Supported Models</th>
+              <th class="py-2.5">Primary Capability</th>
+              <th class="py-2.5">Auth Method</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            <tr>
+              <td class="py-3 font-bold text-slate-900">Xerj AI</td>
+              <td class="font-mono">xerj-reader-1</td>
+              <td>Document Intelligence, typed symbolic extraction &amp; spatial entity parsing</td>
+              <td class="font-mono text-sky-700">xerj_... API Key</td>
+            </tr>
+            <tr>
+              <td class="py-3 font-bold text-slate-900">Google Gemini</td>
+              <td class="font-mono">gemini-2.5-pro, gemini-2.5-flash, gemini-2.0-flash</td>
+              <td>Complex spatial reasoning, multimodal map vision, 1M+ context window</td>
+              <td class="font-mono text-sky-700">Gemini API Key</td>
+            </tr>
+            <tr>
+              <td class="py-3 font-bold text-slate-900">OpenAI</td>
+              <td class="font-mono">gpt-4o, gpt-4o-mini, o3-mini</td>
+              <td>High-speed tool calling, automated PyQGIS code generation</td>
+              <td class="font-mono text-sky-700">OpenAI API Key</td>
+            </tr>
+            <tr>
+              <td class="py-3 font-bold text-slate-900">Anthropic</td>
+              <td class="font-mono">claude-sonnet-4.5, claude-haiku-4.5</td>
+              <td>Precise architectural planning, long-form spatial report synthesis</td>
+              <td class="font-mono text-sky-700">Anthropic Key</td>
+            </tr>
+            <tr>
+              <td class="py-3 font-bold text-slate-900">DeepSeek</td>
+              <td class="font-mono">deepseek-chat (V3), deepseek-reasoner (R1)</td>
+              <td>Deep mathematical and topological constraint derivation</td>
+              <td class="font-mono text-sky-700">DeepSeek Key</td>
+            </tr>
+            <tr>
+              <td class="py-3 font-bold text-slate-900">OpenRouter</td>
+              <td class="font-mono">100+ Models (Nemotron, Llama 3.3 70B, Qwen 2.5)</td>
+              <td>Free-tier access &amp; instant failover routing across 100+ open models</td>
+              <td class="font-mono text-sky-700">OpenRouter Key</td>
+            </tr>
+            <tr>
+              <td class="py-3 font-bold text-slate-900">Local AI (Ollama / LM Studio)</td>
+              <td class="font-mono">qwen2.5-coder:14b, llama3.3, mistral</td>
+              <td>100% offline execution for classified, sensitive, or defense datasets</td>
+              <td class="font-mono text-emerald-700">No Key Needed (Localhost)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Bottom CTA -->
+    <div class="mt-16 text-center">
+      <h3 class="text-xl font-bold text-slate-900">Ready to explore how these modules connect?</h3>
+      <p class="text-sm text-slate-600 mt-1 mb-5">Inspect the end-to-end execution pipeline from natural language prompt to validated cartography.</p>
+      <a href="/architecture" class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 font-mono text-xs font-bold text-white shadow-md hover:bg-slate-800 transition">
+        <span>View System Architecture &amp; Workflow Graph</span>
+        <span>→</span>
+      </a>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500">
+    <div class="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2 font-mono">
+        <span>AutoGIS Studio v1.0.7</span> · <span>Authored by Prince</span>
+      </div>
+      <div class="flex items-center gap-5">
+        <a href="/" class="hover:text-slate-900">Home</a>
+        <a href="/architecture" class="hover:text-slate-900">Architecture</a>
+        <a href="/tech-stack" class="text-sky-600 font-bold">Tech Stack</a>
+        <a href="https://github.com/sutharprin098/AutoGIS" class="hover:text-slate-900">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoGIS Studio System Architecture &amp; Autonomous Workflow Graph</title>
+  <meta name="description" content="Visual architecture graph and execution lifecycle of AutoGIS: from natural language user prompt to VeriGeo validation, Xerj AI document extraction, and 100+ layer MCDM suitability maps." />
+  <link rel="icon" type="image/svg+xml" href="/assets/icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Mermaid.js for interactive dynamic diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'neutral',
+      themeVariables: {
+        primaryColor: '#0284c7',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#cbd5e1',
+        lineColor: '#64748b',
+        secondaryColor: '#f0f9ff',
+        tertiaryColor: '#ffffff'
+      }
+    });
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #F8FAFC; color: #0F172A; font-family: 'Inter', system-ui, sans-serif; overflow-x: hidden; }
+    .light-grid {
+      background-size: 48px 48px;
+      background-image:
+        linear-gradient(to right, rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+    }
+    .nav-blur {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid #E2E8F0;
+    }
+    .step-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px -3px rgba(15, 23, 42, 0.04);
+      transition: all 0.2s ease;
+    }
+    .step-card:hover {
+      border-color: #0284C7;
+      box-shadow: 0 10px 25px -4px rgba(2, 132, 199, 0.08);
+      transform: translateY(-2px);
+    }
+    .prompt-tab.active {
+      background-color: #0F172A;
+      color: #FFFFFF;
+      border-color: #0F172A;
+    }
+  </style>
+</head>
+<body class="light-grid antialiased">
+
+  <!-- Minimal Sticky Navigation Header -->
+  <header class="nav-blur sticky top-0 z-50 transition-all">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
+      <a href="/" class="flex items-center gap-3">
+        <img src="/assets/icon.svg" alt="AutoGIS Logo" class="h-8 w-8" />
+        <div class="flex items-baseline gap-2">
+          <span class="font-extrabold tracking-tight text-slate-900 text-lg">AutoGIS</span>
+          <span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono text-[11px] font-bold text-sky-700">Studio v1.0.7</span>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-7 text-xs font-semibold text-slate-600">
+        <a href="/" class="hover:text-slate-900 transition">Home</a>
+        <a href="/architecture" class="text-sky-600 font-bold flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-sky-500"></span>Architecture &amp; Workflow Graph</a>
+        <a href="/tech-stack" class="hover:text-slate-900 transition">Tech Stack</a>
+        <a href="/#tools" class="hover:text-slate-900 transition">71 Tools</a>
+        <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="hover:text-slate-900 transition">GitHub</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.7/AutoGIS.zip"
+           class="inline-flex items-center justify-center rounded-xl bg-sky-600 px-4 py-2 font-mono text-xs font-bold text-white shadow-sm transition hover:bg-sky-500 hover:shadow-md">
+          Download ZIP (v1.0.7)
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Header -->
+  <section class="mx-auto max-w-5xl px-6 pt-14 pb-8 text-center">
+    <div class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1 text-xs font-semibold text-indigo-800">
+      <span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
+      <span>Autonomous Execution Pipeline Lifecycle</span>
+    </div>
+    <h1 class="mt-5 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl leading-tight">
+      How AutoGIS Processes Any Prompt
+    </h1>
+    <p class="mx-auto mt-4 max-w-3xl text-base text-slate-600 md:text-lg">
+      From a single sentence prompt or uploaded document to fully verified, mass-conserving geospatial decisions.
+    </p>
+  </section>
+
+  <!-- High-Level Interactive Workflow Graph -->
+  <main class="mx-auto max-w-6xl px-6 pb-24">
+
+    <!-- Visual Architecture Diagram Box -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm mb-16">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-100 gap-3">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">End-to-End System Execution Graph</h2>
+          <p class="text-xs text-slate-500">Autonomous data flow across Data Lake, Xerj AI, VeriGeo Guardian, and Out-of-Core Datacube.</p>
+        </div>
+        <span class="rounded-full bg-slate-100 px-3 py-1 font-mono text-[11px] font-semibold text-slate-600 self-start sm:self-auto">
+          State Machine: Reactive &amp; Self-Healing
+        </span>
+      </div>
+
+      <!-- Mermaid Diagram Render -->
+      <div class="overflow-x-auto py-6 flex justify-center">
+        <pre class="mermaid text-xs">
+flowchart TD
+    subgraph S1 ["1. User Ingestion"]
+        A["🗣️ Natural Language Prompt / Voice / Uploaded PDF"] --> B["🤖 AutoGIS Agent Engine\n(Task Decomposition &amp; Planning)"]
+    end
+
+    subgraph S2 ["2. Document Intelligence Router"]
+        B --> C{"Uploaded Document\nDetected?"}
+        C -- "YES: Has Xerj API Key" --> D{"Spatial Entity\nDensity Score"}
+        D -- "Spatial &ge; 0.25" --> E["🌟 Xerj AI Reader-1\n(/v1/answers Typed Symbolic Program)"]
+        D -- "General &lt; 0.25" --> F["Primary LLM Parser\n(Gemini / GPT-4o / Claude)"]
+        C -- "NO / Plain Prompt" --> G["Zero-Input Ingestion Planner"]
+    end
+
+    subgraph S3 ["3. Autonomous Data Lake Crawling"]
+        G &amp; E &amp; F --> H["🌍 Autonomous Data Lake Crawler"]
+        H --> I1["STAC API: Sentinel-2 &amp; Copernicus DEM"]
+        H --> I2["NASA POWER: Solar GHI &amp; Climate Profile"]
+        H --> I3["OSM Overpass: Power Grid &amp; Roads"]
+    end
+
+    subgraph S4 ["4. 100+ Layer Out-of-Core Datacube"]
+        I1 &amp; I2 &amp; I3 --> J["⚡ Streaming Datacube (512x512 Chunks)"]
+        J --> K["Automated Grid Harmonization\n(Unified UTM CRS &amp; Resolution)"]
+    end
+
+    subgraph S5 ["5. VeriGeo Scientific Guardian"]
+        K --> L["🛡️ VeriGeo Runtime Protocol (NS-VGP 1.0)"]
+        L --> M1["Axiom 1: Equal-Area &amp; Metric CRS"]
+        L --> M2["Axiom 2: MAUP &amp; Pycnophylactic Interpolation"]
+        L --> M3["Axiom 3: Sliver Topology Auto-Healing"]
+        L --> M4["Axiom 4: Physical Mass/Energy Conservation"]
+    end
+
+    subgraph S6 ["6. High-Dimensional MCDM Engine"]
+        M1 &amp; M2 &amp; M3 &amp; M4 --> N["🎯 5-Pillar Hierarchical Tree"]
+        N --> O["Hybrid AHP (CR &lt; 0.1) + Shannon Entropy"]
+        O --> P["Fuzzy TOPSIS Spatial Suitability Solver\n[0 to 100 Score per Pixel]"]
+        P --> Q["Monte Carlo Sensitivity Analysis (&plusmn;15%)"]
+    end
+
+    subgraph S7 ["7. Multi-Agent &amp; PyQGIS Output"]
+        Q --> R{"VeriGeo Final\nQuality Gate"}
+        R -- "Self-Healing Failure" --> S["Automated Temporal/Buffer Backtracking"]
+        S --> H
+        R -- "PASSED" --> T["🗺️ QGIS Live Canvas + 300 DPI Print Layout + .vgeo Proof"]
+    end
+        </pre>
+      </div>
+    </div>
+
+    <!-- Interactive Prompt Walkthrough Simulator -->
+    <section class="mb-16">
+      <div class="text-center max-w-3xl mx-auto mb-8">
+        <h2 class="text-2xl font-bold text-slate-900">Step-by-Step Execution Scenarios</h2>
+        <p class="text-sm text-slate-600 mt-1">Select a real prompt below to see exactly how AutoGIS activates each module.</p>
+        
+        <!-- Tabs -->
+        <div class="flex flex-wrap items-center justify-center gap-2.5 mt-5">
+          <button onclick="switchScenario('scenario-solar')" id="tab-solar" class="prompt-tab active px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold transition">
+            1. Solar MCDM (100+ Layers)
+          </button>
+          <button onclick="switchScenario('scenario-doc')" id="tab-doc" class="prompt-tab px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition">
+            2. Xerj AI Document Ingestion
+          </button>
+          <button onclick="switchScenario('scenario-sar')" id="tab-sar" class="prompt-tab px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition">
+            3. VeriGeo MAUP &amp; Topology Repair
+          </button>
+        </div>
+      </div>
+
+      <!-- Scenario 1: Solar 100+ Layer MCDM -->
+      <div id="scenario-solar" class="scenario-panel space-y-4">
+        <div class="rounded-xl bg-slate-900 text-white p-4 font-mono text-xs flex items-center gap-3">
+          <span class="text-sky-400 font-bold">User Prompt:</span>
+          <span>"Find optimal 500MW solar park sites in Rajasthan using 100+ environmental and technical criteria."</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="step-card">
+            <span class="rounded bg-sky-100 text-sky-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 1</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">Geocoding &amp; STAC Crawl</h3>
+            <p class="text-xs text-slate-600 mt-1">Resolves Rajasthan bounds, fetches Sentinel-2 L2A (&lt;15% clouds), Copernicus 30m DEM, and NASA POWER GHI (5.92 kWh/m²).</p>
+          </div>
+          <div class="step-card">
+            <span class="rounded bg-amber-100 text-amber-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 2</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">100+ Layer Datacube</h3>
+            <p class="text-xs text-slate-600 mt-1">Assembles 100 criteria into 512x512 tile chunks in memory-mapped GeoParquet + COG. RAM stays under 45MB.</p>
+          </div>
+          <div class="step-card">
+            <span class="rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 3</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">VeriGeo Axiom Check</h3>
+            <p class="text-xs text-slate-600 mt-1">Harmonizes coordinates to UTM Zone 43N (EPSG:32643), enforces equal-area projection, and verifies surface solar radiation limits.</p>
+          </div>
+          <div class="step-card">
+            <span class="rounded bg-purple-100 text-purple-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 4</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">Hybrid MCDM &amp; QGIS Map</h3>
+            <p class="text-xs text-slate-600 mt-1">Computes AHP + Shannon Entropy weights, solves Fuzzy TOPSIS raster suitability [0–100], and renders ranked polygon layers on QGIS canvas.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scenario 2: Xerj AI Document Ingestion -->
+      <div id="scenario-doc" class="scenario-panel hidden space-y-4">
+        <div class="rounded-xl bg-slate-900 text-white p-4 font-mono text-xs flex items-center gap-3">
+          <span class="text-indigo-400 font-bold">User Action:</span>
+          <span>Uploaded "Thar_Solar_EIA_Report.pdf" with query "What is the buffer distance and coordinates?"</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="step-card">
+            <span class="rounded bg-indigo-100 text-indigo-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 1</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">AI Router Inspection</h3>
+            <p class="text-xs text-slate-600 mt-1">AI Document Router checks user's Xerj API key and scans spatial entity density (Score: 1.0 &gt; 0.25 threshold).</p>
+          </div>
+          <div class="step-card">
+            <span class="rounded bg-indigo-100 text-indigo-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 2</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">Xerj Reader-1 Dispatch</h3>
+            <p class="text-xs text-slate-600 mt-1">Dispatches document to <code>platform.xerj.ai/v1/answers</code>. Generates symbolic checked program in <strong>230 ms</strong>.</p>
+          </div>
+          <div class="step-card">
+            <span class="rounded bg-indigo-100 text-indigo-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 3</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">Typed Evidence Quotes</h3>
+            <p class="text-xs text-slate-600 mt-1">Extracts typed values: 500m wildlife buffer, coordinates 27.1823°N, 71.9321°E, and EPSG:32643 with 99.3% confidence.</p>
+          </div>
+          <div class="step-card">
+            <span class="rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 4</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">Automated Buffer on Map</h3>
+            <p class="text-xs text-slate-600 mt-1">AutoGIS passes extracted parameters directly into PyQGIS toolchain, drawing the exact 500m exclusion polygon.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scenario 3: VeriGeo MAUP & Topology Repair -->
+      <div id="scenario-sar" class="scenario-panel hidden space-y-4">
+        <div class="rounded-xl bg-slate-900 text-white p-4 font-mono text-xs flex items-center gap-3">
+          <span class="text-emerald-400 font-bold">User Prompt:</span>
+          <span>"Aggregate census population into new watershed flood zones and remove overlay boundary slivers."</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="step-card">
+            <span class="rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 1</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">Semantic Attribute Typing</h3>
+            <p class="text-xs text-slate-600 mt-1">VeriGeo classifies attributes into intensive ratios (median income, pop density) vs extensive counts (headcount).</p>
+          </div>
+          <div class="step-card">
+            <span class="rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 2</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">Pycnophylactic Interpolation</h3>
+            <p class="text-xs text-slate-600 mt-1">Applies Tobler's smooth pycnophylactic interpolation across zones. Eliminates 169% population overcount error.</p>
+          </div>
+          <div class="step-card">
+            <span class="rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 3</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">Sliver &amp; Gap Auto-Heal</h3>
+            <p class="text-xs text-slate-600 mt-1">Scans polygon fragments. Any sliver with circularity &lt; 0.05 and width &lt; 1.0m is automatically pruned and rings closed.</p>
+          </div>
+          <div class="step-card">
+            <span class="rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 4</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">Verified Audit Certificate</h3>
+            <p class="text-xs text-slate-600 mt-1">Exports output with an immutable SHA-256 Spatial Proof Certificate certifying zero MAUP bias and clean topology.</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Deep-Dive Architectural Pillars -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="step-card">
+        <h3 class="text-base font-bold text-slate-900">Why Code Errors Aren't Enough</h3>
+        <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+          Standard GIS agents check only Python syntax (`Exit Code 0`). But unprojected degrees cause 35% area errors, and boundary aggregations flip statistical signs (MAUP). AutoGIS embeds domain physics into the compiler loop.
+        </p>
+      </div>
+      <div class="step-card">
+        <h3 class="text-base font-bold text-slate-900">The 100+ Layer Scalability Trick</h3>
+        <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+          Loading 100 rasters into RAM crashes any machine. AutoGIS streams tiled windows ($512\times 512$) using lazy Dask/Xarray evaluation, computing continental decision surfaces with under 50MB RAM.
+        </p>
+      </div>
+      <div class="step-card">
+        <h3 class="text-base font-bold text-slate-900">Zero-Input Autonomy</h3>
+        <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+          Instead of requiring users to hunt for satellite files, AutoGIS crawls open STAC catalogs, NASA POWER climatology, and OpenStreetMap automatically, converting natural language into production datasets.
+        </p>
+      </div>
+    </section>
+
+    <!-- Navigation Footer CTA -->
+    <div class="mt-16 text-center">
+      <a href="/tech-stack" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 font-mono text-xs font-bold text-slate-800 shadow-sm hover:bg-slate-50 transition mr-3">
+        <span>← Back to Tech Stack</span>
+      </a>
+      <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.7/AutoGIS.zip" class="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-5 py-2.5 font-mono text-xs font-bold text-white shadow-sm hover:bg-sky-500 transition">
+        <span>Download AutoGIS Studio v1.0.7 ZIP</span>
+        <span>↓</span>
+      </a>
+    </div>
+
+  </main>
+
+  <!-- Interactive script for scenario tabs -->
+  <script>
+    function switchScenario(id) {
+      document.querySelectorAll('.scenario-panel').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.prompt-tab').forEach(el => {
+        el.classList.remove('active');
+        el.classList.remove('bg-slate-900', 'text-white');
+        el.classList.add('bg-white', 'text-slate-600');
+      });
+      document.getElementById(id).classList.remove('hidden');
+
+      if (id === 'scenario-solar') {
+        const tab = document.getElementById('tab-solar');
+        tab.classList.add('active', 'bg-slate-900', 'text-white');
+        tab.classList.remove('bg-white', 'text-slate-600');
+      } else if (id === 'scenario-doc') {
+        const tab = document.getElementById('tab-doc');
+        tab.classList.add('active', 'bg-slate-900', 'text-white');
+        tab.classList.remove('bg-white', 'text-slate-600');
+      } else if (id === 'scenario-sar') {
+        const tab = document.getElementById('tab-sar');
+        tab.classList.add('active', 'bg-slate-900', 'text-white');
+        tab.classList.remove('bg-white', 'text-slate-600');
+      }
+    }
+  </script>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500">
+    <div class="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2 font-mono">
+        <span>AutoGIS Studio v1.0.7</span> · <span>Authored by Prince</span>
+      </div>
+      <div class="flex items-center gap-5">
+        <a href="/" class="hover:text-slate-900">Home</a>
+        <a href="/architecture" class="text-sky-600 font-bold">Architecture</a>
+        <a href="/tech-stack" class="hover:text-slate-900">Tech Stack</a>
+        <a href="https://github.com/sutharprin098/AutoGIS" class="hover:text-slate-900">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
