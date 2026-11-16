@@ -79,8 +79,10 @@ class XerjAIClient:
             method="POST"
         )
 
+        if not url.lower().startswith(("http://", "https://")):
+            raise ValueError(f"Disallowed URL scheme in {url}")
         try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
+            with urllib.request.urlopen(req, timeout=15) as resp:  # nosec B310
                 data = json.loads(resp.read().decode("utf-8"))
                 return {
                     "status": "SUCCESS",

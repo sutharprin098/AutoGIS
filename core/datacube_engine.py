@@ -80,20 +80,20 @@ class StreamingDatacube:
     def register_batch_layers(self, layer_list: List[Dict[str, Any]]) -> int:
         """Register up to 100+ layers in a single batch call."""
         count = 0
-        for l in layer_list:
+        for layer_item in layer_list:
             desc = LayerDescriptor(
-                layer_id=l.get("id", f"layer_{count:03d}"),
-                name=l.get("name", f"Spatial Layer {count}"),
-                layer_type=l.get("type", "raster"),
-                source_path=l.get("path", ""),
-                crs=l.get("crs", "EPSG:4326"),
-                resolution=float(l.get("resolution", 30.0)),
-                bounds=tuple(l.get("bounds", (0.0, 0.0, 1.0, 1.0))),
-                is_categorical=bool(l.get("is_categorical", False)),
-                weight_in_mcdm=float(l.get("weight", 1.0)),
-                is_exclusion_constraint=bool(l.get("is_exclusion", False)),
-                data_range=tuple(l.get("range", (0.0, 1.0))),
-                extra_metadata=l.get("metadata", {}),
+                layer_id=layer_item.get("id", f"layer_{count:03d}"),
+                name=layer_item.get("name", f"Spatial Layer {count}"),
+                layer_type=layer_item.get("type", "raster"),
+                source_path=layer_item.get("path", ""),
+                crs=layer_item.get("crs", "EPSG:4326"),
+                resolution=float(layer_item.get("resolution", 30.0)),
+                bounds=tuple(layer_item.get("bounds", (0.0, 0.0, 1.0, 1.0))),
+                is_categorical=bool(layer_item.get("is_categorical", False)),
+                weight_in_mcdm=float(layer_item.get("weight", 1.0)),
+                is_exclusion_constraint=bool(layer_item.get("is_exclusion", False)),
+                data_range=tuple(layer_item.get("range", (0.0, 1.0))),
+                extra_metadata=layer_item.get("metadata", {}),
             )
             self.register_layer(desc)
             count += 1
@@ -104,11 +104,11 @@ class StreamingDatacube:
         return {
             "total_layers": len(self.layers),
             "grid_spec": asdict(self.grid_spec) if self.grid_spec else None,
-            "raster_count": sum(1 for l in self.layers.values() if l.layer_type == "raster"),
-            "vector_count": sum(1 for l in self.layers.values() if l.layer_type == "vector"),
-            "exclusion_criteria_count": sum(1 for l in self.layers.values() if l.is_exclusion_constraint),
+            "raster_count": sum(1 for layer in self.layers.values() if layer.layer_type == "raster"),
+            "vector_count": sum(1 for layer in self.layers.values() if layer.layer_type == "vector"),
+            "exclusion_criteria_count": sum(1 for layer in self.layers.values() if layer.is_exclusion_constraint),
             "dimensions_pixels": f"{self.grid_spec.width} x {self.grid_spec.height}" if self.grid_spec else "N/A",
-            "layer_names": [l.name for l in self.layers.values()][:20],  # first 20 names
+            "layer_names": [layer.name for layer in self.layers.values()][:20],  # first 20 names
         }
 
     def iter_chunks(self) -> Generator[Dict[str, Any], None, None]:

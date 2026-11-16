@@ -56,8 +56,10 @@ class AutonomousDataLakeCrawler:
         )
         req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
 
+        if not url.lower().startswith(("http://", "https://")):
+            raise ValueError(f"Disallowed URL scheme in {url}")
         try:
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=10) as resp:  # nosec B310
                 data = json.loads(resp.read().decode("utf-8"))
                 if not data:
                     raise ValueError(f"Place '{place_name}' not found.")
@@ -121,8 +123,10 @@ class AutonomousDataLakeCrawler:
             method="POST",
         )
 
+        if not EARTH_SEARCH_STAC.lower().startswith(("http://", "https://")):
+            raise ValueError(f"Disallowed URL scheme in {EARTH_SEARCH_STAC}")
         try:
-            with urllib.request.urlopen(req, timeout=12) as resp:
+            with urllib.request.urlopen(req, timeout=12) as resp:  # nosec B310
                 result = json.loads(resp.read().decode("utf-8"))
                 features = result.get("features", [])
                 assets_catalog = []
@@ -189,8 +193,10 @@ class AutonomousDataLakeCrawler:
         url = NASA_POWER_API + "?" + urllib.parse.urlencode(params)
         req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
 
+        if not url.lower().startswith(("http://", "https://")):
+            raise ValueError(f"Disallowed URL scheme in {url}")
         try:
-            with urllib.request.urlopen(req, timeout=12) as resp:
+            with urllib.request.urlopen(req, timeout=12) as resp:  # nosec B310
                 data = json.loads(resp.read().decode("utf-8"))
                 props = data.get("properties", {}).get("parameter", {})
 

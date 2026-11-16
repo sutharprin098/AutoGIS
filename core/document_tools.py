@@ -407,7 +407,8 @@ def tool_read_uploaded_file_or_pdf(iface, args: dict) -> dict:
             primary_llm_name=cfg.active_provider.capitalize(),
         )
         res["ai_router_decision"] = routing_info
-    except Exception:
-        pass
+    except Exception as exc:  # nosec B110
+        # Safe fallback if optional AI document router is offline
+        res["ai_router_decision"] = {"status": "FALLBACK_PRIMARY_LLM", "error": str(exc)}
 
     return res

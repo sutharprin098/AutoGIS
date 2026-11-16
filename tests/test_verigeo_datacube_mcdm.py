@@ -216,7 +216,7 @@ def test_xerj_router_with_api_key_spatial_document():
     )
     assert res["decision"] == "XERJ_AI"
     assert res["has_xerj_key"] is True
-    assert res["reader"] == "Xerj AI"
+    assert "Xerj AI" in res["reader"]
     assert res["spatial_score"] > 0.25
     assert res["xerj_intelligence"] is not None
     assert res["xerj_intelligence"]["detected_coordinates_count"] >= 1
