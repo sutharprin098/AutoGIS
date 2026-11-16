@@ -58,6 +58,10 @@ class AutoGISEngine(QObject):
         "gas_execute_task",
         "gas_manage_task",
         "gas_registry_search",
+        "verigeo_verify_and_repair",
+        "verigeo_maup_and_physics_guard",
+        "datacube_manage_100_layers",
+        "autonomous_mcdm_100plus",
     })
 
     def __init__(self, iface, config: AutoGISConfig, parent=None) -> None:

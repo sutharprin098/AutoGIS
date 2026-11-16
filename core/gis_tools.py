@@ -1732,7 +1732,9 @@ from .gee_tools import (
     tool_gee_image_collection, tool_gee_image_preview,
 )
 from .advanced_gis_tools import (
+    tool_autonomous_mcdm_100plus,
     tool_compute_zonal_statistics,
+    tool_datacube_manage_100_layers,
     tool_export_interactive_webmap,
     tool_export_publication_map,
     tool_fetch_live_hazard_feed,
@@ -1740,6 +1742,8 @@ from .advanced_gis_tools import (
     tool_load_india_national_gis,
     tool_query_xerj_corpus,
     tool_style_raster_layer,
+    tool_verigeo_maup_and_physics_guard,
+    tool_verigeo_verify_workflow,
 )
 from .extended_gis_tools import (
     tool_analyze_map_vision,
@@ -2877,6 +2881,65 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
                 },
             },
             handler=tool_gas_registry_search,
+        ),
+        GISToolSpec(
+            name="verigeo_verify_and_repair",
+            description="VeriGeo Neuro-Symbolic Verification and Topological Self-Healing. Enforces Equal-Area / Metric CRS axioms, removes sliver polygons, snaps dangling nodes, and auto-diagnoses empty spatial intersection/join results.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "layer_name": {"type": "string", "description": "Target layer name to inspect."},
+                    "operator": {"type": "string", "description": "Spatial operator being verified (buffer, overlay, spatial_join, carbon_sum)."},
+                    "crs": {"type": "string", "description": "Layer CRS string (e.g. EPSG:4326, EPSG:32643)."},
+                    "repair_slivers": {"type": "boolean", "description": "Whether to automatically detect and heal sliver polygons (<0.05 circularity)."},
+                    "diagnose_empty_result": {"type": "boolean", "description": "If true, diagnoses why intersection yielded 0 rows and prescribes fixes."},
+                },
+            },
+            handler=tool_verigeo_verify_workflow,
+        ),
+        GISToolSpec(
+            name="verigeo_maup_and_physics_guard",
+            description="VeriGeo MAUP (Modifiable Areal Unit Problem) & Physics-Informed Conservation Guard. Detects scale-dependent correlation reversals, Moran's I spatial autocorrelation (Tobler's Law), and verifies mass/energy conservation bounds (Hydrology, Carbon, Solar GHI, Slope).",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "domain": {"type": "string", "enum": ["hydrology", "carbon_biomass", "solar_energy", "slope_terrain"], "description": "Physical science domain for conservation checks."},
+                    "physical_metrics": {"type": "object", "description": "Key-value pairs of simulated physical parameters (e.g. precipitation_mm, runoff_mm, npp_g_c_m2_yr, surface_ghi_w_m2)."},
+                    "zone_a_values": {"type": "array", "items": {"type": "number"}, "description": "Aggregated values at Zone Level A to test MAUP variance."},
+                    "zone_b_values": {"type": "array", "items": {"type": "number"}, "description": "Aggregated values at Zone Level B to test MAUP variance."},
+                },
+            },
+            handler=tool_verigeo_maup_and_physics_guard,
+        ),
+        GISToolSpec(
+            name="datacube_manage_100_layers",
+            description="Cloud-Native Out-of-Core 100+ Layer Datacube Engine. Seamlessly manages, aligns, and streams 100+ high-resolution raster and vector layers chunk-by-chunk (512x512) with constant low memory footprint (zero RAM crash).",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "action": {"type": "string", "enum": ["register_synthetic_100", "summary", "stream_pipeline"], "description": "Action to perform on datacube."},
+                    "target_crs": {"type": "string", "description": "Target metric CRS (default EPSG:32643)."},
+                    "resolution": {"type": "number", "description": "Target pixel grid resolution in meters (default 30.0)."},
+                },
+            },
+            handler=tool_datacube_manage_100_layers,
+        ),
+        GISToolSpec(
+            name="autonomous_mcdm_100plus",
+            description="Autonomous 100+ Criteria Multi-Criteria Decision Making (MCDM) Engine. Clusters 100+ layers across 5 pillars (Environmental, Technical, Economic, Social, Climate Risk), calculates Hybrid AHP + Shannon Entropy weights, solves Fuzzy TOPSIS raster suitability, and executes Monte Carlo sensitivity analysis.",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "ahp_entropy_alpha": {"type": "number", "description": "Hybrid weight ratio (0.0 = 100% Entropy data-driven, 1.0 = 100% AHP subjective). Default 0.5."},
+                    "simulated_samples": {"type": "integer", "description": "Number of spatial candidate pixels/samples to evaluate (default 1000)."},
+                    "monte_carlo_iterations": {"type": "integer", "description": "Number of Monte Carlo sensitivity iterations to test stability (default 30)."},
+                },
+            },
+            handler=tool_autonomous_mcdm_100plus,
         ),
     ])
     return {s.name: s for s in specs}

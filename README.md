@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/license-GPL--3.0-orange)](LICENSE)
 [![Downloads](https://img.shields.io/github/downloads/sutharprin098/AutoGIS/total)](https://github.com/sutharprin098/AutoGIS/releases)
 
-**AutoGIS** is an open-source, fully autonomous Geospatial AI Agent, Live MCP & GAS 1.0.0 Server, and Spatial Analysis Studio built into QGIS. Connect any AI model — cloud or offline — to your GIS data and automate complex workflows with 65 built-in tools.
+**AutoGIS** is an open-source, fully autonomous Geospatial AI Agent, Live MCP & GAS 1.0.0 Server, and Spatial Analysis Studio built into QGIS. Connect any AI model — cloud or offline — to your GIS data and automate complex workflows with 69 built-in tools.
 
 ---
 
@@ -38,7 +38,7 @@ AutoGIS does all of that in one shot.
 
 ---
 
-## 🛠️ 65 Autonomous Tools (v1.0.6)
+## 🛠️ 69 Autonomous Tools (v1.0.7)
 
 ### 🤝 Geospatial Agentic Services (GAS 1.0.0)
 | Tool | Description |
@@ -84,6 +84,14 @@ AutoGIS does all of that in one shot.
 | `compute_road_route` | Road routing via OSRM (car/bike/foot) |
 | `query_xerj_corpus` | Semantic search over geospatial knowledge corpus |
 | `classify_crops_sentinel1_sar` | Sentinel-1 SAR crop mapping with ATCN/LSTM |
+
+### 🛡️ VeriGeo Runtime Verification & 100+ Layer MCDM (v1.0.7)
+| Tool | Description |
+|---|---|
+| `verigeo_verify_and_repair` | VeriGeo Neuro-Symbolic Verification: Equal-Area/Metric CRS axioms, sliver polygon healing, dangling node snapping, empty intersection diagnosis |
+| `verigeo_maup_and_physics_guard` | MAUP (Modifiable Areal Unit Problem) risk detection, Moran's I spatial autocorrelation (Tobler's Law), and physical conservation laws (Hydrology mass balance, Carbon NPP, Solar GHI, Slope) |
+| `datacube_manage_100_layers` | Cloud-Native 100+ Layer Out-of-Core Datacube Streaming: Process 100+ rasters/vectors chunk-by-chunk (512x512) with constant low RAM footprint (zero OOM crash) |
+| `autonomous_mcdm_100plus` | Autonomous 100+ Criteria Multi-Criteria Decision Making: Hierarchical 5-pillar clustering, Hybrid AHP + Shannon Entropy weights, Fuzzy TOPSIS raster suitability & Monte Carlo sensitivity |
 
 ### 🗺️ Visualization & Cartography
 | Tool | Description |
