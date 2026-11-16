@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoGIS Studio Tech Stack &amp; Scientific Integrations — VeriGeo, Xerj AI, GAS, Datacube &amp; GEE</title>
-  <meta name="description" content="Comprehensive technical breakdown of AutoGIS Studio: VeriGeo verification, Xerj AI document intelligence, 100+ layer datacubes, GAS 1.0.0, PyQGIS, and Earth observation APIs." />
+  <title>AutoGIS Studio Tech Stack — VeriGeo, Xerj AI, GAS 1.0.0 &amp; GEE</title>
+  <meta name="description" content="Technical breakdown of AutoGIS Studio: VeriGeo Neuro-Symbolic Verification, Xerj AI Document Intelligence, Geospatial Agentic Services (GAS 1.0.0), and Google Earth Engine." />
   <link rel="icon" type="image/svg+xml" href="/assets/icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -67,7 +67,7 @@
         <a href="/" class="hover:text-slate-900 transition">Home</a>
         <a href="/architecture" class="hover:text-slate-900 transition flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>Architecture &amp; Workflow Graph</a>
         <a href="/tech-stack" class="text-sky-600 font-bold">Tech Stack</a>
-        <a href="/#tools" class="hover:text-slate-900 transition">71 Tools</a>
+        <a href="/#tools" class="hover:text-slate-900 transition">Tools</a>
         <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="hover:text-slate-900 transition">GitHub</a>
       </nav>
 
@@ -84,13 +84,13 @@
   <section class="mx-auto max-w-5xl px-6 pt-14 pb-10 text-center">
     <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3.5 py-1 text-xs font-semibold text-sky-800">
       <span class="h-2 w-2 rounded-full bg-sky-500"></span>
-      <span>Comprehensive Technology &amp; Scientific Protocol Directory</span>
+      <span>Core Technology &amp; Scientific Protocol Directory</span>
     </div>
     <h1 class="mt-5 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl leading-tight">
       What Powers AutoGIS Studio?
     </h1>
     <p class="mx-auto mt-4 max-w-3xl text-base text-slate-600 md:text-lg">
-      A transparent look at the technologies, AI models, remote sensing pipelines, and neuro-symbolic verification protocols integrated into AutoGIS.
+      A transparent look at the technologies, AI models, remote sensing tools, and neuro-symbolic verification protocols integrated into AutoGIS.
     </p>
   </section>
 
@@ -156,65 +156,7 @@
         </div>
       </div>
 
-      <!-- 3. Cloud-Native 100+ Layer Datacube -->
-      <div class="stack-card border-l-4 border-l-amber-500">
-        <div class="flex items-center gap-3 mb-3">
-          <span class="rounded-lg bg-amber-100 p-2 text-amber-800 font-mono text-xs font-bold">OOM-FREE</span>
-          <h2 class="text-xl font-bold text-slate-900">100+ Layer Out-of-Core Datacube</h2>
-        </div>
-        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-          Handles 100+ multi-gigabyte rasters and complex vector boundaries simultaneously without memory crashes.
-        </p>
-        <div class="space-y-2 text-xs text-slate-700">
-          <div class="flex items-start gap-2">
-            <span class="text-amber-600 font-bold">✓</span>
-            <div><strong>Chunked Tile Streaming:</strong> Evaluates criteria in $512 \times 512$ pixel windows with a constant memory footprint under <strong>50MB RAM</strong>.</div>
-          </div>
-          <div class="flex items-start gap-2">
-            <span class="text-amber-600 font-bold">✓</span>
-            <div><strong>Automated Grid Harmonization:</strong> Snaps heterogeneous resolutions (10m, 30m, 1km) to a common metric UTM grid with categorical vs continuous resampling.</div>
-          </div>
-          <div class="flex items-start gap-2">
-            <span class="text-amber-600 font-bold">✓</span>
-            <div><strong>DuckDB &amp; GeoParquet:</strong> High-performance out-of-core spatial vector indexing.</div>
-          </div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
-          <span>Architecture: Dask / Xarray / COG</span>
-          <span class="text-amber-600 font-semibold">98.4% RAM Efficient</span>
-        </div>
-      </div>
-
-      <!-- 4. Autonomous MCDM Engine -->
-      <div class="stack-card border-l-4 border-l-purple-500">
-        <div class="flex items-center gap-3 mb-3">
-          <span class="rounded-lg bg-purple-100 p-2 text-purple-800 font-mono text-xs font-bold">MCDM</span>
-          <h2 class="text-xl font-bold text-slate-900">Autonomous Spatial MCDM Solver</h2>
-        </div>
-        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-          High-dimensional multi-criteria decision making capable of ranking sites across 100+ competing criteria.
-        </p>
-        <div class="space-y-2 text-xs text-slate-700">
-          <div class="flex items-start gap-2">
-            <span class="text-purple-600 font-bold">✓</span>
-            <div><strong>5-Pillar Tree Decomposition:</strong> Environmental, Technical, Economic, Social, and Climate Risk.</div>
-          </div>
-          <div class="flex items-start gap-2">
-            <span class="text-purple-600 font-bold">✓</span>
-            <div><strong>Hybrid Weighting:</strong> Combines domain-expert AHP ($CR &lt; 0.10$) with data-driven <strong>Shannon Entropy (EWM)</strong>.</div>
-          </div>
-          <div class="flex items-start gap-2">
-            <span class="text-purple-600 font-bold">✓</span>
-            <div><strong>Fuzzy TOPSIS &amp; Sensitivity:</strong> Evaluates Ideal Best ($A^+$) and Ideal Worst ($A^-$) with Monte Carlo robustness perturbation ($\pm 15\%$).</div>
-          </div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
-          <span>Algorithms: AHP + EWM + TOPSIS</span>
-          <span class="text-purple-600 font-semibold">Monte Carlo Verified</span>
-        </div>
-      </div>
-
-      <!-- 5. Geospatial Agentic Services (GAS 1.0.0) -->
+      <!-- 3. Geospatial Agentic Services (GAS 1.0.0) -->
       <div class="stack-card border-l-4 border-l-rose-500">
         <div class="flex items-center gap-3 mb-3">
           <span class="rounded-lg bg-rose-100 p-2 text-rose-800 font-mono text-xs font-bold">OGC / GAS</span>
@@ -243,32 +185,32 @@
         </div>
       </div>
 
-      <!-- 6. Earth Observation & Open Data Lake -->
+      <!-- 4. Google Earth Engine (GEE) -->
       <div class="stack-card border-l-4 border-l-teal-500">
         <div class="flex items-center gap-3 mb-3">
-          <span class="rounded-lg bg-teal-100 p-2 text-teal-800 font-mono text-xs font-bold">STAC / OSM</span>
-          <h2 class="text-xl font-bold text-slate-900">Autonomous Earth Observation Lake</h2>
+          <span class="rounded-lg bg-teal-100 p-2 text-teal-800 font-mono text-xs font-bold">GEE / PyQGIS</span>
+          <h2 class="text-xl font-bold text-slate-900">Google Earth Engine &amp; PyQGIS</h2>
         </div>
         <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-          Zero-input regional data crawler connecting the world's leading open spatial repositories.
+          Planetary-scale geospatial analysis and native QGIS processing integration.
         </p>
         <div class="space-y-2 text-xs text-slate-700">
           <div class="flex items-start gap-2">
             <span class="text-teal-600 font-bold">✓</span>
-            <div><strong>STAC Satellites:</strong> Queries Microsoft Planetary Computer &amp; AWS Earth-Search for Sentinel-2, Sentinel-1 SAR, Copernicus 30m DEM, and ESA WorldCover.</div>
+            <div><strong>Petabyte-Scale Satellite Catalogs:</strong> Direct integration with Sentinel, Landsat, and MODIS image collections.</div>
           </div>
           <div class="flex items-start gap-2">
             <span class="text-teal-600 font-bold">✓</span>
-            <div><strong>NASA POWER API:</strong> Fetches 10-year climatological Solar GHI ($\text{kWh/m}^2/\text{day}$), temperature, and wind speed.</div>
+            <div><strong>Automated Spectral Indices:</strong> Computes NDVI, NDWI, EVI, and NBR directly in the cloud and streams back to QGIS.</div>
           </div>
           <div class="flex items-start gap-2">
             <span class="text-teal-600 font-bold">✓</span>
-            <div><strong>OpenStreetMap Overpass:</strong> Extracts high-voltage power transmission lines, substations, and national park boundaries.</div>
+            <div><strong>Local PyQGIS Canvas:</strong> Native layout generation, 300 DPI exports, 3D terrain visualizer, and animated time series maps.</div>
           </div>
         </div>
         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
-          <span>Data: Sentinel-2 · GLO-30 · NASA · OSM</span>
-          <span class="text-teal-600 font-semibold">Zero-Upload Ingestion</span>
+          <span>Engine: GEE API + PyQGIS 3.22+</span>
+          <span class="text-teal-600 font-semibold">Fully Autonomous</span>
         </div>
       </div>
 
