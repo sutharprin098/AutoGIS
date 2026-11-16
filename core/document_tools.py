@@ -356,10 +356,9 @@ def tool_read_uploaded_file_or_pdf(iface, args: dict) -> dict:
         return res
 
     if ext == ".docx":
-        return extract_docx_content(path, max_chars=18000)
-
-    if ext in (".xlsx", ".xls"):
-        return extract_xlsx_content(path, max_rows=80)
+        res = extract_docx_content(path, max_chars=18000)
+    elif ext in (".xlsx", ".xls"):
+        res = extract_xlsx_content(path, max_rows=80)
 
     # Generic text / CSV / JSON / script reader with optional search filter
     file_size = os.path.getsize(path)
@@ -384,7 +383,7 @@ def tool_read_uploaded_file_or_pdf(iface, args: dict) -> dict:
                 offset = max(0, (start_page - 1) * 8000)
                 fh.seek(offset)
                 content = fh.read(16000)
-                return {
+                res = {
                     "path": path,
                     "file_size": _format_size(file_size),
                     "offset": offset,
@@ -392,3 +391,23 @@ def tool_read_uploaded_file_or_pdf(iface, args: dict) -> dict:
                 }
     except Exception as exc:
         return {"error": f"Could not read file '{path}': {exc}"}
+
+    # Autonomous AI Document Routing (Xerj AI vs Primary LLM)
+    try:
+        from .config import AutoGISConfig
+        from .xerj_ai_router import AIDocumentRouter
+        cfg = AutoGISConfig()
+        sample_text = str(res.get("text_preview") or res.get("content") or res.get("matches") or "")[:4000]
+        routing_info = AIDocumentRouter.route_document_reading(
+            doc_path=path,
+            text_content=sample_text,
+            user_query=search_query,
+            xerj_api_key=cfg.xerj_key,
+            xerj_base_url=cfg.xerj_url,
+            primary_llm_name=cfg.active_provider.capitalize(),
+        )
+        res["ai_router_decision"] = routing_info
+    except Exception:
+        pass
+
+    return res

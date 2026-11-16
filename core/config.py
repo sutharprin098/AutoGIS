@@ -13,6 +13,7 @@ DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_MODEL = ""
 
 PROVIDERS: list[tuple[str, str, str]] = [
+    ("xerj", "Xerj AI (Geospatial & Document Intelligence)", "https://api.xerj.ai/v1"),
     ("gemini", "Google Gemini", "https://generativelanguage.googleapis.com/v1beta/openai"),
     ("openai", "OpenAI (ChatGPT)", "https://api.openai.com/v1"),
     ("anthropic", "Anthropic (Claude)", "https://api.anthropic.com/v1"),
@@ -98,6 +99,9 @@ CURATED_MODELS: list[tuple[str, str]] = [
     ("deepseek/deepseek-reasoner", "DeepSeek R1"),
     ("qwen/qwen-2.5-72b-instruct", "Qwen 2.5 72B"),
     ("meta-llama/llama-3.3-70b-instruct", "Llama 3.3 70B"),
+    # --- Xerj AI ---
+    ("xerj/geo-reasoner", "Xerj AI: Geospatial Reasoner"),
+    ("xerj/geo-doc-intelligence", "Xerj AI: Document Intelligence"),
     # --- Local (Ollama) ---
     ("ollama/qwen2.5-coder:14b", "Local: Qwen 2.5 Coder 14B (Ollama)"),
     ("ollama/qwen2.5-coder:7b", "Local: Qwen 2.5 Coder 7B (Ollama)"),
@@ -222,6 +226,7 @@ class AutoGISConfig:
 
     def get_provider_key(self, provider_id: str) -> str:
         key_map = {
+            "xerj": "xerj_key",
             "openrouter": "api_key",
             "gemini": "gemini_key",
             "openai": "openai_key",
@@ -233,6 +238,7 @@ class AutoGISConfig:
 
     def set_provider_key(self, provider_id: str, value: str) -> None:
         key_map = {
+            "xerj": "xerj_key",
             "openrouter": "api_key",
             "gemini": "gemini_key",
             "openai": "openai_key",
@@ -274,6 +280,14 @@ class AutoGISConfig:
     @custom_logo_path.setter
     def custom_logo_path(self, value: str) -> None:
         self.set_str("custom_logo_path", value)
+
+    @property
+    def xerj_key(self) -> str:
+        return self.get_str("xerj_key", "")
+
+    @xerj_key.setter
+    def xerj_key(self, value: str) -> None:
+        self.set_str("xerj_key", value)
 
     @property
     def api_key(self) -> str:
@@ -356,6 +370,11 @@ class AutoGISConfig:
         # If active provider is openrouter and we have an openrouter key, route directly via openrouter
         if self.active_provider == "openrouter" and or_key:
             return ("openrouter", or_key, PROVIDER_ENDPOINTS["openrouter"], m)
+
+        if (m.startswith("xerj/") or self.active_provider == "xerj") and self.xerj_key:
+            clean_m = m.split("/", 1)[1] if "/" in m else (m or "geo-reasoner")
+            x_url = self.get_str("xerj_url", PROVIDER_ENDPOINTS.get("xerj", "https://api.xerj.ai/v1")) or "https://api.xerj.ai/v1"
+            return ("xerj", self.xerj_key, x_url.rstrip("/"), clean_m)
 
         if (m.startswith("google/gemini") or m.startswith("gemini-")) and gem_key and not gem_key.startswith("sk-or-"):
             clean_m = m.split("/", 1)[1] if "/" in m else m

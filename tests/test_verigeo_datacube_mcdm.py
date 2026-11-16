@@ -185,3 +185,65 @@ def test_all_tools_execution():
     assert res_dl["crawler_result"]["layers_auto_assembled"] == 100
     assert "climate_summary" in res_dl["crawler_result"]
 
+
+
+# =============================================================================
+# 5. Xerj AI Document Intelligence & Router Tests
+# =============================================================================
+def test_xerj_router_without_api_key():
+    from core.xerj_ai_router import AIDocumentRouter
+    # When user did NOT provide Xerj key, MUST route to Primary LLM
+    res = AIDocumentRouter.route_document_reading(
+        doc_path="project_brief.pdf",
+        text_content="Coordinates: 26.9124, 75.7873. EPSG:32643 UTM zone. Solar GHI: 5.8 kWh/m2.",
+        xerj_api_key="",  # No key provided
+        primary_llm_name="Gemini 2.5 Flash",
+    )
+    assert res["decision"] == "PRIMARY_LLM"
+    assert res["has_xerj_key"] is False
+    assert res["reader"] == "Gemini 2.5 Flash"
+    assert "did not configure a Xerj AI API key" in res["reason"]
+
+
+def test_xerj_router_with_api_key_spatial_document():
+    from core.xerj_ai_router import AIDocumentRouter
+    # When user provided Xerj key AND document is spatial, MUST route to Xerj AI
+    res = AIDocumentRouter.route_document_reading(
+        doc_path="solar_farm_specs.pdf",
+        text_content="Coordinates: 26.9124, 75.7873. EPSG:32643 UTM zone. Slope: 3.2 deg. Solar GHI: 5.85 kWh/m2. Bounding box overlay with Sentinel-2 NDVI.",
+        xerj_api_key="xerj-live-token-secret-xyz",
+        primary_llm_name="Gemini 2.5 Flash",
+    )
+    assert res["decision"] == "XERJ_AI"
+    assert res["has_xerj_key"] is True
+    assert res["reader"] == "Xerj AI"
+    assert res["spatial_score"] > 0.25
+    assert res["xerj_intelligence"] is not None
+    assert res["xerj_intelligence"]["detected_coordinates_count"] >= 1
+    assert "32643" in res["xerj_intelligence"]["detected_epsg_codes"]
+
+
+def test_xerj_router_with_api_key_general_document():
+    from core.xerj_ai_router import AIDocumentRouter
+    # When user provided Xerj key BUT document is plain non-spatial essay, router picks primary LLM
+    res = AIDocumentRouter.route_document_reading(
+        doc_path="meeting_notes.txt",
+        text_content="Team meeting on Monday morning at 10 AM to discuss marketing strategy and quarterly sales budget.",
+        xerj_api_key="xerj-live-token-secret-xyz",
+        primary_llm_name="Gemini 2.5 Flash",
+    )
+    assert res["decision"] == "PRIMARY_LLM"
+    assert res["has_xerj_key"] is True
+    assert res["reader"] == "Gemini 2.5 Flash"
+    assert "general/non-spatial" in res["reason"]
+
+
+def test_tool_xerj_document_intelligence_execution():
+    from core.advanced_gis_tools import tool_xerj_document_intelligence
+    res = tool_xerj_document_intelligence({
+        "text": "Solar site survey in Jodhpur: lat 26.2389, lon 73.0243. Coordinate system EPSG:32643. Elevation 231m.",
+        "query": "Find coordinates and elevation",
+    })
+    assert res["status"] == "ok"
+    assert "routing_evaluation" in res
+    assert "assigned_reason" in res

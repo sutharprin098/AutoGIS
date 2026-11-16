@@ -63,6 +63,7 @@ class AutoGISEngine(QObject):
         "datacube_manage_100_layers",
         "autonomous_mcdm_100plus",
         "autonomous_datalake_crawl",
+        "xerj_document_intelligence",
     })
 
     def __init__(self, iface, config: AutoGISConfig, parent=None) -> None:

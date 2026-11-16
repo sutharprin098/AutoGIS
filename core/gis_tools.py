@@ -1733,6 +1733,7 @@ from .gee_tools import (
 )
 from .advanced_gis_tools import (
     tool_autonomous_datalake_crawl,
+    tool_xerj_document_intelligence,
     tool_autonomous_mcdm_100plus,
     tool_compute_zonal_statistics,
     tool_datacube_manage_100_layers,
@@ -2954,6 +2955,20 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
                 "required": ["place_name"],
             },
             handler=tool_autonomous_datalake_crawl,
+        ),
+        GISToolSpec(
+            name="xerj_document_intelligence",
+            description="Autonomous AI Document Router & Deep Spatial Extraction. Users can upload any PDF, Word doc, Excel, CSV, or GeoPDF. The AI Decision Router determines whether the primary LLM or Xerj AI parses the document based on spatial density, but strictly engages Xerj AI only if the user has provided a Xerj AI API key.",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string", "description": "Full filesystem path to uploaded document (PDF, DOCX, CSV, GeoJSON, etc.)."},
+                    "text": {"type": "string", "description": "Optional raw text payload to analyze."},
+                    "query": {"type": "string", "description": "Optional user query or specific spatial entity to extract."},
+                },
+            },
+            handler=tool_xerj_document_intelligence,
         ),
     ])
     return {s.name: s for s in specs}

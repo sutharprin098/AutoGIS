@@ -1545,3 +1545,42 @@ def tool_autonomous_datalake_crawl(params: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+
+
+def tool_xerj_document_intelligence(params: dict[str, Any]) -> dict[str, Any]:
+    """AI Document Router & Deep Spatial Extraction (Xerj AI vs Primary LLM). Only routes to Xerj AI if user has provided Xerj API key."""
+    from .config import AutoGISConfig
+    from .xerj_ai_router import AIDocumentRouter, XerjAIClient
+
+    cfg = AutoGISConfig()
+    path = str(params.get("path") or "").strip()
+    raw_text = str(params.get("text") or "").strip()
+    user_query = str(params.get("query") or "").strip()
+
+    if path and os.path.isfile(path) and not raw_text:
+        try:
+            with open(path, "r", encoding="utf-8", errors="ignore") as fh:
+                raw_text = fh.read(30000)
+        except Exception as e:
+            raw_text = f"File read note: {e}"
+
+    routing_res = AIDocumentRouter.route_document_reading(
+        doc_path=path,
+        text_content=raw_text,
+        user_query=user_query,
+        xerj_api_key=cfg.xerj_key,
+        xerj_base_url=cfg.xerj_url,
+        primary_llm_name=cfg.active_provider.capitalize(),
+    )
+
+    return {
+        "status": "ok",
+        "routing_evaluation": routing_res,
+        "active_reader": routing_res["reader"],
+        "assigned_reason": routing_res["reason"],
+        "xerj_key_configured": routing_res["has_xerj_key"],
+        "extracted_insights": routing_res.get("xerj_intelligence") or {
+            "summary": "Document processed via Primary LLM pipeline.",
+            "spatial_density": routing_res["spatial_score"],
+        },
+    }
