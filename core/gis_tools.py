@@ -1732,6 +1732,7 @@ from .gee_tools import (
     tool_gee_image_collection, tool_gee_image_preview,
 )
 from .advanced_gis_tools import (
+    tool_autonomous_datalake_crawl,
     tool_autonomous_mcdm_100plus,
     tool_compute_zonal_statistics,
     tool_datacube_manage_100_layers,
@@ -2940,6 +2941,19 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
                 },
             },
             handler=tool_autonomous_mcdm_100plus,
+        ),
+        GISToolSpec(
+            name="autonomous_datalake_crawl",
+            description="Zero-Input Autonomous Earth Data Lake Crawler. Provide any regional place name (e.g. 'Rajasthan, India' or 'Salt Lake City, Utah') and the crawler automatically geocodes the bounds, queries STAC (Sentinel-2, Copernicus DEM, ESA WorldCover), fetches NASA POWER climate irradiance (GHI), extracts OSM power/road infrastructure, and assembles 100+ criteria directly into the streaming datacube with zero manual uploads.",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "place_name": {"type": "string", "description": "Target region or city name (e.g. 'Rajasthan, India', 'Salt Lake City, Utah')."},
+                },
+                "required": ["place_name"],
+            },
+            handler=tool_autonomous_datalake_crawl,
         ),
     ])
     return {s.name: s for s in specs}

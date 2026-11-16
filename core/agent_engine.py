@@ -62,6 +62,7 @@ class AutoGISEngine(QObject):
         "verigeo_maup_and_physics_guard",
         "datacube_manage_100_layers",
         "autonomous_mcdm_100plus",
+        "autonomous_datalake_crawl",
     })
 
     def __init__(self, iface, config: AutoGISConfig, parent=None) -> None:

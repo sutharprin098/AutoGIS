@@ -1530,3 +1530,18 @@ def tool_autonomous_mcdm_100plus(params: dict[str, Any]) -> dict[str, Any]:
         "verigeo_governance": "Axiomatic validation passed. 100 criteria solved via Hybrid AHP-Entropy Fuzzy TOPSIS.",
     }
 
+
+def tool_autonomous_datalake_crawl(params: dict[str, Any]) -> dict[str, Any]:
+    """Zero-Input Autonomous Earth Data Lake Crawler: Geocodes region, queries STAC + NASA Climate + OSM, and auto-assembles 100+ criteria."""
+    from .autonomous_datalake import AutonomousDataLakeCrawler
+    place_name = params.get("place_name", "Rajasthan, India")
+    crawler = AutonomousDataLakeCrawler()
+
+    res = crawler.assemble_autonomous_datacube(place_name=place_name, target_datacube=_GLOBAL_DATACUBE)
+    return {
+        "status": "ok",
+        "crawler_result": res,
+        "datacube_state": _GLOBAL_DATACUBE.get_summary(),
+    }
+
+

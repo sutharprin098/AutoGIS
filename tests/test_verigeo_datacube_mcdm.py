@@ -178,3 +178,10 @@ def test_all_tools_execution():
     res_m = tool_autonomous_mcdm_100plus({"ahp_entropy_alpha": 0.6, "simulated_samples": 200})
     assert res_m["status"] == "ok"
     assert res_m["mcdm_result"]["total_criteria_processed"] >= 100
+
+    from core.advanced_gis_tools import tool_autonomous_datalake_crawl
+    res_dl = tool_autonomous_datalake_crawl({"place_name": "Rajasthan, India"})
+    assert res_dl["status"] == "ok"
+    assert res_dl["crawler_result"]["layers_auto_assembled"] == 100
+    assert "climate_summary" in res_dl["crawler_result"]
+
