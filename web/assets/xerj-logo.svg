@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="xerjGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C084FC"/>
+      <stop offset="100%" stop-color="#7E22CE"/>
+    </linearGradient>
+    <linearGradient id="xerjBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FAF5FF"/>
+      <stop offset="100%" stop-color="#F3E8FF"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Rounded Squircle -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#xerjBg)" stroke="#E9D5FF" stroke-width="3"/>
+  <!-- Document Intelligence Contour -->
+  <rect x="34" y="24" width="60" height="80" rx="8" fill="#FFFFFF" stroke="#D8B4FE" stroke-width="2.5"/>
+  <line x1="44" y1="38" x2="68" y2="38" stroke="#D8B4FE" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="44" y1="48" x2="84" y2="48" stroke="#E9D5FF" stroke-width="2" stroke-linecap="round"/>
+  <line x1="44" y1="56" x2="74" y2="56" stroke="#E9D5FF" stroke-width="2" stroke-linecap="round"/>
+  <!-- Stylized Gradient 'X' Symbol (XERJ Intelligence) -->
+  <path d="M46 94 L82 58 M82 94 L46 58" stroke="url(#xerjGrad)" stroke-width="7" stroke-linecap="round"/>
+  <!-- AI Symbolic Checked Sparkle -->
+  <polygon points="88,26 91,34 99,37 91,40 88,48 85,40 77,37 85,34" fill="#9333EA"/>
+</svg>

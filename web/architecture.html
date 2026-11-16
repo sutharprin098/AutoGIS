@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoGIS Studio System Architecture — VeriGeo, GAS 1.0.0 &amp; Xerj AI</title>
-  <meta name="description" content="Complete real architecture and execution lifecycle of AutoGIS: VeriGeo Neuro-Symbolic Verification, Geospatial Agentic Services (GAS 1.0.0), and Xerj AI Document Intelligence." />
+  <title>AutoGIS Studio Architecture — VeriGeo, GAS 1.0.0 &amp; Xerj AI</title>
+  <meta name="description" content="Complete architecture and execution lifecycle of AutoGIS: VeriGeo Neuro-Symbolic Verification, Geospatial Agentic Services (GAS 1.0.0), and Xerj AI Document Intelligence." />
   <link rel="icon" type="image/svg+xml" href="/assets/icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -139,18 +139,56 @@
     </div>
   </header>
 
-  <!-- Hero Header -->
-  <section class="mx-auto max-w-5xl px-6 pt-14 pb-8 text-center">
-    <div class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1 text-xs font-semibold text-indigo-800">
-      <span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
-      <span>Autonomous Geospatial AI Architecture &amp; Multi-Agent Mesh</span>
+  <!-- Hero Header with All 3 Ecosystem Logos -->
+  <section class="mx-auto max-w-5xl px-6 pt-12 pb-8 text-center">
+    
+    <!-- Badges Row with Logos -->
+    <div class="inline-flex flex-wrap items-center justify-center gap-3 mb-4">
+      <div class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 shadow-sm">
+        <img src="/assets/verigeo-logo.svg" alt="VeriGeo Logo" class="h-4 w-4" />
+        <span>VeriGeo (NS-VGP 1.0)</span>
+      </div>
+      <div class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-800 shadow-sm">
+        <img src="/assets/gas-logo.svg" alt="GAS Logo" class="h-4 w-4" />
+        <span>GAS 1.0.0 Multi-Agent Mesh</span>
+      </div>
+      <div class="inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-800 shadow-sm">
+        <img src="/assets/xerj-logo.svg" alt="Xerj AI Logo" class="h-4 w-4" />
+        <span>Xerj AI Document Intelligence</span>
+      </div>
     </div>
-    <h1 class="mt-5 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl leading-tight">
-      VeriGeo &amp; GAS 1.0.0 Integrated Architecture
+
+    <!-- Main Title with All 3 Names -->
+    <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl leading-tight">
+      VeriGeo, GAS 1.0.0 &amp; Xerj AI Integrated Architecture
     </h1>
+    
     <p class="mx-auto mt-4 max-w-3xl text-base text-slate-600 md:text-lg">
-      Clean, end-to-end execution flow of AutoGIS: from user prompt and document parsing to <strong>VeriGeo Neuro-Symbolic Verification</strong>, <strong>Geospatial Agentic Services (GAS 1.0.0)</strong>, and certified cartography.
+      Autonomous geospatial intelligence pipeline: seamlessly orchestrating <strong>VeriGeo Neuro-Symbolic Verification</strong>, <strong>Geospatial Agentic Services (GAS 1.0.0)</strong>, and <strong>Xerj AI Document Intelligence</strong> directly into native PyQGIS cartography.
     </p>
+
+    <!-- Visual Logo Partner Bar -->
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-6 sm:gap-10 pt-6 border-t border-slate-200/60 text-slate-400">
+      <div class="flex items-center gap-2 font-mono text-xs font-bold text-slate-700">
+        <img src="/assets/icon.svg" alt="AutoGIS" class="h-7 w-7" />
+        <span>AutoGIS Studio</span>
+      </div>
+      <span class="text-slate-300">•</span>
+      <div class="flex items-center gap-2 font-mono text-xs font-bold text-emerald-700">
+        <img src="/assets/verigeo-logo.svg" alt="VeriGeo" class="h-7 w-7" />
+        <span>VeriGeo Protocol</span>
+      </div>
+      <span class="text-slate-300">•</span>
+      <div class="flex items-center gap-2 font-mono text-xs font-bold text-indigo-700">
+        <img src="/assets/gas-logo.svg" alt="GAS 1.0.0" class="h-7 w-7" />
+        <span>GAS 1.0.0 Mesh</span>
+      </div>
+      <span class="text-slate-300">•</span>
+      <div class="flex items-center gap-2 font-mono text-xs font-bold text-purple-700">
+        <img src="/assets/xerj-logo.svg" alt="Xerj AI" class="h-7 w-7" />
+        <span>Xerj AI Engine</span>
+      </div>
+    </div>
   </section>
 
   <!-- High-Level Interactive Workflow Section -->
@@ -166,12 +204,19 @@
           <p class="text-xs text-slate-500">Autonomous workflow across VeriGeo Guardian, GAS Agentic Services, Xerj AI, and PyQGIS Engine.</p>
         </div>
         <div class="flex items-center gap-2">
-          <span class="rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 font-mono text-[11px] font-bold">VeriGeo (NS-VGP 1.0)</span>
-          <span class="rounded-full bg-indigo-100 text-indigo-800 px-2.5 py-0.5 font-mono text-[11px] font-bold">GAS 1.0.0 Mesh</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 font-mono text-[11px] font-bold">
+            <img src="/assets/verigeo-logo.svg" alt="VeriGeo" class="h-3 w-3" /> VeriGeo
+          </span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 text-indigo-800 px-2.5 py-0.5 font-mono text-[11px] font-bold">
+            <img src="/assets/gas-logo.svg" alt="GAS" class="h-3 w-3" /> GAS 1.0.0
+          </span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-purple-100 text-purple-800 px-2.5 py-0.5 font-mono text-[11px] font-bold">
+            <img src="/assets/xerj-logo.svg" alt="Xerj AI" class="h-3 w-3" /> Xerj AI
+          </span>
         </div>
       </div>
 
-      <!-- 1. Executive 5-Stage Visual Workflow Cards (Razor Sharp & 100% Real) -->
+      <!-- 1. Executive 5-Stage Visual Workflow Cards (With Logos & 100% Real) -->
       <div class="my-8">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
@@ -187,7 +232,7 @@
             <div>
               <div class="flex items-center justify-between mb-2">
                 <span class="font-mono text-[10px] font-bold text-slate-500 uppercase tracking-wider">Stage 01</span>
-                <span class="text-base">🗣️</span>
+                <img src="/assets/icon.svg" alt="Input" class="h-5 w-5" />
               </div>
               <h4 class="text-sm font-bold text-slate-900">User Ingestion</h4>
               <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Natural prompt, voice query, or attached spatial document (PDF, TXT, DOCX).</p>
@@ -202,10 +247,10 @@
             <div>
               <div class="flex items-center justify-between mb-2">
                 <span class="font-mono text-[10px] font-bold text-purple-700 uppercase tracking-wider">Stage 02</span>
-                <span class="text-base">🌟</span>
+                <img src="/assets/xerj-logo.svg" alt="Xerj AI" class="h-5 w-5" />
               </div>
               <h4 class="text-sm font-bold text-slate-900">Planner &amp; Xerj AI</h4>
-              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Task decomposition into steps. If document is provided, Xerj AI extracts coordinates and parameters.</p>
+              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Task decomposition into steps. If document is attached, Xerj AI extracts coordinates and parameters.</p>
             </div>
             <div class="mt-3 pt-2 border-t border-purple-200 font-mono text-[10px] text-purple-700 font-semibold">
               AI Router &amp; Parsing
@@ -217,7 +262,7 @@
             <div>
               <div class="flex items-center justify-between mb-2">
                 <span class="font-mono text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Stage 03</span>
-                <span class="text-base">🛡️</span>
+                <img src="/assets/verigeo-logo.svg" alt="VeriGeo" class="h-5 w-5" />
               </div>
               <h4 class="text-sm font-bold text-slate-900">VeriGeo Guardian</h4>
               <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Pre-execution verification: Metric UTM/Equal-Area CRS, sliver ring auto-repair, and MAUP bounds.</p>
@@ -228,16 +273,16 @@
           </div>
 
           <!-- Stage 4 -->
-          <div class="rounded-xl border border-orange-200 bg-orange-50/60 p-4 flex flex-col justify-between hover:border-orange-300 transition">
+          <div class="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 flex flex-col justify-between hover:border-indigo-300 transition">
             <div>
               <div class="flex items-center justify-between mb-2">
-                <span class="font-mono text-[10px] font-bold text-orange-800 uppercase tracking-wider">Stage 04</span>
-                <span class="text-base">⚙️</span>
+                <span class="font-mono text-[10px] font-bold text-indigo-800 uppercase tracking-wider">Stage 04</span>
+                <img src="/assets/gas-logo.svg" alt="GAS" class="h-5 w-5" />
               </div>
               <h4 class="text-sm font-bold text-slate-900">Dual Execution</h4>
               <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Local PyQGIS algorithms (GDAL, GeoPandas) OR remote GAS 1.0.0 specialist agents (SAR, Hydrology).</p>
             </div>
-            <div class="mt-3 pt-2 border-t border-orange-200 font-mono text-[10px] text-orange-800 font-semibold">
+            <div class="mt-3 pt-2 border-t border-indigo-200 font-mono text-[10px] text-indigo-800 font-semibold">
               PyQGIS &amp; GAS Mesh
             </div>
           </div>
@@ -339,70 +384,108 @@ flowchart TD
 
     </div>
 
-    <!-- 2 Highlighted Deep-Dive Sections: VeriGeo & GAS 1.0.0 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+    <!-- 3 Highlighted Deep-Dive Sections: VeriGeo, GAS 1.0.0, and Xerj AI (With Logos) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
 
-      <!-- VeriGeo Deep Dive -->
-      <div class="rounded-2xl border-2 border-emerald-500 bg-white p-6 shadow-sm">
-        <div class="flex items-center gap-3 mb-4">
-          <span class="rounded-lg bg-emerald-100 p-2.5 text-emerald-800 font-mono text-sm font-bold">NS-VGP 1.0</span>
-          <div>
-            <h3 class="text-lg font-bold text-slate-900">VeriGeo Runtime Verification Protocol</h3>
-            <p class="text-xs text-slate-500">Neuro-Symbolic Guardian against Silent Spatial Hallucinations</p>
+      <!-- 1. VeriGeo Deep Dive -->
+      <div class="rounded-2xl border-2 border-emerald-500 bg-white p-6 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-3 mb-4">
+            <img src="/assets/verigeo-logo.svg" alt="VeriGeo Logo" class="h-10 w-10 shrink-0" />
+            <div>
+              <h3 class="text-base font-bold text-slate-900">VeriGeo Runtime Guardian</h3>
+              <p class="text-xs text-emerald-700 font-mono font-semibold">NS-VGP 1.0 Protocol</p>
+            </div>
           </div>
-        </div>
-        <p class="text-xs text-slate-600 leading-relaxed mb-4">
-          General LLMs check only Python syntax. If code exits with <code>Exit Code 0</code>, they assume success — even when geographic calculations are distorted by 35% or correlations flip signs. VeriGeo enforces four non-negotiable scientific axioms:
-        </p>
-        <div class="space-y-2.5 text-xs">
-          <div class="rounded-lg bg-emerald-50/70 p-3 border border-emerald-100">
-            <strong class="text-emerald-900">Axiom 1 (Projections):</strong> Equal-Area CRS (e.g. EPSG:6933, EPSG:5070) is mandatory for carbon, area, and density sums; Metric UTM is mandatory for buffer distances.
-          </div>
-          <div class="rounded-lg bg-emerald-50/70 p-3 border border-emerald-100">
-            <strong class="text-emerald-900">Axiom 2 (MAUP &amp; Tobler):</strong> Intensive ratios (income, NDVI, density) must never be summed in spatial joins. Applies 35-pass pycnophylactic smooth interpolation to conserve total counts.
-          </div>
-          <div class="rounded-lg bg-emerald-50/70 p-3 border border-emerald-100">
-            <strong class="text-emerald-900">Axiom 3 (Topology):</strong> Detects micro-geometry slivers (circularity &lt; 0.05 and width &lt; 1.0m), snaps dangling nodes, and auto-repairs self-intersecting rings.
-          </div>
-          <div class="rounded-lg bg-emerald-50/70 p-3 border border-emerald-100">
-            <strong class="text-emerald-900">Axiom 4 (Physical Conservation):</strong> Enforces thermodynamic limits (NPP &le; 3500 g C/m²/yr) and hydrological mass balance (&Sigma; Outflow &le; Precipitation).
+          <p class="text-xs text-slate-600 leading-relaxed mb-4">
+            Neuro-Symbolic guardian eliminating silent spatial hallucinations. General LLMs check only Python syntax; VeriGeo enforces non-negotiable scientific axioms:
+          </p>
+          <div class="space-y-2 text-xs">
+            <div class="rounded-lg bg-emerald-50/70 p-2.5 border border-emerald-100">
+              <strong class="text-emerald-900">Axiom 1 (Projections):</strong> Equal-Area CRS for area/carbon sums; Metric UTM for buffer distances.
+            </div>
+            <div class="rounded-lg bg-emerald-50/70 p-2.5 border border-emerald-100">
+              <strong class="text-emerald-900">Axiom 2 (MAUP Guard):</strong> 35-pass pycnophylactic smooth interpolation prevents summing intensive ratios.
+            </div>
+            <div class="rounded-lg bg-emerald-50/70 p-2.5 border border-emerald-100">
+              <strong class="text-emerald-900">Axiom 3 (Topology):</strong> Auto-prunes micro slivers ($circ &lt; 0.05$) and snaps self-intersecting rings.
+            </div>
+            <div class="rounded-lg bg-emerald-50/70 p-2.5 border border-emerald-100">
+              <strong class="text-emerald-900">Axiom 4 (Thermodynamics):</strong> Enforces thermodynamic limits and hydrological mass conservation.
+            </div>
           </div>
         </div>
         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
-          <span>Repository: <a href="https://github.com/sutharprin098/VeriGeo" class="text-sky-600 font-semibold hover:underline">sutharprin098/VeriGeo</a></span>
+          <span>Repo: <a href="https://github.com/sutharprin098/VeriGeo" class="text-sky-600 font-semibold hover:underline">sutharprin098/VeriGeo</a></span>
           <span class="text-emerald-600 font-bold">10/10 Verified</span>
         </div>
       </div>
 
-      <!-- GAS 1.0.0 Deep Dive -->
-      <div class="rounded-2xl border-2 border-indigo-500 bg-white p-6 shadow-sm">
-        <div class="flex items-center gap-3 mb-4">
-          <span class="rounded-lg bg-indigo-100 p-2.5 text-indigo-800 font-mono text-sm font-bold">GAS 1.0.0</span>
-          <div>
-            <h3 class="text-lg font-bold text-slate-900">Geospatial Agentic Services Mesh</h3>
-            <p class="text-xs text-slate-500">OGC-Style Standard Protocol for Distributed Geo-Agents (GIBD Lab)</p>
+      <!-- 2. GAS 1.0.0 Deep Dive -->
+      <div class="rounded-2xl border-2 border-indigo-500 bg-white p-6 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-3 mb-4">
+            <img src="/assets/gas-logo.svg" alt="GAS Logo" class="h-10 w-10 shrink-0" />
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Geospatial Agentic Services</h3>
+              <p class="text-xs text-indigo-700 font-mono font-semibold">GAS 1.0.0 OGC Mesh</p>
+            </div>
           </div>
-        </div>
-        <p class="text-xs text-slate-600 leading-relaxed mb-4">
-          AutoGIS connects natively to the <strong>Geospatial Agentic Services (GAS 1.0.0)</strong> ecosystem, allowing local QGIS workflows to discover, delegate, and execute specialized tasks on remote agent nodes across research institutions:
-        </p>
-        <div class="space-y-2.5 text-xs">
-          <div class="rounded-lg bg-indigo-50/70 p-3 border border-indigo-100">
-            <strong class="text-indigo-900">Discovery (GetCapabilities):</strong> Discovers registered agents via <code>gas_discover_agents</code> and distributed registries via <code>gas_registry_search</code>.
-          </div>
-          <div class="rounded-lg bg-indigo-50/70 p-3 border border-indigo-100">
-            <strong class="text-indigo-900">Inspection (DescribeAgent):</strong> Inspects skills, JSON input parameter schemas, and real-time operational status via <code>gas_describe_agent</code>.
-          </div>
-          <div class="rounded-lg bg-indigo-50/70 p-3 border border-indigo-100">
-            <strong class="text-indigo-900">Execution Modes:</strong> Supports synchronous execution, live Server-Sent Events (SSE) token streaming, and asynchronous polling for long-running compute jobs.
-          </div>
-          <div class="rounded-lg bg-indigo-50/70 p-3 border border-indigo-100">
-            <strong class="text-indigo-900">Artifact Auto-Loading:</strong> Spatial GeoJSON, Shapefiles, and GeoTIFFs returned by remote agents are automatically loaded directly onto the QGIS map canvas.
+          <p class="text-xs text-slate-600 leading-relaxed mb-4">
+            OGC-style standard protocol by GIBD Lab connecting local QGIS workflows to distributed remote agent nodes across research institutions:
+          </p>
+          <div class="space-y-2 text-xs">
+            <div class="rounded-lg bg-indigo-50/70 p-2.5 border border-indigo-100">
+              <strong class="text-indigo-900">Discovery:</strong> Discovers published remote agents across university registries via <code>gas_registry_search</code>.
+            </div>
+            <div class="rounded-lg bg-indigo-50/70 p-2.5 border border-indigo-100">
+              <strong class="text-indigo-900">Schema Negotiation:</strong> Inspects JSON parameter schemas and agent status via <code>gas_describe_agent</code>.
+            </div>
+            <div class="rounded-lg bg-indigo-50/70 p-2.5 border border-indigo-100">
+              <strong class="text-indigo-900">Live SSE &amp; Async:</strong> Supports synchronous tasks, live streaming tokens, and async compute jobs.
+            </div>
+            <div class="rounded-lg bg-indigo-50/70 p-2.5 border border-indigo-100">
+              <strong class="text-indigo-900">Canvas Draping:</strong> Returned GeoJSON, Shapefiles, and GeoTIFFs auto-drape directly into QGIS layers.
+            </div>
           </div>
         </div>
         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
-          <span>Standards: GIBD Lab GAS 1.0.0 Protocol</span>
+          <span>Standards: GIBD Lab GAS 1.0.0</span>
           <span class="text-indigo-600 font-bold">5 Native Tools</span>
+        </div>
+      </div>
+
+      <!-- 3. Xerj AI Deep Dive -->
+      <div class="rounded-2xl border-2 border-purple-500 bg-white p-6 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-3 mb-4">
+            <img src="/assets/xerj-logo.svg" alt="Xerj AI Logo" class="h-10 w-10 shrink-0" />
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Xerj AI Document Intelligence</h3>
+              <p class="text-xs text-purple-700 font-mono font-semibold">xerj-reader-1 Engine</p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed mb-4">
+            Official integration with the XERJ Platform for typed symbolic extraction and checked programs from environmental reports and spatial PDFs:
+          </p>
+          <div class="space-y-2 text-xs">
+            <div class="rounded-lg bg-purple-50/70 p-2.5 border border-purple-100">
+              <strong class="text-purple-900">Autonomous AI Router:</strong> Evaluates spatial entity density (&gt;0.25) to automatically route documents to Xerj.
+            </div>
+            <div class="rounded-lg bg-purple-50/70 p-2.5 border border-purple-100">
+              <strong class="text-purple-900">Checked Programs:</strong> Extracts typed coordinates, EPSG codes, and buffer numbers with character offsets.
+            </div>
+            <div class="rounded-lg bg-purple-50/70 p-2.5 border border-purple-100">
+              <strong class="text-purple-900">Sub-Second Speed:</strong> Production response time verified in <strong>230–310 ms</strong> per document query.
+            </div>
+            <div class="rounded-lg bg-purple-50/70 p-2.5 border border-purple-100">
+              <strong class="text-purple-900">User Key Protection:</strong> Active only when user provides their Xerj API key; falls back safely to Primary LLM.
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Endpoint: <code>platform.xerj.ai/v1</code></span>
+          <span class="text-purple-600 font-bold">Checked Extraction</span>
         </div>
       </div>
 
@@ -412,18 +495,18 @@ flowchart TD
     <section class="mb-16">
       <div class="text-center max-w-3xl mx-auto mb-8">
         <h2 class="text-2xl font-bold text-slate-900">Step-by-Step Prompt Walkthrough Simulator</h2>
-        <p class="text-sm text-slate-600 mt-1">Select a prompt below to trace how AutoGIS, VeriGeo, and GAS execute together.</p>
+        <p class="text-sm text-slate-600 mt-1">Select a prompt below to trace how AutoGIS, VeriGeo, GAS, and Xerj execute together.</p>
         
         <!-- Tabs -->
         <div class="flex flex-wrap items-center justify-center gap-2.5 mt-5">
-          <button onclick="switchScenario('scenario-gas')" id="tab-gas" class="prompt-tab active px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold transition">
-            1. GAS 1.0.0 Remote Agent Collaboration
+          <button onclick="switchScenario('scenario-gas')" id="tab-gas" class="prompt-tab active px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold transition flex items-center gap-1.5">
+            <img src="/assets/gas-logo.svg" alt="GAS" class="h-3.5 w-3.5" /> 1. GAS 1.0.0 Remote Collaboration
           </button>
-          <button onclick="switchScenario('scenario-doc')" id="tab-doc" class="prompt-tab px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition">
-            2. Xerj AI Document Ingestion
+          <button onclick="switchScenario('scenario-doc')" id="tab-doc" class="prompt-tab px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition flex items-center gap-1.5">
+            <img src="/assets/xerj-logo.svg" alt="Xerj" class="h-3.5 w-3.5" /> 2. Xerj AI Document Ingestion
           </button>
-          <button onclick="switchScenario('scenario-verigeo')" id="tab-verigeo" class="prompt-tab px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition">
-            3. VeriGeo MAUP &amp; Topology Repair
+          <button onclick="switchScenario('scenario-verigeo')" id="tab-verigeo" class="prompt-tab px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition flex items-center gap-1.5">
+            <img src="/assets/verigeo-logo.svg" alt="VeriGeo" class="h-3.5 w-3.5" /> 3. VeriGeo MAUP &amp; Topology Repair
           </button>
         </div>
       </div>
@@ -462,23 +545,23 @@ flowchart TD
       <!-- Scenario 2: Xerj AI Document Ingestion -->
       <div id="scenario-doc" class="scenario-panel hidden space-y-4">
         <div class="rounded-xl bg-slate-900 text-white p-4 font-mono text-xs flex items-center gap-3">
-          <span class="text-indigo-400 font-bold">User Action:</span>
+          <span class="text-purple-400 font-bold">User Action:</span>
           <span>Uploaded "Thar_Solar_EIA_Report.pdf" with query "What is the buffer distance and coordinates?"</span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div class="step-card">
-            <span class="rounded bg-indigo-100 text-indigo-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 1</span>
+            <span class="rounded bg-purple-100 text-purple-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 1</span>
             <h3 class="font-bold text-slate-900 mt-2 text-sm">AI Router Inspection</h3>
             <p class="text-xs text-slate-600 mt-1">AI Document Router checks user's Xerj API key and scans spatial entity density (Score: 1.0 &gt; 0.25 threshold).</p>
           </div>
           <div class="step-card">
-            <span class="rounded bg-indigo-100 text-indigo-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 2</span>
+            <span class="rounded bg-purple-100 text-purple-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 2</span>
             <h3 class="font-bold text-slate-900 mt-2 text-sm">Xerj Reader-1 Dispatch</h3>
             <p class="text-xs text-slate-600 mt-1">Dispatches document to <code>platform.xerj.ai/v1/answers</code>. Generates symbolic checked program in <strong>230 ms</strong>.</p>
           </div>
           <div class="step-card">
-            <span class="rounded bg-indigo-100 text-indigo-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 3</span>
+            <span class="rounded bg-purple-100 text-purple-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 3</span>
             <h3 class="font-bold text-slate-900 mt-2 text-sm">Typed Evidence Quotes</h3>
             <p class="text-xs text-slate-600 mt-1">Extracts typed values: 500m wildlife buffer, coordinates 27.1823°N, 71.9321°E, and EPSG:32643 with 99.3% confidence.</p>
           </div>
