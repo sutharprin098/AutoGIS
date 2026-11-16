@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoGIS Studio Architecture — VeriGeo, GAS 1.0.0 &amp; Xerj AI</title>
-  <meta name="description" content="Complete architecture and execution lifecycle of AutoGIS: VeriGeo Neuro-Symbolic Verification, Geospatial Agentic Services (GAS 1.0.0), and Xerj AI Document Intelligence." />
+  <title>AutoGIS Studio System Architecture — VeriGeo, GAS 1.0.0 &amp; Xerj AI</title>
+  <meta name="description" content="Complete detailed architecture and execution lifecycle of AutoGIS: VeriGeo Neuro-Symbolic Verification, Geospatial Agentic Services (GAS 1.0.0), and Xerj AI Document Intelligence." />
   <link rel="icon" type="image/svg+xml" href="/assets/icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,17 +20,19 @@
         useMaxWidth: false,
         htmlLabels: true,
         curve: 'basis',
-        nodeSpacing: 45,
-        rankSpacing: 55,
-        padding: 24
+        nodeSpacing: 40,
+        rankSpacing: 50,
+        padding: 20
       },
       themeVariables: {
-        fontSize: '15px',
+        fontSize: '14px',
         fontFamily: 'Inter, system-ui, sans-serif',
         primaryColor: '#f0f9ff',
         primaryTextColor: '#0f172a',
         primaryBorderColor: '#0284c7',
-        lineColor: '#64748b'
+        lineColor: '#64748b',
+        secondaryColor: '#f8fafc',
+        tertiaryColor: '#ffffff'
       }
     });
     tailwind.config = {
@@ -75,16 +77,19 @@
       color: #FFFFFF;
       border-color: #0F172A;
     }
-    /* Mermaid diagram container and responsive zoom */
+    /* Detailed Mermaid Diagram Container with Smooth Pan & Zoom */
     .mermaid-box {
       width: 100%;
-      overflow-x: auto;
+      overflow: auto;
+      max-height: 820px;
       background: #ffffff;
       border-radius: 1rem;
-      padding: 1.5rem 0.5rem;
+      padding: 2rem 1.5rem;
+      border: 1px solid #e2e8f0;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
     }
     .mermaid-viewport {
-      min-width: 820px;
+      min-width: 1050px;
       display: flex;
       justify-content: center;
       transition: transform 0.2s ease-out;
@@ -92,16 +97,16 @@
     }
     .mermaid svg {
       width: 100% !important;
-      max-width: 960px !important;
+      max-width: 1100px !important;
       height: auto !important;
     }
     .mermaid .nodeLabel {
       font-family: 'Inter', system-ui, sans-serif !important;
-      font-size: 15px !important;
+      font-size: 14px !important;
       font-weight: 600 !important;
-      line-height: 1.5 !important;
+      line-height: 1.4 !important;
     }
-    .mermaid .subgraph-title {
+    .mermaid .cluster-label span, .mermaid .subgraph-title {
       font-family: 'JetBrains Mono', monospace !important;
       font-size: 13px !important;
       font-weight: 700 !important;
@@ -164,7 +169,7 @@
     </h1>
     
     <p class="mx-auto mt-4 max-w-3xl text-base text-slate-600 md:text-lg">
-      Autonomous geospatial intelligence pipeline: seamlessly orchestrating <strong>VeriGeo Neuro-Symbolic Verification</strong>, <strong>Geospatial Agentic Services (GAS 1.0.0)</strong>, and <strong>Xerj AI Document Intelligence</strong> directly into native PyQGIS cartography.
+      Detailed end-to-end execution lifecycle: tracing autonomous data flow across <strong>VeriGeo Neuro-Symbolic Guardian</strong>, <strong>GAS 1.0.0 Distributed Mesh</strong>, <strong>Xerj AI Document Intelligence</strong>, and the <strong>PyQGIS Engine</strong>.
     </p>
 
     <!-- Visual Logo Partner Bar -->
@@ -304,78 +309,86 @@
         </div>
       </div>
 
-      <!-- 2. Interactive High-Resolution Mermaid Diagram with Zoom Controls -->
-      <div class="mt-8 pt-6 border-t border-slate-100">
+      <!-- 2. Detailed Technical Execution Flowchart with Zoom Controls & Fullscreen -->
+      <div class="mt-10 pt-6 border-t border-slate-100">
         
         <!-- Zoom Controls Toolbar -->
         <div class="flex flex-wrap items-center justify-between pb-4 gap-3">
           <div>
-            <h3 class="text-sm font-bold text-slate-900">Interactive Execution Architecture Graph</h3>
-            <p class="text-xs text-slate-500">Zoom in or out to inspect nodes in full detail</p>
+            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span>Detailed System Execution Flowchart</span>
+              <span class="rounded bg-sky-100 px-2 py-0.5 text-sky-800 font-mono text-[10px] font-bold">Interactive Deep-Dive</span>
+            </h3>
+            <p class="text-xs text-slate-500">Zoom in to inspect every condition diamond, decision branch, axiom verification, and self-healing loop.</p>
           </div>
-          <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
-            <button onclick="zoomMermaid(0.15)" class="px-2.5 py-1 text-xs font-mono font-bold bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 shadow-sm transition">
-              + Zoom In
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button onclick="zoomMermaid(0.2)" title="Zoom In" class="px-3 py-1.5 text-xs font-mono font-bold bg-white hover:bg-slate-50 text-slate-800 rounded-lg border border-slate-200 shadow-sm transition flex items-center gap-1">
+                <span>🔍+</span> <span>Zoom In</span>
+              </button>
+              <button onclick="zoomMermaid(-0.2)" title="Zoom Out" class="px-3 py-1.5 text-xs font-mono font-bold bg-white hover:bg-slate-50 text-slate-800 rounded-lg border border-slate-200 shadow-sm transition flex items-center gap-1">
+                <span>🔍-</span> <span>Zoom Out</span>
+              </button>
+              <button onclick="resetZoomMermaid()" title="Reset to 100%" class="px-3 py-1.5 text-xs font-mono font-bold bg-white hover:bg-slate-50 text-slate-800 rounded-lg border border-slate-200 shadow-sm transition">
+                ↺ Reset
+              </button>
+              <span id="zoom-level" class="px-2.5 py-1 text-xs font-mono font-bold text-sky-700 bg-sky-50 rounded-md border border-sky-200">100%</span>
+            </div>
+            <button onclick="toggleFullscreenDiagram()" title="Open Full Screen View" class="px-3.5 py-1.5 text-xs font-mono font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm transition flex items-center gap-1.5">
+              <span>⛶</span> <span>Fullscreen</span>
             </button>
-            <button onclick="zoomMermaid(-0.15)" class="px-2.5 py-1 text-xs font-mono font-bold bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 shadow-sm transition">
-              - Zoom Out
-            </button>
-            <button onclick="resetZoomMermaid()" class="px-2.5 py-1 text-xs font-mono font-bold bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 shadow-sm transition">
-              ↺ Reset
-            </button>
-            <span id="zoom-level" class="px-2 py-0.5 text-[11px] font-mono font-bold text-slate-600">100%</span>
           </div>
         </div>
 
-        <!-- Mermaid Diagram Viewport -->
-        <div class="mermaid-box border border-slate-100 shadow-inner">
+        <!-- Mermaid Diagram Viewport with Scrollbars & Pan-Zoom -->
+        <div id="diagram-container" class="mermaid-box">
           <div id="mermaid-viewport" class="mermaid-viewport">
             <pre class="mermaid text-sm">
 flowchart TD
-    %% Node Styling Definitions
-    classDef inputStyle fill:#F8FAFC,stroke:#475569,stroke-width:2.5px,color:#0F172A,font-weight:700,font-size:15px;
-    classDef plannerStyle fill:#EFF6FF,stroke:#0284C7,stroke-width:2.5px,color:#0369A1,font-weight:700,font-size:15px;
-    classDef xerjStyle fill:#FAF5FF,stroke:#9333EA,stroke-width:2.5px,color:#6B21A8,font-weight:700,font-size:15px;
-    classDef veriStyle fill:#ECFDF5,stroke:#059669,stroke-width:2.5px,color:#065F46,font-weight:700,font-size:15px;
-    classDef engineStyle fill:#FFF7ED,stroke:#EA580C,stroke-width:2.5px,color:#9A3412,font-weight:700,font-size:15px;
-    classDef outputStyle fill:#F0FDF4,stroke:#16A34A,stroke-width:3px,color:#14532D,font-weight:800,font-size:16px;
+    %% Detailed Architecture Graph Nodes Styling
+    classDef mainNode fill:#F8FAFC,stroke:#0284C7,stroke-width:2px,color:#0F172A,font-weight:600,font-size:14px;
+    classDef decisionNode fill:#FEF3C7,stroke:#D97706,stroke-width:2px,color:#78350F,font-weight:700,font-size:13px;
+    classDef xerjNode fill:#FAF5FF,stroke:#9333EA,stroke-width:2px,color:#6B21A8,font-weight:600,font-size:14px;
+    classDef veriNode fill:#ECFDF5,stroke:#059669,stroke-width:2px,color:#065F46,font-weight:600,font-size:13px;
+    classDef gasNode fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81,font-weight:600,font-size:13px;
+    classDef outputNode fill:#F0FDF4,stroke:#16A34A,stroke-width:3px,color:#14532D,font-weight:800,font-size:15px;
+    classDef healNode fill:#FEF2F2,stroke:#DC2626,stroke-width:2px,color:#991B1B,font-weight:700,font-size:13px;
 
-    %% STAGE 1: User Input
-    subgraph STAGE1 ["1. USER INGESTION"]
-        U1["🗣️ User Input: Natural Prompt / PDF Document / Voice"]:::inputStyle
+    subgraph S1 ["1. USER INGESTION &amp; AGENT PLANNER"]
+        A["🗣️ User Prompt / Voice / Uploaded Document"]:::mainNode --> B["🤖 AutoGIS Agent Planner\n(Task Decomposition &amp; Step Tracker)"]:::mainNode
     end
 
-    %% STAGE 2: Planning & Xerj AI Document Intelligence
-    subgraph STAGE2 ["2. AGENT PLANNING &amp; XERJ AI"]
-        P1["🤖 AutoGIS Task Planner &amp; Tool Selector"]:::plannerStyle
-        X1["🌟 Xerj AI Reader-1: Spatial Coordinate &amp; Entity Extraction<br/>(Optional: Active when spatial document is attached)"]:::xerjStyle
+    subgraph S2 ["2. XERJ AI DOCUMENT ROUTER"]
+        B --> C{"Document Attached?"}:::decisionNode
+        C -- "YES: Has Xerj API Key" --> D{"Spatial Entity Density &ge; 0.25"}:::decisionNode
+        D -- "Spatial" --> E["🌟 Xerj AI Reader-1\n(/v1/answers Typed Extraction)"]:::xerjNode
+        D -- "General" --> F["Primary LLM\n(Gemini / GPT-4o / Claude)"]:::mainNode
+        C -- "NO / Plain Prompt" --> G["Direct Spatial Workflow Engine"]:::mainNode
     end
 
-    %% STAGE 3: VeriGeo Neuro-Symbolic Verification
-    subgraph STAGE3 ["3. VERIGEO SPATIAL GUARDIAN (NS-VGP 1.0)"]
-        V1["🛡️ Pre-Execution Axiom Verification<br/>• Equal-Area &amp; Metric UTM CRS Enforcement<br/>• Topology Sliver &amp; Self-Intersection Auto-Repair<br/>• MAUP Protection &amp; Physical Conservation Bounds"]:::veriStyle
+    subgraph S3 ["🛡️ 3. VERIGEO NEURO-SYMBOLIC GUARDIAN (NS-VGP 1.0)"]
+        G &amp; E &amp; F --> H["VeriGeo Pre-Execution Axiom Verification"]:::veriNode
+        H --> I1["Axiom 1: Equal-Area &amp; Metric UTM CRS"]:::veriNode
+        H --> I2["Axiom 2: Counts vs Ratios (MAUP &amp; Pycnophylactic Interpolation)"]:::veriNode
+        H --> I3["Axiom 3: Sliver Polygon &amp; Ring Auto-Repair (circ &lt; 0.05)"]:::veriNode
+        H --> I4["Axiom 4: Physical Mass/Energy Conservation Limits"]:::veriNode
     end
 
-    %% STAGE 4: Dual Execution Engine
-    subgraph STAGE4 ["4. DUAL EXECUTION ENGINE"]
-        E1["⚙️ Local PyQGIS Engine<br/>• QGIS Native Algorithms &amp; Processing Framework<br/>• GDAL / GeoPandas / Rasterio / Shapely"]:::engineStyle
-        E2["🤝 GAS 1.0.0 Multi-Agent Mesh<br/>• Remote SAR Radar &amp; Hydrology Specialized Agents<br/>• Distributed High-Compute Lab Agents (GIBD)"]:::engineStyle
+    subgraph S4 ["🤝 4. GEOSPATIAL AGENTIC SERVICES (GAS 1.0.0 MESH)"]
+        I1 &amp; I2 &amp; I3 &amp; I4 --> J{"Task Requires Remote\nSpecialist Agent?"}:::decisionNode
+        J -- "YES: Remote Specialized Tool" --> K["GAS 1.0.0 Client Registry Search"]:::gasNode
+        K --> L["Remote GAS Agents\n(SAR Crop Agent · Hydrology Agent · GIBD Lab)"]:::gasNode
+        L --> M["ExecuteTask\n(Sync · SSE Stream · Async Polling)"]:::gasNode
+        M --> N["Automatic QGIS Layer &amp; Artifact Loader"]:::gasNode
+        J -- "NO: Local Operation" --> O["Local PyQGIS Core Engine"]:::mainNode
     end
 
-    %% STAGE 5: Certified Cartography Output
-    subgraph STAGE5 ["5. FINAL AUDITED CARTOGRAPHY"]
-        O1["🗺️ Direct QGIS Map Canvas Draping<br/>• 300 DPI Publication Cartography Layout<br/>• Cryptographic SHA-256 VeriGeo Quality Proof (.vgeo)"]:::outputStyle
+    subgraph S5 ["5. OUTPUT &amp; FORMAL PROOF CERTIFICATE"]
+        N &amp; O --> P{"VeriGeo Final Quality Gate"}:::decisionNode
+        P -- "Passed" --> Q["🗺️ QGIS Live Canvas + 300 DPI Print Layout + .vgeo SHA-256 Proof"]:::outputNode
+        P -- "Empty / Mismatch" --> R["Self-Healing Backtracking Engine"]:::healNode
+        R ==> B
     end
-
-    %% Clean, Direct Architecture Connections
-    U1 --> P1
-    U1 -. "If Document Attached" .-> X1
-    X1 --> P1
-    P1 ==> V1
-    V1 -->|"Local Analysis"| E1
-    V1 -->|"Remote Specialist Agent"| E2
-    E1 ==> O1
-    E2 ==> O1
             </pre>
           </div>
         </div>
@@ -619,7 +632,34 @@ flowchart TD
 
   </main>
 
-  <!-- Interactive script for scenario tabs & diagram zoom -->
+  <!-- Fullscreen Modal for High-Resolution Architecture Exploration -->
+  <div id="fullscreen-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex flex-col p-4 sm:p-6">
+    <div class="flex items-center justify-between pb-4 border-b border-slate-800 text-white">
+      <div class="flex items-center gap-3">
+        <span class="rounded-lg bg-sky-500/20 text-sky-400 font-mono text-xs px-2.5 py-1 font-bold">Fullscreen Inspector</span>
+        <h3 class="text-sm font-bold text-white">AutoGIS Detailed System Architecture Graph</h3>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="zoomMermaid(0.2)" class="px-3 py-1.5 text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 text-white rounded-lg border border-slate-700 transition">
+          + Zoom In
+        </button>
+        <button onclick="zoomMermaid(-0.2)" class="px-3 py-1.5 text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 text-white rounded-lg border border-slate-700 transition">
+          - Zoom Out
+        </button>
+        <button onclick="resetZoomMermaid()" class="px-3 py-1.5 text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 text-white rounded-lg border border-slate-700 transition">
+          ↺ Reset
+        </button>
+        <button onclick="toggleFullscreenDiagram()" class="px-3 py-1.5 text-xs font-mono font-bold bg-red-600/80 hover:bg-red-500 text-white rounded-lg transition ml-3">
+          ✕ Close
+        </button>
+      </div>
+    </div>
+    <div id="modal-container" class="flex-1 overflow-auto bg-white rounded-xl mt-4 p-6 flex justify-center">
+      <!-- Diagram is moved here dynamically when in fullscreen -->
+    </div>
+  </div>
+
+  <!-- Interactive script for scenario tabs, diagram zoom & fullscreen -->
   <script>
     // Tab switching for simulator
     function switchScenario(id) {
@@ -647,7 +687,7 @@ flowchart TD
     // Zoom controls for Mermaid diagram
     let currentZoom = 1.0;
     function zoomMermaid(factor) {
-      currentZoom = Math.min(Math.max(currentZoom + factor, 0.7), 2.2);
+      currentZoom = Math.min(Math.max(currentZoom + factor, 0.6), 2.5);
       const el = document.getElementById('mermaid-viewport');
       if (el) {
         el.style.transform = `scale(${currentZoom})`;
@@ -669,6 +709,33 @@ flowchart TD
         label.innerText = '100%';
       }
     }
+
+    // Fullscreen toggle
+    let isFullscreen = false;
+    function toggleFullscreenDiagram() {
+      const modal = document.getElementById('fullscreen-modal');
+      const modalContainer = document.getElementById('modal-container');
+      const normalContainer = document.getElementById('diagram-container');
+      const viewport = document.getElementById('mermaid-viewport');
+
+      isFullscreen = !isFullscreen;
+      if (isFullscreen) {
+        modal.classList.remove('hidden');
+        modalContainer.appendChild(viewport);
+        document.body.style.overflow = 'hidden';
+      } else {
+        modal.classList.add('hidden');
+        normalContainer.appendChild(viewport);
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Escape key closes modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        toggleFullscreenDiagram();
+      }
+    });
   </script>
 
   <!-- Footer -->
