@@ -24,7 +24,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Dict, List, Optional, Tuple
 
-USER_AGENT = "AutoGIS-XerjAIRouter/1.0.7 (+https://github.com/sutharprin098/AutoGIS)"
+USER_AGENT = "AutoGIS-XerjAIRouter/1.0.8 (+https://github.com/sutharprin098/AutoGIS)"
 DEFAULT_XERJ_BASE_URL = "https://platform.xerj.ai/v1"
 
 SPATIAL_KEYWORDS = frozenset({

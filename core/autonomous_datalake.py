@@ -26,7 +26,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Dict, List, Optional, Tuple
 
-USER_AGENT = "AutoGIS-EarthEngine/1.0.7 (+https://github.com/sutharprin098/AutoGIS)"
+USER_AGENT = "AutoGIS-EarthEngine/1.0.8 (+https://github.com/sutharprin098/AutoGIS)"
 PLANETARY_COMPUTER_STAC = "https://planetarycomputer.microsoft.com/api/stac/v1/search"
 EARTH_SEARCH_STAC = "https://earth-search.aws.element84.com/v1/search"
 NASA_POWER_API = "https://power.larc.nasa.gov/api/temporal/climatology/point"
