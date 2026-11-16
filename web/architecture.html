@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoGIS Studio System Architecture &amp; Autonomous Workflow Graph</title>
-  <meta name="description" content="Visual architecture graph and execution lifecycle of AutoGIS: from natural language user prompt to VeriGeo validation, Xerj AI document extraction, and 100+ layer MCDM suitability maps." />
+  <title>AutoGIS Studio System Architecture — VeriGeo, GAS 1.0.0, Xerj AI &amp; Datacube</title>
+  <meta name="description" content="Complete architecture and execution lifecycle of AutoGIS: VeriGeo Neuro-Symbolic Verification, Geospatial Agentic Services (GAS 1.0.0), Xerj AI Document Intelligence, and 100+ Layer MCDM." />
   <link rel="icon" type="image/svg+xml" href="/assets/icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -103,13 +103,13 @@
   <section class="mx-auto max-w-5xl px-6 pt-14 pb-8 text-center">
     <div class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1 text-xs font-semibold text-indigo-800">
       <span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
-      <span>Autonomous Execution Pipeline Lifecycle</span>
+      <span>Autonomous Geospatial AI Architecture &amp; Multi-Agent Mesh</span>
     </div>
     <h1 class="mt-5 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl leading-tight">
-      How AutoGIS Processes Any Prompt
+      VeriGeo &amp; GAS 1.0.0 Integrated Architecture
     </h1>
     <p class="mx-auto mt-4 max-w-3xl text-base text-slate-600 md:text-lg">
-      From a single sentence prompt or uploaded document to fully verified, mass-conserving geospatial decisions.
+      See how AutoGIS orchestrates <strong>VeriGeo Neuro-Symbolic Verification</strong>, <strong>Geospatial Agentic Services (GAS 1.0.0)</strong>, <strong>Xerj AI</strong>, and <strong>100+ Layer Datacubes</strong> from user prompt to certified cartography.
     </p>
   </section>
 
@@ -121,82 +121,157 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-100 gap-3">
         <div>
           <h2 class="text-xl font-bold text-slate-900">End-to-End System Execution Graph</h2>
-          <p class="text-xs text-slate-500">Autonomous data flow across Data Lake, Xerj AI, VeriGeo Guardian, and Out-of-Core Datacube.</p>
+          <p class="text-xs text-slate-500">Autonomous data flow across VeriGeo Guardian, GAS Agentic Services, Xerj AI, and Out-of-Core Datacube.</p>
         </div>
-        <span class="rounded-full bg-slate-100 px-3 py-1 font-mono text-[11px] font-semibold text-slate-600 self-start sm:self-auto">
-          State Machine: Reactive &amp; Self-Healing
-        </span>
+        <div class="flex items-center gap-2">
+          <span class="rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 font-mono text-[11px] font-bold">VeriGeo (NS-VGP 1.0)</span>
+          <span class="rounded-full bg-indigo-100 text-indigo-800 px-2.5 py-0.5 font-mono text-[11px] font-bold">GAS 1.0.0 Mesh</span>
+        </div>
       </div>
 
       <!-- Mermaid Diagram Render -->
       <div class="overflow-x-auto py-6 flex justify-center">
         <pre class="mermaid text-xs">
 flowchart TD
-    subgraph S1 ["1. User Ingestion"]
-        A["🗣️ Natural Language Prompt / Voice / Uploaded PDF"] --> B["🤖 AutoGIS Agent Engine\n(Task Decomposition &amp; Planning)"]
+    subgraph S1 ["1. USER INGESTION &amp; AGENT PLANNER"]
+        A["🗣️ User Prompt / Voice / Uploaded Document"] --> B["🤖 AutoGIS Agent Planner\n(Task Decomposition &amp; Step Tracker)"]
     end
 
-    subgraph S2 ["2. Document Intelligence Router"]
-        B --> C{"Uploaded Document\nDetected?"}
-        C -- "YES: Has Xerj API Key" --> D{"Spatial Entity\nDensity Score"}
-        D -- "Spatial &ge; 0.25" --> E["🌟 Xerj AI Reader-1\n(/v1/answers Typed Symbolic Program)"]
-        D -- "General &lt; 0.25" --> F["Primary LLM Parser\n(Gemini / GPT-4o / Claude)"]
+    subgraph S2 ["2. XERJ AI DOCUMENT ROUTER"]
+        B --> C{"Document Attached?"}
+        C -- "YES: Has Xerj API Key" --> D{"Spatial Entity Density &ge; 0.25"}
+        D -- "Spatial" --> E["🌟 Xerj AI Reader-1\n(/v1/answers Typed Extraction)"]
+        D -- "General" --> F["Primary LLM\n(Gemini / GPT-4o / Claude)"]
         C -- "NO / Plain Prompt" --> G["Zero-Input Ingestion Planner"]
     end
 
-    subgraph S3 ["3. Autonomous Data Lake Crawling"]
-        G &amp; E &amp; F --> H["🌍 Autonomous Data Lake Crawler"]
-        H --> I1["STAC API: Sentinel-2 &amp; Copernicus DEM"]
-        H --> I2["NASA POWER: Solar GHI &amp; Climate Profile"]
-        H --> I3["OSM Overpass: Power Grid &amp; Roads"]
+    subgraph S3 ["3. DATA LAKE &amp; 100+ LAYER STREAMING DATACUBE"]
+        G &amp; E &amp; F --> H["🌍 Zero-Input Data Lake Crawler\n(STAC Sentinel-2 + NASA POWER + OSM)"]
+        H --> I["⚡ Out-of-Core Streaming Datacube\n(512x512 Window Chunks &lt; 50MB RAM)"]
     end
 
-    subgraph S4 ["4. 100+ Layer Out-of-Core Datacube"]
-        I1 &amp; I2 &amp; I3 --> J["⚡ Streaming Datacube (512x512 Chunks)"]
-        J --> K["Automated Grid Harmonization\n(Unified UTM CRS &amp; Resolution)"]
+    subgraph S4 ["🛡️ 4. VERIGEO NEURO-SYMBOLIC GUARDIAN (NS-VGP 1.0)"]
+        I --> J["VeriGeo Pre-Execution Axiom Verification"]
+        J --> K1["Axiom 1: Equal-Area &amp; Metric Metric UTM CRS"]
+        J --> K2["Axiom 2: Counts vs Ratios (MAUP &amp; Pycnophylactic Interpolation)"]
+        J --> K3["Axiom 3: Sliver Polygon &amp; Ring Auto-Repair (circ &lt; 0.05)"]
+        J --> K4["Axiom 4: Physical Mass/Energy Conservation Limits"]
     end
 
-    subgraph S5 ["5. VeriGeo Scientific Guardian"]
-        K --> L["🛡️ VeriGeo Runtime Protocol (NS-VGP 1.0)"]
-        L --> M1["Axiom 1: Equal-Area &amp; Metric CRS"]
-        L --> M2["Axiom 2: MAUP &amp; Pycnophylactic Interpolation"]
-        L --> M3["Axiom 3: Sliver Topology Auto-Healing"]
-        L --> M4["Axiom 4: Physical Mass/Energy Conservation"]
+    subgraph S5 ["5. AUTONOMOUS HIGH-DIMENSIONAL MCDM"]
+        K1 &amp; K2 &amp; K3 &amp; K4 --> L["🎯 5-Pillar Hierarchical Tree"]
+        L --> M["Hybrid AHP (CR &lt; 0.1) + Shannon Entropy Weights"]
+        M --> N["Fuzzy TOPSIS Spatial Solver [0-100 Suitability Index]"]
+        N --> O["Monte Carlo Sensitivity Analysis (&plusmn;15% Perturbation)"]
     end
 
-    subgraph S6 ["6. High-Dimensional MCDM Engine"]
-        M1 &amp; M2 &amp; M3 &amp; M4 --> N["🎯 5-Pillar Hierarchical Tree"]
-        N --> O["Hybrid AHP (CR &lt; 0.1) + Shannon Entropy"]
-        O --> P["Fuzzy TOPSIS Spatial Suitability Solver\n[0 to 100 Score per Pixel]"]
-        P --> Q["Monte Carlo Sensitivity Analysis (&plusmn;15%)"]
+    subgraph S6 ["🤝 6. GEOSPATIAL AGENTIC SERVICES (GAS 1.0.0 MESH)"]
+        O --> P{"Task Requires Remote\nSpecialist Agent?"}
+        P -- "YES: Remote Specialized Tool" --> Q["GAS 1.0.0 Client Registry Search"]
+        Q --> R["Remote GAS Agents\n(SAR Crop Agent · Hydrology Agent · GIBD Lab)"]
+        R --> S["ExecuteTask (Sync · SSE Stream · Async Polling)"]
+        S --> T["Automatic QGIS Layer &amp; Artifact Loader"]
+        P -- "NO: Local Operation" --> U["Local PyQGIS Core Engine"]
     end
 
-    subgraph S7 ["7. Multi-Agent &amp; PyQGIS Output"]
-        Q --> R{"VeriGeo Final\nQuality Gate"}
-        R -- "Self-Healing Failure" --> S["Automated Temporal/Buffer Backtracking"]
-        S --> H
-        R -- "PASSED" --> T["🗺️ QGIS Live Canvas + 300 DPI Print Layout + .vgeo Proof"]
+    subgraph S7 ["7. OUTPUT &amp; FORMAL PROOF CERTIFICATE"]
+        T &amp; U --> V{"VeriGeo Final Quality Gate"}
+        V -- "Passed" --> W["🗺️ QGIS Live Canvas + 300 DPI Print Layout + .vgeo SHA-256 Proof"]
+        V -- "Empty/Mismatch" --> X["Self-Healing Backtracking Engine"]
+        X --> H
     end
         </pre>
       </div>
     </div>
 
+    <!-- 2 Highlighted Deep-Dive Sections: VeriGeo & GAS 1.0.0 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+
+      <!-- VeriGeo Deep Dive -->
+      <div class="rounded-2xl border-2 border-emerald-500 bg-white p-6 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="rounded-lg bg-emerald-100 p-2.5 text-emerald-800 font-mono text-sm font-bold">NS-VGP 1.0</span>
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">VeriGeo Runtime Verification Protocol</h3>
+            <p class="text-xs text-slate-500">Neuro-Symbolic Guardian against Silent Spatial Hallucinations</p>
+          </div>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed mb-4">
+          General LLMs check only Python syntax. If code exits with <code>Exit Code 0</code>, they assume success — even when geographic calculations are distorted by 35% or correlations flip signs. VeriGeo enforces four non-negotiable scientific axioms:
+        </p>
+        <div class="space-y-2.5 text-xs">
+          <div class="rounded-lg bg-emerald-50/70 p-3 border border-emerald-100">
+            <strong class="text-emerald-900">Axiom 1 (Projections):</strong> Equal-Area CRS (e.g. EPSG:6933, EPSG:5070) is mandatory for carbon, area, and density sums; Metric UTM is mandatory for buffer distances.
+          </div>
+          <div class="rounded-lg bg-emerald-50/70 p-3 border border-emerald-100">
+            <strong class="text-emerald-900">Axiom 2 (MAUP &amp; Tobler):</strong> Intensive ratios (income, NDVI, density) must never be summed in spatial joins. Applies 35-pass pycnophylactic smooth interpolation to conserve total counts.
+          </div>
+          <div class="rounded-lg bg-emerald-50/70 p-3 border border-emerald-100">
+            <strong class="text-emerald-900">Axiom 3 (Topology):</strong> Detects micro-geometry slivers ($circularity &lt; 0.05$ and width &lt; 1.0m), snaps dangling nodes, and auto-repairs self-intersecting rings.
+          </div>
+          <div class="rounded-lg bg-emerald-50/70 p-3 border border-emerald-100">
+            <strong class="text-emerald-900">Axiom 4 (Physical Conservation):</strong> Enforces thermodynamic limits ($\text{NPP} \le 3500\text{ g C/m}^2/\text{yr}$) and hydrological mass balance ($\sum \text{Outflow} \le \text{Precipitation}$).
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Repository: <a href="https://github.com/sutharprin098/VeriGeo" class="text-sky-600 font-semibold hover:underline">sutharprin098/VeriGeo</a></span>
+          <span class="text-emerald-600 font-bold">10/10 Verified</span>
+        </div>
+      </div>
+
+      <!-- GAS 1.0.0 Deep Dive -->
+      <div class="rounded-2xl border-2 border-indigo-500 bg-white p-6 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="rounded-lg bg-indigo-100 p-2.5 text-indigo-800 font-mono text-sm font-bold">GAS 1.0.0</span>
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Geospatial Agentic Services Mesh</h3>
+            <p class="text-xs text-slate-500">OGC-Style Standard Protocol for Distributed Geo-Agents (GIBD Lab)</p>
+          </div>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed mb-4">
+          AutoGIS connects natively to the <strong>Geospatial Agentic Services (GAS 1.0.0)</strong> ecosystem, allowing local QGIS workflows to discover, delegate, and execute specialized tasks on remote agent nodes across research institutions:
+        </p>
+        <div class="space-y-2.5 text-xs">
+          <div class="rounded-lg bg-indigo-50/70 p-3 border border-indigo-100">
+            <strong class="text-indigo-900">Discovery (GetCapabilities):</strong> Discovers registered agents via <code>gas_discover_agents</code> and distributed registries via <code>gas_registry_search</code>.
+          </div>
+          <div class="rounded-lg bg-indigo-50/70 p-3 border border-indigo-100">
+            <strong class="text-indigo-900">Inspection (DescribeAgent):</strong> Inspects skills, JSON input parameter schemas, and real-time operational status via <code>gas_describe_agent</code>.
+          </div>
+          <div class="rounded-lg bg-indigo-50/70 p-3 border border-indigo-100">
+            <strong class="text-indigo-900">Execution Modes:</strong> Supports synchronous execution, live Server-Sent Events (SSE) token streaming, and asynchronous polling for long-running compute jobs.
+          </div>
+          <div class="rounded-lg bg-indigo-50/70 p-3 border border-indigo-100">
+            <strong class="text-indigo-900">Artifact Auto-Loading:</strong> Spatial GeoJSON, Shapefiles, and GeoTIFFs returned by remote agents are automatically loaded directly onto the QGIS map canvas.
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Standards: GIBD Lab GAS 1.0.0 Protocol</span>
+          <span class="text-indigo-600 font-bold">5 Native Tools</span>
+        </div>
+      </div>
+
+    </div>
+
     <!-- Interactive Prompt Walkthrough Simulator -->
     <section class="mb-16">
       <div class="text-center max-w-3xl mx-auto mb-8">
-        <h2 class="text-2xl font-bold text-slate-900">Step-by-Step Execution Scenarios</h2>
-        <p class="text-sm text-slate-600 mt-1">Select a real prompt below to see exactly how AutoGIS activates each module.</p>
+        <h2 class="text-2xl font-bold text-slate-900">Step-by-Step Prompt Walkthrough Simulator</h2>
+        <p class="text-sm text-slate-600 mt-1">Select a prompt below to trace how AutoGIS, VeriGeo, and GAS execute together.</p>
         
         <!-- Tabs -->
         <div class="flex flex-wrap items-center justify-center gap-2.5 mt-5">
           <button onclick="switchScenario('scenario-solar')" id="tab-solar" class="prompt-tab active px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold transition">
             1. Solar MCDM (100+ Layers)
           </button>
-          <button onclick="switchScenario('scenario-doc')" id="tab-doc" class="prompt-tab px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition">
-            2. Xerj AI Document Ingestion
+          <button onclick="switchScenario('scenario-gas')" id="tab-gas" class="prompt-tab px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition">
+            2. GAS 1.0.0 Remote Agent Collaboration
           </button>
-          <button onclick="switchScenario('scenario-sar')" id="tab-sar" class="prompt-tab px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition">
-            3. VeriGeo MAUP &amp; Topology Repair
+          <button onclick="switchScenario('scenario-doc')" id="tab-doc" class="prompt-tab px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition">
+            3. Xerj AI Document Ingestion
+          </button>
+          <button onclick="switchScenario('scenario-verigeo')" id="tab-verigeo" class="prompt-tab px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition">
+            4. VeriGeo MAUP &amp; Topology Repair
           </button>
         </div>
       </div>
@@ -232,7 +307,38 @@ flowchart TD
         </div>
       </div>
 
-      <!-- Scenario 2: Xerj AI Document Ingestion -->
+      <!-- Scenario 2: GAS 1.0.0 Remote Collaboration -->
+      <div id="scenario-gas" class="scenario-panel hidden space-y-4">
+        <div class="rounded-xl bg-slate-900 text-white p-4 font-mono text-xs flex items-center gap-3">
+          <span class="text-indigo-400 font-bold">User Prompt:</span>
+          <span>"Run deep Sentinel-1 SAR radar crop classification over Punjab using the remote GIBD Lab GAS Agent."</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="step-card">
+            <span class="rounded bg-indigo-100 text-indigo-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 1</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">GAS Discovery</h3>
+            <p class="text-xs text-slate-600 mt-1">Calls <code>gas_registry_search</code> to discover the active remote SAR crop classification agent on the GAS 1.0.0 network.</p>
+          </div>
+          <div class="step-card">
+            <span class="rounded bg-indigo-100 text-indigo-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 2</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">Schema Negotiation</h3>
+            <p class="text-xs text-slate-600 mt-1">Executes <code>gas_describe_agent</code> to fetch JSON parameter requirements, bounding box coordinate types, and expected SAR polarization channels.</p>
+          </div>
+          <div class="step-card">
+            <span class="rounded bg-indigo-100 text-indigo-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 3</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">Remote Task Dispatch</h3>
+            <p class="text-xs text-slate-600 mt-1">Calls <code>gas_execute_task</code> in streaming mode. Receives live status updates and intermediate backscatter processing telemetry.</p>
+          </div>
+          <div class="step-card">
+            <span class="rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 4</span>
+            <h3 class="font-bold text-slate-900 mt-2 text-sm">VeriGeo &amp; Canvas Draping</h3>
+            <p class="text-xs text-slate-600 mt-1">VeriGeo audits the returned classification raster for projection integrity; AutoGIS automatically drapes the classified crop zones onto the QGIS canvas.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scenario 3: Xerj AI Document Ingestion -->
       <div id="scenario-doc" class="scenario-panel hidden space-y-4">
         <div class="rounded-xl bg-slate-900 text-white p-4 font-mono text-xs flex items-center gap-3">
           <span class="text-indigo-400 font-bold">User Action:</span>
@@ -263,8 +369,8 @@ flowchart TD
         </div>
       </div>
 
-      <!-- Scenario 3: VeriGeo MAUP & Topology Repair -->
-      <div id="scenario-sar" class="scenario-panel hidden space-y-4">
+      <!-- Scenario 4: VeriGeo MAUP & Topology Repair -->
+      <div id="scenario-verigeo" class="scenario-panel hidden space-y-4">
         <div class="rounded-xl bg-slate-900 text-white p-4 font-mono text-xs flex items-center gap-3">
           <span class="text-emerald-400 font-bold">User Prompt:</span>
           <span>"Aggregate census population into new watershed flood zones and remove overlay boundary slivers."</span>
@@ -296,28 +402,6 @@ flowchart TD
 
     </section>
 
-    <!-- Deep-Dive Architectural Pillars -->
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="step-card">
-        <h3 class="text-base font-bold text-slate-900">Why Code Errors Aren't Enough</h3>
-        <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-          Standard GIS agents check only Python syntax (`Exit Code 0`). But unprojected degrees cause 35% area errors, and boundary aggregations flip statistical signs (MAUP). AutoGIS embeds domain physics into the compiler loop.
-        </p>
-      </div>
-      <div class="step-card">
-        <h3 class="text-base font-bold text-slate-900">The 100+ Layer Scalability Trick</h3>
-        <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-          Loading 100 rasters into RAM crashes any machine. AutoGIS streams tiled windows ($512\times 512$) using lazy Dask/Xarray evaluation, computing continental decision surfaces with under 50MB RAM.
-        </p>
-      </div>
-      <div class="step-card">
-        <h3 class="text-base font-bold text-slate-900">Zero-Input Autonomy</h3>
-        <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-          Instead of requiring users to hunt for satellite files, AutoGIS crawls open STAC catalogs, NASA POWER climatology, and OpenStreetMap automatically, converting natural language into production datasets.
-        </p>
-      </div>
-    </section>
-
     <!-- Navigation Footer CTA -->
     <div class="mt-16 text-center">
       <a href="/tech-stack" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 font-mono text-xs font-bold text-slate-800 shadow-sm hover:bg-slate-50 transition mr-3">
@@ -342,16 +426,15 @@ flowchart TD
       });
       document.getElementById(id).classList.remove('hidden');
 
-      if (id === 'scenario-solar') {
-        const tab = document.getElementById('tab-solar');
-        tab.classList.add('active', 'bg-slate-900', 'text-white');
-        tab.classList.remove('bg-white', 'text-slate-600');
-      } else if (id === 'scenario-doc') {
-        const tab = document.getElementById('tab-doc');
-        tab.classList.add('active', 'bg-slate-900', 'text-white');
-        tab.classList.remove('bg-white', 'text-slate-600');
-      } else if (id === 'scenario-sar') {
-        const tab = document.getElementById('tab-sar');
+      const tabMap = {
+        'scenario-solar': 'tab-solar',
+        'scenario-gas': 'tab-gas',
+        'scenario-doc': 'tab-doc',
+        'scenario-verigeo': 'tab-verigeo'
+      };
+      const activeTabId = tabMap[id];
+      if (activeTabId) {
+        const tab = document.getElementById(activeTabId);
         tab.classList.add('active', 'bg-slate-900', 'text-white');
         tab.classList.remove('bg-white', 'text-slate-600');
       }
