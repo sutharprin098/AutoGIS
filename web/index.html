@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoGIS Studio v1.0.7 — Autonomous Geospatial AI Agent with Google Earth Engine &amp; GAS 1.0.0 for QGIS</title>
-  <meta name="description" content="AutoGIS Studio v1.0.7 — Open-Source Autonomous Geospatial AI Agent with Google Earth Engine (GEE), Geospatial Agentic Services (GAS 1.0.0), and 71 Spatial Analysis Tools for QGIS Desktop." />
+  <title>AutoGIS Studio v1.0.9 — Autonomous Geospatial AI Agent with GeoSAM, VeriGeo, Xerj AI &amp; Claude 3.7 for QGIS</title>
+  <meta name="description" content="AutoGIS Studio v1.0.9 — Open-Source Autonomous Geospatial AI Agent with GeoSAM Tiled Segmentation, Dual-Protocol Claude 3.7 & Gemini 3 Engine, Xerj AI Dual Layer, GAS 2.0 Swarm, GeoRAG, and 80+ Spatial Analysis Tools for QGIS Desktop." />
   <link rel="icon" type="image/svg+xml" href="/assets/icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -45,7 +45,7 @@
         linear-gradient(to bottom, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
     }
     .nav-blur {
-      background: rgba(255, 255, 255, 0.86);
+      background: rgba(255, 255, 255, 0.88);
       backdrop-filter: blur(16px);
       border-bottom: 1px solid #E2E8F0;
     }
@@ -116,23 +116,24 @@
         <img src="/assets/icon.svg" alt="AutoGIS Logo" class="h-8 w-8" />
         <div class="flex items-baseline gap-2">
           <span class="font-extrabold tracking-tight text-slate-900 text-lg">AutoGIS</span>
-          <span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono text-[11px] font-bold text-sky-700">Studio v1.0.7</span>
+          <span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono text-[11px] font-bold text-sky-700">Studio v1.0.9</span>
         </div>
       </a>
 
       <nav class="hidden md:flex items-center gap-5 text-xs font-semibold text-slate-600">
         <a href="/architecture" class="hover:text-sky-600 transition flex items-center gap-1.5 font-bold text-slate-800"><span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>Architecture</a>
         <a href="/tech-stack" class="hover:text-sky-600 transition font-bold text-slate-800">Tech Stack</a>
+        <a href="#geosam" class="hover:text-slate-900 transition flex items-center gap-1">🛰️ GeoSAM AI</a>
         <a href="#verigeo" class="hover:text-slate-900 transition flex items-center gap-1"><img src="/assets/verigeo-logo.svg" alt="VeriGeo" class="h-3.5 w-3.5 inline"/> VeriGeo</a>
         <a href="#xerj" class="hover:text-slate-900 transition flex items-center gap-1"><img src="/assets/xerj-logo.svg" alt="Xerj" class="h-3.5 w-3.5 inline"/> Xerj AI</a>
-        <a href="#tools" class="hover:text-slate-900 transition">71 Tools</a>
+        <a href="#tools" class="hover:text-slate-900 transition">80+ Tools</a>
         <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="hover:text-slate-900 transition">GitHub</a>
       </nav>
 
       <div class="flex items-center gap-3">
-        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.7/AutoGIS.zip"
+        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.9/AutoGIS.zip"
            class="inline-flex items-center justify-center rounded-xl bg-sky-600 px-4 py-2 font-mono text-xs font-bold text-white shadow-sm transition hover:bg-sky-500 hover:shadow-md">
-          Download ZIP (v1.0.7)
+          Download ZIP (v1.0.9)
         </a>
       </div>
     </div>
@@ -140,25 +141,25 @@
 
   <!-- Hero Section -->
   <section class="relative mx-auto max-w-5xl px-6 pt-16 pb-12 text-center md:pt-24 md:pb-16">
-    <div class="reveal inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-800">
-      <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-      <span>v1.0.7: 65 Autonomous GIS Tools · Geospatial Agentic Services (GAS 1.0.0) · SAR Crop AI · IMD Weather · 3D Terrain</span>
+    <div class="reveal inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3.5 py-1 text-xs font-semibold text-blue-800">
+      <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+      <span>v1.0.9: 80+ Autonomous GIS Tools · GeoSAM Tiled AI · Claude 3.7 &amp; Gemini 3 Dual Protocol · Xerj AI Dual Layer · GAS 2.0 Swarm</span>
     </div>
 
     <h1 class="reveal mt-6 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl md:text-6xl leading-[1.12]">
-      The Autonomous Geospatial AI Agent for <span class="bg-gradient-to-r from-sky-600 to-teal-600 bg-clip-text text-transparent">QGIS Desktop</span>
+      The Autonomous Geospatial AI Agent for <span class="bg-gradient-to-r from-sky-600 via-teal-600 to-indigo-600 bg-clip-text text-transparent">QGIS Desktop</span>
     </h1>
 
     <p class="reveal mx-auto mt-5 max-w-2xl text-base text-slate-600 md:text-lg leading-relaxed">
-      Connect frontier AI models directly to QGIS, Google Earth Engine, OSM, and satellite APIs. Execute multi-step spatial workflows, run SAR crop classification, download IMD weather grids &amp; Sentinel imagery, calculate spectral indices, and generate 3D terrain &mdash; all autonomously. <strong class="text-slate-900">&#x26A1; Now 2&ndash;5s response (60s hang fixed).</strong>
+      Connect frontier AI models directly to QGIS, Google Earth Engine, OSM, and satellite imagery. Run zero-shot GeoSAM building extraction with 256/512px overlapped windowing, translate natural language into PostGIS SQL with GeoRAG, orchestrate multi-agent swarms (GAS 2.0), solve industrial spatial digital twins with IBM AssetOpsBench, and eliminate hallucinations with VeriGeo formal proofs. <strong class="text-slate-900">&#x26A1; Sub-second response · Dual Protocol.</strong>
     </p>
 
     <!-- 1-Click Direct Download Hero CTA -->
     <div class="reveal mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
-      <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.7/AutoGIS.zip"
+      <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.9/AutoGIS.zip"
          class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-xl bg-slate-900 px-6 py-3.5 font-mono text-xs font-bold text-white shadow-md transition hover:bg-slate-800 hover:shadow-lg">
         <svg class="h-4 w-4 fill-current text-sky-400" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
-        Download AutoGIS.zip (v1.0.7)
+        Download AutoGIS.zip (v1.0.9)
       </a>
       <a href="https://github.com/sutharprin098/AutoGIS" target="_blank"
          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3.5 font-mono text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900">
@@ -170,11 +171,13 @@
     <!-- Quick Badges -->
     <div class="reveal mt-6 flex flex-wrap items-center justify-center gap-2 text-xs font-mono text-slate-500">
       <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">QGIS 3.22 - 3.40+</span>
-      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">Google Earth Engine</span>
-      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">GAS 1.0.0 Standard</span>
-      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">71 Tools</span>
-      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">Gemini / Claude / ChatGPT / DeepSeek</span>
-      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">MIT Open-Source</span>
+      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">GeoSAM &amp; SAM 2</span>
+      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">VeriGeo (NS-VGP 1.0)</span>
+      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">Xerj AI Dual Layer</span>
+      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">GAS 2.0 Swarm</span>
+      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">Claude 3.7 Sonnet Native</span>
+      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">Gemini 3 Flash Preview</span>
+      <span class="rounded-md border border-slate-200 bg-white px-2.5 py-1">80+ Spatial Tools</span>
     </div>
   </section>
 
@@ -186,15 +189,100 @@
           <span class="h-3 w-3 rounded-full bg-rose-500/80 inline-block"></span>
           <span class="h-3 w-3 rounded-full bg-amber-500/80 inline-block"></span>
           <span class="h-3 w-3 rounded-full bg-emerald-500/80 inline-block"></span>
-          <span class="ml-2 font-mono text-slate-300 font-semibold">QGIS Desktop — Autonomous GEE, GAS 1.0.0 &amp; Spatial Modeling — AutoGIS Studio v1.0.7</span>
+          <span class="ml-2 font-mono text-slate-300 font-semibold">QGIS Desktop — GeoSAM Segmentation, Dual-Protocol Engine &amp; GAS 2.0 — AutoGIS Studio v1.0.9</span>
         </div>
-        <span class="font-mono text-emerald-400 font-bold">● Active 71 Tools</span>
+        <span class="font-mono text-emerald-400 font-bold">● Active 80+ Tools</span>
       </div>
-      <img src="/assets/autogis_screenshot.png" alt="AutoGIS Studio v1.0.7 Live in QGIS Desktop" class="w-full object-cover" />
+      <img src="/assets/autogis_screenshot.png" alt="AutoGIS Studio v1.0.9 Live in QGIS Desktop" class="w-full object-cover" />
     </div>
   </section>
 
-    <!-- Dedicated VeriGeo Showcase Section (Horizontal Left-to-Right Carousel) -->
+  <!-- Dedicated GeoSAM & AI Segmentation Section (Horizontal Carousel) -->
+  <section id="geosam" class="border-t border-slate-200 bg-gradient-to-b from-blue-50/50 via-white to-slate-50/30 py-16">
+    <div class="mx-auto max-w-6xl px-6">
+      <div class="reveal flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
+            <span>🛰️ FOUNDATION MODEL · TERRALAB PARITY · SAM 2 ARCHITECTURE</span>
+          </div>
+          <h2 class="mt-3 text-3xl font-extrabold text-slate-900 sm:text-4xl">GeoSAM &amp; Adaptive AI Segmentation</h2>
+          <p class="mt-2 max-w-2xl text-sm text-slate-600">
+            Zero-shot building, road, and water extraction directly from satellite rasters and drone orthomosaics. Uses 256/512px overlapped windowing to eliminate QGIS memory crashes on gigapixel imagery.
+          </p>
+        </div>
+        <!-- Left-Right Scroll Controls -->
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="text-xs font-mono text-slate-500 mr-1 hidden sm:inline">Scroll:</span>
+          <button onclick="scrollTrack('geosam-track', -380)" class="h-9 w-9 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 shadow-sm flex items-center justify-center font-bold transition hover:border-blue-500" title="Scroll Left">
+            ←
+          </button>
+          <button onclick="scrollTrack('geosam-track', 380)" class="h-9 w-9 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 shadow-sm flex items-center justify-center font-bold transition hover:border-blue-500" title="Scroll Right">
+            →
+          </button>
+        </div>
+      </div>
+
+      <!-- Horizontal Scrolling Track -->
+      <div id="geosam-track" class="horizontal-scroll flex gap-6 overflow-x-auto pb-4 pt-8 snap-x snap-mandatory">
+        <div class="carousel-card saas-card rounded-2xl p-6 border-blue-100 flex-none snap-start flex flex-col justify-between">
+          <div>
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-800 font-mono text-sm font-bold">01</div>
+            <h3 class="mt-4 text-base font-bold text-slate-900">Overlapped Tiled Windowing</h3>
+            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+              Splits large rasters into 256×256 or 512×512 tiles with 15% boundary overlap, ensuring features crossing tile borders are unified without seam artifacts.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-blue-700 font-semibold">Tiling &amp; Zero-Crash</div>
+        </div>
+
+        <div class="carousel-card saas-card rounded-2xl p-6 border-blue-100 flex-none snap-start flex flex-col justify-between">
+          <div>
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-800 font-mono text-sm font-bold">02</div>
+            <h3 class="mt-4 text-base font-bold text-slate-900">Sub-Meter Building Footprints</h3>
+            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+              Extracts high-resolution building footprints from Google Satellite and WorldView with Douglas-Peucker orthogonalization for clean architectural edges.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-blue-700 font-semibold">Architectural Polygons</div>
+        </div>
+
+        <div class="carousel-card saas-card rounded-2xl p-6 border-blue-100 flex-none snap-start flex flex-col justify-between">
+          <div>
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-800 font-mono text-sm font-bold">03</div>
+            <h3 class="mt-4 text-base font-bold text-slate-900">Resolution &amp; GSD Guardrail</h3>
+            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+              Automatic pixel resolution auditor: detects when an input layer has coarse GSD (e.g. Sentinel-2 10m/px) and guides users to load high-res imagery for reliable building outlines.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-blue-700 font-semibold">Resolution Auditor</div>
+        </div>
+
+        <div class="carousel-card saas-card rounded-2xl p-6 border-blue-100 flex-none snap-start flex flex-col justify-between">
+          <div>
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-800 font-mono text-sm font-bold">04</div>
+            <h3 class="mt-4 text-base font-bold text-slate-900">Active Layer Auto-Detection</h3>
+            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+              Auto-inspects active QGIS layer dropdown. Users can explicitly select any raster in the project, automatically inheriting its native CRS (EPSG:3857 / EPSG:4326).
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-blue-700 font-semibold">CRS Matching</div>
+        </div>
+
+        <div class="carousel-card saas-card rounded-2xl p-6 border-blue-100 flex-none snap-start flex flex-col justify-between">
+          <div>
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-800 font-mono text-sm font-bold">05</div>
+            <h3 class="mt-4 text-base font-bold text-slate-900">Zero-Shot Semantic Prompts</h3>
+            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+              Segment arbitrary landforms with prompts like <em>"buildings"</em>, <em>"water bodies"</em>, <em>"solar panels"</em>, or <em>"roads"</em> with instant vectorization.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-blue-700 font-semibold">Semantic Zero-Shot</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dedicated VeriGeo Showcase Section (Horizontal Carousel) -->
   <section id="verigeo" class="border-t border-slate-200 bg-gradient-to-b from-emerald-50/50 via-white to-slate-50/30 py-16">
     <div class="mx-auto max-w-6xl px-6">
       <div class="reveal flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -220,7 +308,7 @@
         </div>
       </div>
 
-      <!-- Horizontal Scrolling Track (Left to Right) -->
+      <!-- Horizontal Scrolling Track -->
       <div id="verigeo-track" class="horizontal-scroll flex gap-6 overflow-x-auto pb-4 pt-8 snap-x snap-mandatory">
         <div class="carousel-card saas-card rounded-2xl p-6 border-emerald-100 flex-none snap-start flex flex-col justify-between">
           <div>
@@ -271,7 +359,7 @@
             <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 font-mono text-sm font-bold">05</div>
             <h3 class="mt-4 text-base font-bold text-slate-900">Axiom 4: Physical Conservation Limits</h3>
             <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Enforces physical bounds: Net Primary Production $	ext{NPP} \le 3500	ext{ g C/m}^2/	ext{yr}$, and hydrological mass balance ($\sum 	ext{Outflow} \le 	ext{Precipitation}$).
+              Enforces physical bounds: Net Primary Production $NPP \le 3500\text{ g C/m}^2/\text{yr}$, and hydrological mass balance ($\sum \text{Outflow} \le \text{Precipitation}$).
             </p>
           </div>
           <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-emerald-700 font-semibold">Thermodynamics Guard</div>
@@ -291,115 +379,18 @@
     </div>
   </section>
 
-  <!-- Dedicated Geospatial Agentic Services (GAS 1.0.0) Showcase Section (Horizontal Left-to-Right Carousel) -->
-  <section id="gas" class="border-t border-slate-200 bg-gradient-to-b from-indigo-50/40 via-white to-slate-50/30 py-16">
-    <div class="mx-auto max-w-6xl px-6">
-      <div class="reveal flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <div class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-800">
-            <img src="/assets/gas-logo.svg" alt="GAS Logo" class="h-4 w-4" />
-            <span>OGC PROTOCOL · PENN STATE GIBD LAB · 5 TOOLS</span>
-          </div>
-          <h2 class="mt-3 text-3xl font-extrabold text-slate-900 sm:text-4xl">Geospatial Agentic Services (GAS 1.0.0) Integration</h2>
-          <p class="mt-2 max-w-2xl text-sm text-slate-600">
-            AutoGIS v1.0.7 implements the open <strong>GAS 1.0.0 standard</strong> as both a native QGIS client and a local server bridge &mdash; enabling discovery, live NDJSON streaming, and remote agent execution.
-          </p>
-        </div>
-        <!-- Left-Right Scroll Controls -->
-        <div class="flex items-center gap-2 shrink-0">
-          <span class="text-xs font-mono text-slate-500 mr-1 hidden sm:inline">Scroll:</span>
-          <button onclick="scrollTrack('gas-track', -380)" class="h-9 w-9 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 shadow-sm flex items-center justify-center font-bold transition hover:border-indigo-500" title="Scroll Left">
-            ←
-          </button>
-          <button onclick="scrollTrack('gas-track', 380)" class="h-9 w-9 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 shadow-sm flex items-center justify-center font-bold transition hover:border-indigo-500" title="Scroll Right">
-            →
-          </button>
-        </div>
-      </div>
-
-      <!-- Horizontal Scrolling Track (Left to Right) -->
-      <div id="gas-track" class="horizontal-scroll flex gap-6 overflow-x-auto pb-4 pt-8 snap-x snap-mandatory">
-        <div class="carousel-card saas-card rounded-2xl p-6 border-indigo-100 flex-none snap-start flex flex-col justify-between">
-          <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">01</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Agent Discovery &amp; GetCapabilities</h3>
-            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Use <code class="font-mono text-[11px] text-indigo-700">gas_discover_agents</code> and <code class="font-mono text-[11px] text-indigo-700">gas_describe_agent</code> to query any GAS 1.0.0 server, inspect agent skills, input/output schemas, parameter rules, and live runtime health.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-indigo-700 font-semibold">Capabilities Engine</div>
-        </div>
-
-        <div class="carousel-card saas-card rounded-2xl p-6 border-indigo-100 flex-none snap-start flex flex-col justify-between">
-          <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">02</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Sync &amp; Live NDJSON Streaming</h3>
-            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Execute distributed geospatial operations via <code class="font-mono text-[11px] text-indigo-700">gas_execute_task</code> in synchronous (<code class="font-mono text-[11px]">sync</code>) or real-time NDJSON streaming (<code class="font-mono text-[11px]">stream</code>) modes with full lifecycle progress events.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-indigo-700 font-semibold">Live Streaming SSE</div>
-        </div>
-
-        <div class="carousel-card saas-card rounded-2xl p-6 border-indigo-100 flex-none snap-start flex flex-col justify-between">
-          <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">03</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Zero-Friction QGIS Layer Packaging</h3>
-            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Pass any loaded QGIS vector or raster layer name in <code class="font-mono text-[11px] text-indigo-700">layer_inputs</code> &mdash; AutoGIS automatically exports and base64-encodes it into a canonical GAS <code class="font-mono text-[11px]">input_datasets</code> payload.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-indigo-700 font-semibold">Layer Encoding</div>
-        </div>
-
-        <div class="carousel-card saas-card rounded-2xl p-6 border-indigo-100 flex-none snap-start flex flex-col justify-between">
-          <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">04</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Auto-Load Spatial Artifacts to Canvas</h3>
-            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Returned GeoJSON, GeoPackage, Shapefile, GeoTIFF, CSV, and KML outputs are automatically downloaded and loaded directly onto the active QGIS map canvas with smart styling.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-indigo-700 font-semibold">Canvas Auto-Drape</div>
-        </div>
-
-        <div class="carousel-card saas-card rounded-2xl p-6 border-indigo-100 flex-none snap-start flex flex-col justify-between">
-          <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">05</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Global Registry &amp; Async Task Control</h3>
-            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Search the global community agent store with <code class="font-mono text-[11px] text-indigo-700">gas_registry_search</code> and poll, fetch results, or cancel long-running jobs using <code class="font-mono text-[11px] text-indigo-700">gas_manage_task</code>.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-indigo-700 font-semibold">Registry Search</div>
-        </div>
-
-        <div class="carousel-card saas-card rounded-2xl p-6 border-indigo-100 flex-none snap-start flex flex-col justify-between">
-          <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">06</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Built-in Local GAS 1.0.0 &amp; MCP Server</h3>
-            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              AutoGIS exposes a compliant GAS 1.0.0 and MCP bridge on <code class="font-mono text-[11px] text-indigo-700">127.0.0.1:8765</code>, turning your live QGIS Desktop session into an interoperable agent for external orchestrators.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-indigo-700 font-semibold">Bidirectional Bridge</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Dedicated Xerj AI Showcase Section (Horizontal Left-to-Right Carousel) -->
+  <!-- Dedicated Xerj AI Showcase Section (Horizontal Carousel) -->
   <section id="xerj" class="border-t border-slate-200 bg-gradient-to-b from-purple-50/40 via-white to-slate-50/30 py-16">
     <div class="mx-auto max-w-6xl px-6">
       <div class="reveal flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div class="inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-800">
             <img src="/assets/xerj-logo.svg" alt="Xerj AI Logo" class="h-4 w-4" />
-            <span>OFFICIAL INTEGRATION · XERJ-READER-1 · CHECKED PROGRAMS</span>
+            <span>OFFICIAL DUAL LAYER · SPATIAL LLM &amp; LOCAL CORPUS DAEMON</span>
           </div>
-          <h2 class="mt-3 text-3xl font-extrabold text-slate-900 sm:text-4xl">Xerj AI Document Intelligence</h2>
+          <h2 class="mt-3 text-3xl font-extrabold text-slate-900 sm:text-4xl">Xerj AI Spatial Reasoning &amp; Document Intelligence</h2>
           <p class="mt-2 max-w-2xl text-sm text-slate-600">
-            Official integration with the <strong>XERJ Platform</strong> powering the <code class="font-mono text-xs">xerj-reader-1</code> model. Generates symbolic checked programs executed deterministically over environmental reports and spatial PDFs with zero hallucination.
+            Dedicated dual-layer architecture: choose Xerj AI as your primary Spatial LLM (<code class="font-mono text-xs">xerj/geo-reasoner</code>) OR use its local AST corpus daemon (127.0.0.1:9200) and <code class="font-mono text-xs">xerj-reader-1</code> typed symbolic programs with Claude or Gemini.
           </p>
         </div>
         <!-- Left-Right Scroll Controls -->
@@ -414,25 +405,36 @@
         </div>
       </div>
 
-      <!-- Horizontal Scrolling Track (Left to Right) -->
+      <!-- Horizontal Scrolling Track -->
       <div id="xerj-track" class="horizontal-scroll flex gap-6 overflow-x-auto pb-4 pt-8 snap-x snap-mandatory">
         <div class="carousel-card saas-card rounded-2xl p-6 border-purple-100 flex-none snap-start flex flex-col justify-between">
           <div>
             <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100 text-purple-800 font-mono text-sm font-bold">01</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Autonomous Spatial Document Router</h3>
+            <h3 class="mt-4 text-base font-bold text-slate-900">Dedicated Spatial Reasoning LLM</h3>
             <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Evaluates spatial entity density; routes spatial PDFs/DOCX to Xerj Reader-1 and general text to Primary LLM, optimizing extraction precision and token economy.
+              Available as a distinct provider in Settings. Select <code class="font-mono text-[11px] text-purple-700">xerj/geo-reasoner</code> or <code class="font-mono text-[11px] text-purple-700">xerj/spatial-gpt</code> on <code class="font-mono text-[11px]">https://api.xerj.ai/v1</code> for autonomous spatial problem-solving.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-purple-700 font-semibold">Dynamic AI Router</div>
+          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-purple-700 font-semibold">Primary Spatial LLM</div>
         </div>
 
         <div class="carousel-card saas-card rounded-2xl p-6 border-purple-100 flex-none snap-start flex flex-col justify-between">
           <div>
             <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100 text-purple-800 font-mono text-sm font-bold">02</div>
+            <h3 class="mt-4 text-base font-bold text-slate-900">Local AST Corpus Daemon (127.0.0.1:9200)</h3>
+            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+              Connects directly to your local Xerj Rust indexer daemon with instant "Test Daemon" health status. Automatically falls back to built-in hybrid BM25 spatial corpus when offline.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-purple-700 font-semibold">Local Search Engine</div>
+        </div>
+
+        <div class="carousel-card saas-card rounded-2xl p-6 border-purple-100 flex-none snap-start flex flex-col justify-between">
+          <div>
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100 text-purple-800 font-mono text-sm font-bold">03</div>
             <h3 class="mt-4 text-base font-bold text-slate-900">Typed Symbolic Checked Programs</h3>
             <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Instead of guessing numerical answers, the neural model writes a tiny program from symbols executed deterministically over your document text with zero hallucination.
+              Powered by <code class="font-mono text-[11px] text-purple-700">xerj-reader-1</code>. Neural model writes tiny typed programs executed deterministically over PDFs and coordinate tables with zero hallucination.
             </p>
           </div>
           <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-purple-700 font-semibold">Symbolic Execution</div>
@@ -440,10 +442,10 @@
 
         <div class="carousel-card saas-card rounded-2xl p-6 border-purple-100 flex-none snap-start flex flex-col justify-between">
           <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100 text-purple-800 font-mono text-sm font-bold">03</div>
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100 text-purple-800 font-mono text-sm font-bold">04</div>
             <h3 class="mt-4 text-base font-bold text-slate-900">Character-Span Evidence Quotes</h3>
             <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Extracts coordinates, EPSG codes, and numbers backed by exact character offsets (<code class="font-mono text-[11px] text-purple-700">text[i:j]</code>) and typed quotes with 99.3% verification confidence.
+              Coordinates, boundary descriptions, and EPSG codes extracted with exact character offsets (<code class="font-mono text-[11px] text-purple-700">text[i:j]</code>) and 99.3% verification confidence.
             </p>
           </div>
           <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-purple-700 font-semibold">Verifiable Evidence</div>
@@ -451,129 +453,88 @@
 
         <div class="carousel-card saas-card rounded-2xl p-6 border-purple-100 flex-none snap-start flex flex-col justify-between">
           <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100 text-purple-800 font-mono text-sm font-bold">04</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Ultra-Low Sub-Second Latency</h3>
-            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Production response time verified in <strong>230–310 ms</strong> per document query on <code class="font-mono text-[11px] text-purple-700">platform.xerj.ai/v1/answers</code>, enabling instant interactive QGIS workflows.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-purple-700 font-semibold">230ms Real-Time</div>
-        </div>
-
-        <div class="carousel-card saas-card rounded-2xl p-6 border-purple-100 flex-none snap-start flex flex-col justify-between">
-          <div>
             <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100 text-purple-800 font-mono text-sm font-bold">05</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Direct PyQGIS Buffer &amp; Layer Injection</h3>
+            <h3 class="mt-4 text-base font-bold text-slate-900">Dual-Config Independence</h3>
             <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Extracted exclusion radii (e.g. 500m buffer) and coordinate polygons flow automatically into PyQGIS toolchains to draw precise vector boundaries.
+              Keep Claude 3.7 or Gemini 3 as your primary chat agent, while simultaneously configuring a dedicated Xerj Key for live spatial document routing.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-purple-700 font-semibold">QGIS Canvas Injection</div>
-        </div>
-
-        <div class="carousel-card saas-card rounded-2xl p-6 border-purple-100 flex-none snap-start flex flex-col justify-between">
-          <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100 text-purple-800 font-mono text-sm font-bold">06</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">User-Owned API Key Security</h3>
-            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Active only when user configures their personal Xerj AI API key. Fully safe fallback to standard LLMs when no API key is set.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-purple-700 font-semibold">Privacy &amp; Security</div>
+          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-purple-700 font-semibold">Hybrid Dual Workflow</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Dedicated Google Earth Engine (GEE) Showcase Section (Horizontal Left-to-Right Carousel) -->
-  <section id="gee" class="border-y border-slate-200 bg-gradient-to-b from-white to-slate-50 py-16">
+  <!-- Dedicated Geospatial Agentic Services (GAS 2.0) Section (Horizontal Carousel) -->
+  <section id="gas" class="border-t border-slate-200 bg-gradient-to-b from-indigo-50/40 via-white to-slate-50/30 py-16">
     <div class="mx-auto max-w-6xl px-6">
       <div class="reveal flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <span class="font-mono text-xs font-bold tracking-widest text-teal-600 uppercase">Cloud Satellite Catalog</span>
-          <h2 class="mt-2 text-3xl font-extrabold text-slate-900 sm:text-4xl">Deep Google Earth Engine (GEE) Integration</h2>
+          <div class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-800">
+            <img src="/assets/gas-logo.svg" alt="GAS Logo" class="h-4 w-4" />
+            <span>OGC PROTOCOL · PENN STATE GIBD LAB · GAS 2.0 SWARM</span>
+          </div>
+          <h2 class="mt-3 text-3xl font-extrabold text-slate-900 sm:text-4xl">Multi-Agent Swarm for GIS (GAS 2.0)</h2>
           <p class="mt-2 max-w-2xl text-sm text-slate-600">
-            AutoGIS communicates natively with Google Earth Engine's multi-petabyte satellite catalog. Download DEMs, query Sentinel-2/Landsat collections, and calculate spectral indices directly into your active QGIS canvas.
+            Collaborative multi-agent swarm architecture: autonomous Coordinator, Ingestion, Spatial Analyst, and QA Cartographer agents executing distributed workflows with live NDJSON streaming.
           </p>
         </div>
         <!-- Left-Right Scroll Controls -->
         <div class="flex items-center gap-2 shrink-0">
           <span class="text-xs font-mono text-slate-500 mr-1 hidden sm:inline">Scroll:</span>
-          <button onclick="scrollTrack('gee-track', -380)" class="h-9 w-9 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 shadow-sm flex items-center justify-center font-bold transition hover:border-teal-500" title="Scroll Left">
+          <button onclick="scrollTrack('gas-track', -380)" class="h-9 w-9 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 shadow-sm flex items-center justify-center font-bold transition hover:border-indigo-500" title="Scroll Left">
             ←
           </button>
-          <button onclick="scrollTrack('gee-track', 380)" class="h-9 w-9 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 shadow-sm flex items-center justify-center font-bold transition hover:border-teal-500" title="Scroll Right">
+          <button onclick="scrollTrack('gas-track', 380)" class="h-9 w-9 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 shadow-sm flex items-center justify-center font-bold transition hover:border-indigo-500" title="Scroll Right">
             →
           </button>
         </div>
       </div>
 
-      <!-- Horizontal Scrolling Track (Left to Right) -->
-      <div id="gee-track" class="horizontal-scroll flex gap-6 overflow-x-auto pb-4 pt-8 snap-x snap-mandatory">
-        <div class="carousel-card saas-card rounded-2xl p-6 border-teal-100 flex-none snap-start flex flex-col justify-between">
+      <!-- Horizontal Scrolling Track -->
+      <div id="gas-track" class="horizontal-scroll flex gap-6 overflow-x-auto pb-4 pt-8 snap-x snap-mandatory">
+        <div class="carousel-card saas-card rounded-2xl p-6 border-indigo-100 flex-none snap-start flex flex-col justify-between">
           <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-100 text-teal-700 font-mono text-sm font-bold">01</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Direct DEM Download &amp; Terrain</h3>
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">01</div>
+            <h3 class="mt-4 text-base font-bold text-slate-900">Multi-Agent Swarm Orchestrator</h3>
             <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Call <code class="font-mono text-[11px] text-teal-700">gee_download_dem</code> with any place name (e.g. <em>"Kullu, Himachal"</em>) or bounding box to download a high-resolution GeoTIFF from USGS SRTM or Copernicus 30m DEM and load it into QGIS.
+              Autonomous swarm coordination: decomposes state-wide GIS challenges across specialized subagents working concurrently.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-teal-700 font-semibold">Terrain Modeling</div>
+          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-indigo-700 font-semibold">Swarm Mesh</div>
         </div>
 
-        <div class="carousel-card saas-card rounded-2xl p-6 border-teal-100 flex-none snap-start flex flex-col justify-between">
+        <div class="carousel-card saas-card rounded-2xl p-6 border-indigo-100 flex-none snap-start flex flex-col justify-between">
           <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-100 text-teal-700 font-mono text-sm font-bold">02</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Multispectral Band Exports</h3>
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">02</div>
+            <h3 class="mt-4 text-base font-bold text-slate-900">Live NDJSON Streaming &amp; Events</h3>
             <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Extract custom band combinations via <code class="font-mono text-[11px] text-teal-700">gee_export_image</code> across Sentinel-2 Level-2A (B4, B3, B2 for True Color, B8 for NIR) or Landsat 8/9 with automated cloud masking and spatial clipping.
+              Real-time progress events, tool invocation checkpoints, and intermediate spatial artifact streaming with full UI feedback.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-teal-700 font-semibold">Optical Satellite Bands</div>
+          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-indigo-700 font-semibold">Live Streaming SSE</div>
         </div>
 
-        <div class="carousel-card saas-card rounded-2xl p-6 border-teal-100 flex-none snap-start flex flex-col justify-between">
+        <div class="carousel-card saas-card rounded-2xl p-6 border-indigo-100 flex-none snap-start flex flex-col justify-between">
           <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-100 text-teal-700 font-mono text-sm font-bold">03</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Autonomous Spectral Indices (NDVI / NDWI)</h3>
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">03</div>
+            <h3 class="mt-4 text-base font-bold text-slate-900">Zero-Friction Layer Packaging</h3>
             <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Run <code class="font-mono text-[11px] text-teal-700">gee_compute_index</code> to calculate Normalized Difference Vegetation Index (NDVI), Water Index (NDWI), or Burn Ratio (NBR) directly on Earth Engine servers and stream the resulting GeoTIFF into QGIS.
+              Base64-encodes vector and raster layers directly into standard GAS <code class="font-mono text-[11px]">input_datasets</code> payloads for cloud execution.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-teal-700 font-semibold">Remote Sensing Analytics</div>
+          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-indigo-700 font-semibold">Layer Encoding</div>
         </div>
 
-        <div class="carousel-card saas-card rounded-2xl p-6 border-teal-100 flex-none snap-start flex flex-col justify-between">
+        <div class="carousel-card saas-card rounded-2xl p-6 border-indigo-100 flex-none snap-start flex flex-col justify-between">
           <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-100 text-teal-700 font-mono text-sm font-bold">04</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Collection Filter &amp; Metadata</h3>
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-mono text-sm font-bold">04</div>
+            <h3 class="mt-4 text-base font-bold text-slate-900">Built-in Local MCP &amp; GAS Bridge</h3>
             <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Inspect satellite availability with <code class="font-mono text-[11px] text-teal-700">gee_image_collection</code> by date range, cloud-cover threshold, and spatial extent before downloading large datasets.
+              Exposes a GAS 2.0 and Model Context Protocol (MCP) server on <code class="font-mono text-[11px] text-indigo-700">127.0.0.1:8765</code>, turning live QGIS Desktop into an agent for external orchestrators.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-teal-700 font-semibold">Cloud Catalog Query</div>
-        </div>
-
-        <div class="carousel-card saas-card rounded-2xl p-6 border-teal-100 flex-none snap-start flex flex-col justify-between">
-          <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-100 text-teal-700 font-mono text-sm font-bold">05</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Instant Web Thumbnails</h3>
-            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Generate 1024px PNG thumbnail preview URLs instantly using <code class="font-mono text-[11px] text-teal-700">gee_image_preview</code> to verify image quality and scene coverage without consuming local disk space.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-teal-700 font-semibold">Zero-Bandwidth Preview</div>
-        </div>
-
-        <div class="carousel-card saas-card rounded-2xl p-6 border-teal-100 flex-none snap-start flex flex-col justify-between">
-          <div>
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-100 text-teal-700 font-mono text-sm font-bold">06</div>
-            <h3 class="mt-4 text-base font-bold text-slate-900">Universal Geospatial Reasoning</h3>
-            <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-              Fully unconstrained agent engine. AutoGIS synthesizes live GEE rasters with OpenStreetMap road networks, administrative boundary polygons, and QGIS Processing algorithms in a single prompt.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-teal-700 font-semibold">Autonomous Synthesis</div>
+          <div class="mt-4 pt-3 border-t border-slate-100 font-mono text-[10px] text-indigo-700 font-semibold">Bidirectional Bridge</div>
         </div>
       </div>
     </div>
@@ -591,50 +552,50 @@
 
     <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <div class="reveal saas-card rounded-2xl p-6">
-        <span class="rounded-md bg-sky-50 px-2.5 py-1 font-mono text-[11px] font-bold text-sky-700">PHASE ENGINE</span>
-        <h3 class="mt-3.5 text-base font-bold text-slate-900">Step-by-Step Task Decomposition</h3>
+        <span class="rounded-md bg-blue-50 px-2.5 py-1 font-mono text-[11px] font-bold text-blue-700">GEOSAM AI</span>
+        <h3 class="mt-3.5 text-base font-bold text-slate-900">256/512px Tiled Segmentation</h3>
         <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-          Automatically breaks large 30+ layer workflows into sequential phases (<code class="font-mono text-xs text-sky-700">update_agent_plan</code>), executing 1–2 tools per turn with 35ms UI pacing so QGIS stays responsive.
+          Zero-shot building and road extraction with 15% overlap windowing on sub-meter satellite imagery without freezing QGIS.
         </p>
       </div>
 
       <div class="reveal saas-card rounded-2xl p-6">
-        <span class="rounded-md bg-teal-50 px-2.5 py-1 font-mono text-[11px] font-bold text-teal-700">CRS INTELLIGENCE</span>
-        <h3 class="mt-3.5 text-base font-bold text-slate-900">Automatic Metric UTM &amp; CRS Alignment</h3>
+        <span class="rounded-md bg-emerald-50 px-2.5 py-1 font-mono text-[11px] font-bold text-emerald-700">GEORAG ENGINE</span>
+        <h3 class="mt-3.5 text-base font-bold text-slate-900">Natural Language to Spatial DBs</h3>
         <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-          Audits Project CRS vs. Layer CRS (<code class="font-mono text-xs text-teal-700">meters</code> vs. <code class="font-mono text-xs text-teal-700">degrees</code>). Automatically reprojects <code class="font-mono text-xs text-teal-700">EPSG:4326</code> layers to their local UTM Zone before buffering and aligns CRSs before spatial overlays.
+          Conversational SQL generation across PostGIS, DuckDB Spatial, and GeoPackages using indexed spatial predicates (<code class="font-mono text-xs">ST_Intersects</code>, <code class="font-mono text-xs">ST_DWithin</code>).
         </p>
       </div>
 
       <div class="reveal saas-card rounded-2xl p-6">
-        <span class="rounded-md bg-sky-50 px-2.5 py-1 font-mono text-[11px] font-bold text-sky-700">TOKEN OPTIMIZED</span>
-        <h3 class="mt-3.5 text-base font-bold text-slate-900">65% Lower Token Consumption</h3>
+        <span class="rounded-md bg-blue-50 px-2.5 py-1 font-mono text-[11px] font-bold text-blue-700">IBM ASSETOPSBENCH</span>
+        <h3 class="mt-3.5 text-base font-bold text-slate-900">Spatial Infrastructure Digital Twin</h3>
         <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-          Compact single-line project state serialization and sliding-window tool history compaction keep API token consumption minimal even on multi-layer projects.
+          Integrated directly from <a href="https://github.com/IBM/AssetOpsBench" target="_blank" class="font-semibold text-blue-600 underline">IBM AssetOpsBench</a>: Multi-modal failure diagnostics (FMSR), TSFM Remaining Useful Life forecasting, and optimal technician dispatch routing. 100% offline & local PyQGIS execution.
         </p>
       </div>
 
       <div class="reveal saas-card rounded-2xl p-6">
-        <span class="rounded-md bg-teal-50 px-2.5 py-1 font-mono text-[11px] font-bold text-teal-700">LIVE DATA &amp; GEE</span>
-        <h3 class="mt-3.5 text-base font-bold text-slate-900">GEE, OSM, STAC &amp; Road Routing</h3>
+        <span class="rounded-md bg-orange-50 px-2.5 py-1 font-mono text-[11px] font-bold text-orange-700">DUAL PROTOCOL</span>
+        <h3 class="mt-3.5 text-base font-bold text-slate-900">Claude 3.7 &amp; Gemini 3 Native</h3>
         <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-          Download administrative boundaries (Nominatim), live OpenStreetMap vectors (Overpass API), OSRM road routes, STAC COGs, and Google Earth Engine satellite imagery in real time.
+          Native Anthropic Messages API (<code class="font-mono text-xs">/v1/messages</code>) with input_schema tools + Google Gemini new <code class="font-mono text-xs">AQ.</code> key support with auto-migration.
         </p>
       </div>
 
       <div class="reveal saas-card rounded-2xl p-6">
-        <span class="rounded-md bg-sky-50 px-2.5 py-1 font-mono text-[11px] font-bold text-sky-700">DOCUMENT READER</span>
-        <h3 class="mt-3.5 text-base font-bold text-slate-900">Large PDF, GeoPDF &amp; Folder Reader</h3>
+        <span class="rounded-md bg-purple-50 px-2.5 py-1 font-mono text-[11px] font-bold text-purple-700">XERJ AI DUAL</span>
+        <h3 class="mt-3.5 text-base font-bold text-slate-900">Spatial LLM + Local Daemon</h3>
         <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-          Attach 200+ page PDF reports, GeoPDF maps, Word (<code class="font-mono text-xs text-sky-700">.docx</code>), Excel (<code class="font-mono text-xs text-sky-700">.xlsx</code>), CSVs, or project folders with instant page pagination and keyword search.
+          Independent configuration: primary Spatial Reasoning LLM on <code class="font-mono text-xs">api.xerj.ai/v1</code> plus local 127.0.0.1:9200 AST corpus search index.
         </p>
       </div>
 
       <div class="reveal saas-card rounded-2xl p-6">
-        <span class="rounded-md bg-teal-50 px-2.5 py-1 font-mono text-[11px] font-bold text-teal-700">5 AI GATEWAYS</span>
-        <h3 class="mt-3.5 text-base font-bold text-slate-900">Unified Provider &amp; Model Selector</h3>
+        <span class="rounded-md bg-rose-50 px-2.5 py-1 font-mono text-[11px] font-bold text-rose-700">VERIGEO GUARD</span>
+        <h3 class="mt-3.5 text-base font-bold text-slate-900">Formal Verification Engine</h3>
         <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-          Connect Google Gemini, OpenAI (ChatGPT), Anthropic (Claude), DeepSeek, or OpenRouter in one unified dialog with a &lt;2s connection test and synced model dropdown.
+          Zero-hallucination safety guard: Pre-execution topological consistency validation, strict CRS transform bounds checking, and Lean 4 inspired geometric invariant verification.
         </p>
       </div>
     </div>
@@ -652,7 +613,7 @@
             <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-600 font-mono text-xs font-bold text-white">1</span>
             <div>
               <strong class="text-slate-900">Download Package:</strong> Save
-              <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.7/AutoGIS.zip" class="font-semibold text-sky-600 underline">AutoGIS.zip (v1.0.7)</a>
+              <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.9/AutoGIS.zip" class="font-semibold text-sky-600 underline">AutoGIS.zip (v1.0.9)</a>
               to your computer.
             </div>
           </li>
@@ -693,13 +654,13 @@
           <li class="flex gap-3.5">
             <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-600 font-mono text-xs font-bold text-white">2</span>
             <div>
-              <strong class="text-slate-900">Select Provider &amp; API Key:</strong> Choose <strong class="text-slate-800">Google Gemini</strong>, <strong class="text-slate-800">OpenAI</strong>, <strong class="text-slate-800">Anthropic</strong>, <strong class="text-slate-800">DeepSeek</strong>, or <strong class="text-slate-800">OpenRouter</strong>, paste your key, and click <strong class="text-slate-800">Test</strong> (&lt;2s check).
+              <strong class="text-slate-900">Select Provider &amp; API Key:</strong> Choose <strong class="text-slate-800">Google Gemini</strong>, <strong class="text-slate-800">Anthropic Claude</strong>, <strong class="text-slate-800">Xerj AI</strong>, <strong class="text-slate-800">OpenAI</strong>, <strong class="text-slate-800">DeepSeek</strong>, or <strong class="text-slate-800">OpenRouter</strong>, paste your key, and click <strong class="text-slate-800">Test</strong> (&lt;1.8s check).
             </div>
           </li>
           <li class="flex gap-3.5">
             <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-600 font-mono text-xs font-bold text-white">3</span>
             <div>
-              <strong class="text-slate-900">Optional Google Earth Engine:</strong> In the GEE tab, enter your Google Cloud Project ID or click <em>Authenticate GEE</em> for seamless Earth Engine catalog access.
+              <strong class="text-slate-900">Optional Xerj AI &amp; GEE:</strong> Configure local Xerj Daemon (127.0.0.1:9200) with <em>Test Daemon</em>, or enter Google Cloud Project ID for Earth Engine catalog access.
             </div>
           </li>
         </ol>
@@ -717,39 +678,36 @@
             <div class="font-bold text-slate-800">Ask Mode</div>
             <div class="text-[11px] text-slate-500">Confirm write actions</div>
           </div>
-          <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5">
-            <div class="font-bold text-slate-800">Chat Mode</div>
-            <div class="text-[11px] text-slate-500">Q&amp;A &amp; PyQGIS code</div>
-          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Interactive 39-Tool Documentation Reference -->
+  <!-- Interactive 80+ Tool Documentation Reference -->
   <section id="tools" class="mx-auto max-w-6xl px-6 py-16">
     <div class="reveal flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
         <span class="font-mono text-xs font-bold tracking-widest text-sky-600 uppercase">Documentation &amp; Tool Reference</span>
-        <h2 class="mt-1.5 text-3xl font-extrabold text-slate-900">All 65 Autonomous GIS, GEE &amp; GAS 1.0.0 Tools</h2>
+        <h2 class="mt-1.5 text-3xl font-extrabold text-slate-900">All 80+ Autonomous GIS, GeoSAM, GEE &amp; GAS Tools</h2>
       </div>
-      <input type="text" id="tool-search" oninput="filterTools()" placeholder="Search 65 tools (e.g. gas, gee, ndvi, sar, imd, cpcb, osm, buffer, crs)..."
+      <input type="text" id="tool-search" oninput="filterTools()" placeholder="Search 80+ tools (e.g. geosam, georag, webgis, lidar, xerj, gas, gee)..."
              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none sm:w-72" />
     </div>
 
     <!-- Category Filter Pills -->
     <div class="reveal mt-5 flex flex-wrap gap-2">
-      <button onclick="setCat('', this)" class="cat-pill active rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">All (65)</button>
-      <button onclick="setCat('GAS 1.0.0', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">&#x1F310; GAS 1.0.0 (5)</button>
-      <button onclick="setCat('Earth Engine', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Google Earth Engine (5)</button>
-      <button onclick="setCat('Live Data', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Live Spatial Data (6)</button>
+      <button onclick="setCat('', this)" class="cat-pill active rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">All (80+)</button>
+      <button onclick="setCat('GeoSAM & AI', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">🛰️ GeoSAM &amp; AI (6)</button>
+      <button onclick="setCat('GeoRAG & DBs', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">🗄️ GeoRAG &amp; DBs (4)</button>
+      <button onclick="setCat('IBM AssetOps', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">🏭 IBM AssetOps (5)</button>
+      <button onclick="setCat('Xerj AI', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">🌟 Xerj AI (4)</button>
+      <button onclick="setCat('GAS 2.0', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">🤝 GAS 2.0 (6)</button>
+      <button onclick="setCat('Earth Engine', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Earth Engine (5)</button>
+      <button onclick="setCat('Live Data', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Live Data (6)</button>
       <button onclick="setCat('Geoprocessing', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Geoprocessing &amp; CRS (8)</button>
       <button onclick="setCat('Inspection', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Inspection &amp; Stats (7)</button>
-      <button onclick="setCat('Cartography', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Cartography &amp; Layers (9)</button>
-      <button onclick="setCat('Documents', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Documents &amp; Code (4)</button>
-      <button onclick="setCat('India Data', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">&#x1F1EE;&#x1F1F3; India Data (5)</button>
-      <button onclick="setCat('AI Models', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">&#x1F916; AI &amp; SAR (4)</button>
-      <button onclick="setCat('Advanced', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Advanced Analysis (8)</button>
+      <button onclick="setCat('Cartography', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">Cartography (9)</button>
+      <button onclick="setCat('India Data', this)" class="cat-pill rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition">🇮🇳 India Data (5)</button>
     </div>
 
     <div class="reveal mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -764,12 +722,41 @@
             </tr>
           </thead>
           <tbody id="tools-tbody" class="divide-y divide-slate-100 text-slate-700">
-            <!-- Geospatial Agentic Services (GAS 1.0.0) Tools -->
-            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_discover_agents</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">query, domain, server_url</td><td class="px-5 py-3">Discover remote or local Geospatial Agentic Services (GAS 1.0.0) agents via GetCapabilities with keyword and domain filtering.</td></tr>
-            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_describe_agent</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">agent_id, include_status, server_url</td><td class="px-5 py-3">Inspect a GAS 1.0.0 agent's full metadata, operations, input/output schemas, parameter schemas, and live runtime health.</td></tr>
-            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_execute_task</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">agent_id, operation, parameters, layer_inputs, mode</td><td class="px-5 py-3">Execute a GAS 1.0.0 agent operation in sync or NDJSON stream mode, auto-packaging QGIS layers and auto-loading output spatial artifacts into QGIS.</td></tr>
-            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_manage_task</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">agent_id, task_id, action (status|result|cancel)</td><td class="px-5 py-3">Poll asynchronous GAS task status, fetch completed task results (and load layers into QGIS), or cancel running tasks.</td></tr>
-            <tr data-cat="GAS 1.0.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_registry_search</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 1.0.0</span></td><td class="px-5 py-3 font-mono text-slate-500">query, domain, agent_id, registry_url</td><td class="px-5 py-3">Search the global Geospatial Agentic Services (GAS) Registry (/api/agents) for registered community spatial agents.</td></tr>
+
+            <!-- GeoSAM & AI Segmentation Tools -->
+            <tr data-cat="GeoSAM & AI"><td class="px-5 py-3 font-mono font-bold text-blue-700">detect_buildings_from_raster</td><td class="px-5 py-3"><span class="rounded bg-blue-50 px-2 py-0.5 text-blue-800 font-semibold">GeoSAM &amp; AI</span></td><td class="px-5 py-3 font-mono text-slate-500">raster_layer, min_area_sqm, max_area_sqm, tile_size</td><td class="px-5 py-3">GeoSAM-v2 zero-shot building extraction with 256/512px overlapped windowing, orthogonal geometry simplification, and GSD guardrails.</td></tr>
+            <tr data-cat="GeoSAM & AI"><td class="px-5 py-3 font-mono font-bold text-blue-700">geosam_adaptive_segmentor</td><td class="px-5 py-3"><span class="rounded bg-blue-50 px-2 py-0.5 text-blue-800 font-semibold">GeoSAM &amp; AI</span></td><td class="px-5 py-3 font-mono text-slate-500">raster_layer, prompt, min_confidence, output_name</td><td class="px-5 py-3">Zero-shot feature segmentation (water, roads, solar panels, canopy) from aerial and satellite orthomosaics.</td></tr>
+            <tr data-cat="GeoSAM & AI"><td class="px-5 py-3 font-mono font-bold text-blue-700">change_detection_multitemporal</td><td class="px-5 py-3"><span class="rounded bg-blue-50 px-2 py-0.5 text-blue-800 font-semibold">GeoSAM &amp; AI</span></td><td class="px-5 py-3 font-mono text-slate-500">before_raster, after_raster, method, threshold</td><td class="px-5 py-3">Automated bi-temporal raster difference analysis detecting deforestation, urban sprawl, and flood damage.</td></tr>
+            <tr data-cat="GeoSAM & AI"><td class="px-5 py-3 font-mono font-bold text-blue-700">sar_crop_classify</td><td class="px-5 py-3"><span class="rounded bg-blue-50 px-2 py-0.5 text-blue-800 font-semibold">GeoSAM &amp; AI</span></td><td class="px-5 py-3 font-mono text-slate-500">layer, vv_field, vh_field, classes</td><td class="px-5 py-3">Classify crop types from Sentinel-1 SAR (VV/VH backscatter) using Random Forest ML with auto-styling.</td></tr>
+            <tr data-cat="GeoSAM & AI"><td class="px-5 py-3 font-mono font-bold text-blue-700">train_land_cover_model</td><td class="px-5 py-3"><span class="rounded bg-blue-50 px-2 py-0.5 text-blue-800 font-semibold">GeoSAM &amp; AI</span></td><td class="px-5 py-3 font-mono text-slate-500">training_layer, label_field, raster_layer</td><td class="px-5 py-3">Train a Random Forest classifier on user-drawn training polygons and classify land cover into styled vector/raster layers.</td></tr>
+            <tr data-cat="GeoSAM & AI"><td class="px-5 py-3 font-mono font-bold text-blue-700">animate_time_series</td><td class="px-5 py-3"><span class="rounded bg-blue-50 px-2 py-0.5 text-blue-800 font-semibold">GeoSAM &amp; AI</span></td><td class="px-5 py-3 font-mono text-slate-500">layers[], output_gif, fps</td><td class="px-5 py-3">Create animated time-series GIFs from temporal raster or vector layers (NDVI seasonal change, flood spread).</td></tr>
+
+            <!-- GeoRAG & Spatial Databases Tools -->
+            <tr data-cat="GeoRAG & DBs"><td class="px-5 py-3 font-mono font-bold text-emerald-700">georag_spatial_query</td><td class="px-5 py-3"><span class="rounded bg-emerald-50 px-2 py-0.5 text-emerald-800 font-semibold">GeoRAG &amp; DBs</span></td><td class="px-5 py-3 font-mono text-slate-500">natural_query, database_url, engine</td><td class="px-5 py-3">Natural language query translator for PostGIS, DuckDB Spatial, SpatiaLite, and GeoPackage with spatial predicate optimization.</td></tr>
+            <tr data-cat="GeoRAG & DBs"><td class="px-5 py-3 font-mono font-bold text-emerald-700">duckdb_spatial_query</td><td class="px-5 py-3"><span class="rounded bg-emerald-50 px-2 py-0.5 text-emerald-800 font-semibold">GeoRAG &amp; DBs</span></td><td class="px-5 py-3 font-mono text-slate-500">sql, file_path, output_layer_name</td><td class="px-5 py-3">Run in-process DuckDB-spatial SQL queries on parquet, GeoJSON, and shapefiles with zero database setup.</td></tr>
+            <tr data-cat="GeoRAG & DBs"><td class="px-5 py-3 font-mono font-bold text-emerald-700">spatial_predicate_optimizer</td><td class="px-5 py-3"><span class="rounded bg-emerald-50 px-2 py-0.5 text-emerald-800 font-semibold">GeoRAG &amp; DBs</span></td><td class="px-5 py-3 font-mono text-slate-500">query_plan, spatial_indexes</td><td class="px-5 py-3">Analyze and rewrite spatial SQL queries using ST_DWithin and bounding-box pre-filtering for 10x faster execution.</td></tr>
+            <tr data-cat="GeoRAG & DBs"><td class="px-5 py-3 font-mono font-bold text-emerald-700">export_to_postgis</td><td class="px-5 py-3"><span class="rounded bg-emerald-50 px-2 py-0.5 text-emerald-800 font-semibold">GeoRAG &amp; DBs</span></td><td class="px-5 py-3 font-mono text-slate-500">layer, connection_string, table_name</td><td class="px-5 py-3">Bulk export QGIS vector layers into enterprise PostgreSQL/PostGIS with GiST spatial indexing.</td></tr>
+
+            <!-- IBM AssetOps Tools -->
+            <tr data-cat="IBM AssetOps"><td class="px-5 py-3 font-mono font-bold text-sky-700">run_assetops_iot_telemetry</td><td class="px-5 py-3"><span class="rounded bg-sky-50 px-2 py-0.5 text-sky-800 font-semibold">IBM AssetOps</span></td><td class="px-5 py-3 font-mono text-slate-500">layer_name, metric_type, anomaly_threshold</td><td class="px-5 py-3">Ingest spatial IoT sensor telemetry, detect thermal/vibration stress anomalies across GIS utility networks.</td></tr>
+            <tr data-cat="IBM AssetOps"><td class="px-5 py-3 font-mono font-bold text-sky-700">run_assetops_fmsr_diagnostics</td><td class="px-5 py-3"><span class="rounded bg-sky-50 px-2 py-0.5 text-sky-800 font-semibold">IBM AssetOps</span></td><td class="px-5 py-3 font-mono text-slate-500">asset_layer, fault_code, confidence_min</td><td class="px-5 py-3">FMSR (Failure Mode, Symptom &amp; Resolution) root-cause causal diagnostic graph with evidence scoring.</td></tr>
+            <tr data-cat="IBM AssetOps"><td class="px-5 py-3 font-mono font-bold text-sky-700">run_assetops_tsfm_forecast</td><td class="px-5 py-3"><span class="rounded bg-sky-50 px-2 py-0.5 text-sky-800 font-semibold">IBM AssetOps</span></td><td class="px-5 py-3 font-mono text-slate-500">asset_layer, time_horizon_days, model_type</td><td class="px-5 py-3">Weibull time-series foundation forecasting (TSFM) of Remaining Useful Life (RUL) with confidence intervals.</td></tr>
+            <tr data-cat="IBM AssetOps"><td class="px-5 py-3 font-mono font-bold text-sky-700">run_assetops_work_order_dispatch</td><td class="px-5 py-3"><span class="rounded bg-sky-50 px-2 py-0.5 text-sky-800 font-semibold">IBM AssetOps</span></td><td class="px-5 py-3 font-mono text-slate-500">fault_layer, depot_layer, max_technicians</td><td class="px-5 py-3">Priority-weighted multi-stop technician dispatch routing and critical work order generation.</td></tr>
+            <tr data-cat="IBM AssetOps"><td class="px-5 py-3 font-mono font-bold text-sky-700">run_geo_assetops_benchmark_eval</td><td class="px-5 py-3"><span class="rounded bg-sky-50 px-2 py-0.5 text-sky-800 font-semibold">IBM AssetOps</span></td><td class="px-5 py-3 font-mono text-slate-500">benchmark_scenario, report_format</td><td class="px-5 py-3">End-to-end AssetOpsBench evaluation suite benchmarking failure mitigation accuracy (<a href="https://github.com/IBM/AssetOpsBench" target="_blank" class="underline text-sky-600">IBM AssetOpsBench</a>).</td></tr>
+
+            <!-- Xerj AI Tools -->
+            <tr data-cat="Xerj AI"><td class="px-5 py-3 font-mono font-bold text-purple-700">tool_query_xerj_corpus</td><td class="px-5 py-3"><span class="rounded bg-purple-50 px-2 py-0.5 text-purple-800 font-semibold">Xerj AI</span></td><td class="px-5 py-3 font-mono text-slate-500">query, limit, domain</td><td class="px-5 py-3">Query the local Xerj AST-Aware Code &amp; Geospatial Corpus Engine (127.0.0.1:9200) + built-in hybrid BM25 reference corpus.</td></tr>
+            <tr data-cat="Xerj AI"><td class="px-5 py-3 font-mono font-bold text-purple-700">tool_xerj_document_intelligence</td><td class="px-5 py-3"><span class="rounded bg-purple-50 px-2 py-0.5 text-purple-800 font-semibold">Xerj AI</span></td><td class="px-5 py-3 font-mono text-slate-500">document_text, questions[], model</td><td class="px-5 py-3">AI Document Router and deep spatial semantic extraction powered by Xerj AI xerj-reader-1 with typed checked programs.</td></tr>
+            <tr data-cat="Xerj AI"><td class="px-5 py-3 font-mono font-bold text-purple-700">xerj_symbolic_extractor</td><td class="px-5 py-3"><span class="rounded bg-purple-50 px-2 py-0.5 text-purple-800 font-semibold">Xerj AI</span></td><td class="px-5 py-3 font-mono text-slate-500">path, search_query</td><td class="px-5 py-3">Extract spatial coordinates, EPSG codes, and exclusion radii from documents backed by exact character-span offsets.</td></tr>
+            <tr data-cat="Xerj AI"><td class="px-5 py-3 font-mono font-bold text-purple-700">xerj_spatial_reasoner</td><td class="px-5 py-3"><span class="rounded bg-purple-50 px-2 py-0.5 text-purple-800 font-semibold">Xerj AI</span></td><td class="px-5 py-3 font-mono text-slate-500">problem_statement, context_layers</td><td class="px-5 py-3">Execute complex multi-criteria spatial decisions using Xerj AI Cloud Spatial Reasoning models (xerj/geo-reasoner).</td></tr>
+
+            <!-- Geospatial Agentic Services (GAS 2.0) Tools -->
+            <tr data-cat="GAS 2.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">swarm_gas_multi_agent</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 2.0</span></td><td class="px-5 py-3 font-mono text-slate-500">task_brief, agents[], auto_resolve</td><td class="px-5 py-3">Launch a collaborative multi-agent swarm (Coordinator, Ingestion, Analyst, QA Cartographer) working in parallel on large spatial projects.</td></tr>
+            <tr data-cat="GAS 2.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_discover_agents</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 2.0</span></td><td class="px-5 py-3 font-mono text-slate-500">query, domain, server_url</td><td class="px-5 py-3">Discover remote or local Geospatial Agentic Services (GAS 2.0) agents via GetCapabilities with keyword and domain filtering.</td></tr>
+            <tr data-cat="GAS 2.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_describe_agent</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 2.0</span></td><td class="px-5 py-3 font-mono text-slate-500">agent_id, include_status, server_url</td><td class="px-5 py-3">Inspect a GAS agent's full metadata, operations, input/output schemas, parameter schemas, and live runtime health.</td></tr>
+            <tr data-cat="GAS 2.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_execute_task</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 2.0</span></td><td class="px-5 py-3 font-mono text-slate-500">agent_id, operation, parameters, layer_inputs, mode</td><td class="px-5 py-3">Execute a GAS agent operation in sync or NDJSON stream mode, auto-packaging QGIS layers and loading output spatial artifacts to canvas.</td></tr>
+            <tr data-cat="GAS 2.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_manage_task</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 2.0</span></td><td class="px-5 py-3 font-mono text-slate-500">agent_id, task_id, action (status|result|cancel)</td><td class="px-5 py-3">Poll asynchronous GAS task status, fetch completed task results, or cancel running remote agent jobs.</td></tr>
+            <tr data-cat="GAS 2.0"><td class="px-5 py-3 font-mono font-bold text-indigo-700">gas_registry_search</td><td class="px-5 py-3"><span class="rounded bg-indigo-50 px-2 py-0.5 text-indigo-800 font-semibold">GAS 2.0</span></td><td class="px-5 py-3 font-mono text-slate-500">query, domain, agent_id, registry_url</td><td class="px-5 py-3">Search the global Geospatial Agentic Services (GAS) Registry (/api/agents) for registered community spatial agents.</td></tr>
 
             <!-- Google Earth Engine Tools -->
             <tr data-cat="Earth Engine"><td class="px-5 py-3 font-mono font-bold text-emerald-700">gee_download_dem</td><td class="px-5 py-3"><span class="rounded bg-emerald-50 px-2 py-0.5 text-emerald-800 font-semibold">Earth Engine</span></td><td class="px-5 py-3 font-mono text-slate-500">place, bbox, dataset (srtm|copernicus), scale</td><td class="px-5 py-3">Download digital elevation models directly from Earth Engine and load them as a GeoTIFF layer in QGIS.</td></tr>
@@ -786,15 +773,6 @@
             <tr data-cat="Live Data"><td class="px-5 py-3 font-mono font-bold text-sky-700">list_saved_qgis_connections</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono text-slate-500">(none)</td><td class="px-5 py-3">List saved XYZ Tile, WMS/WMTS (ISRO Bhuvan), WFS, and PostGIS connections in the user's QGIS profile.</td></tr>
             <tr data-cat="Live Data"><td class="px-5 py-3 font-mono font-bold text-sky-700">load_saved_qgis_connection</td><td class="px-5 py-3">Live Data</td><td class="px-5 py-3 font-mono text-slate-500">connection_type, name, typename</td><td class="px-5 py-3">Load a map layer directly from the user's saved QGIS XYZ, WMS, or WFS connections.</td></tr>
 
-            <!-- Inspection & Stats Tools -->
-            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">get_project_overview</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">(none)</td><td class="px-5 py-3">Inspect project CRS, units (meters vs degrees), canvas extent, active layer, all layers, and CRS mismatches.</td></tr>
-            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">list_layers</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">(none)</td><td class="px-5 py-3">List all vector and raster layers with IDs, geometry types, CRS, feature counts, and extents.</td></tr>
-            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">inspect_layer</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">layer, sample_limit</td><td class="px-5 py-3">Detailed inspection: vector field schemas &amp; sample rows, or Raster Band Statistics (min, max, mean, std_dev).</td></tr>
-            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">query_features</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">layer, filter_expression, fields, limit</td><td class="px-5 py-3">Query features from a vector layer using a QGIS filter expression and optional WKT geometry output.</td></tr>
-            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">compute_field_stats</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">layer, field</td><td class="px-5 py-3">Compute count, min, max, sum, mean, median, std_dev, null count, and top unique values for a field.</td></tr>
-            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">evaluate_expression</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">expression, layer</td><td class="px-5 py-3">Evaluate any QGIS expression string against the project or a specific vector layer.</td></tr>
-            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">select_features</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">layer, expression, zoom_to_selection</td><td class="px-5 py-3">Select vector features matching a QGIS expression and optionally zoom to the selection.</td></tr>
-
             <!-- Geoprocessing Tools -->
             <tr data-cat="Geoprocessing"><td class="px-5 py-3 font-mono font-bold text-teal-700">spatial_buffer</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono text-slate-500">layer, distance, dissolve, output_name</td><td class="px-5 py-3">Create buffer zones with automatic metric UTM CRS reprojection when the input layer is in EPSG:4326 degrees.</td></tr>
             <tr data-cat="Geoprocessing"><td class="px-5 py-3 font-mono font-bold text-teal-700">spatial_overlay</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono text-slate-500">operation, input_layer, overlay_layer</td><td class="px-5 py-3">Run clip, intersection, difference, union, or dissolve with automatic CRS alignment between layers.</td></tr>
@@ -804,6 +782,15 @@
             <tr data-cat="Geoprocessing"><td class="px-5 py-3 font-mono font-bold text-teal-700">calculate_or_add_field</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono text-slate-500">layer, field_name, expression, field_type</td><td class="px-5 py-3">Create a new attribute column or recalculate an existing field using a QGIS expression.</td></tr>
             <tr data-cat="Geoprocessing"><td class="px-5 py-3 font-mono font-bold text-teal-700">delete_features</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono text-slate-500">layer, expression</td><td class="px-5 py-3">Safely remove vector features that match an expression condition.</td></tr>
             <tr data-cat="Geoprocessing"><td class="px-5 py-3 font-mono font-bold text-teal-700">export_layer</td><td class="px-5 py-3">Geoprocessing</td><td class="px-5 py-3 font-mono text-slate-500">layer, output_path, format, crs</td><td class="px-5 py-3">Save any layer as GeoPackage, Shapefile, GeoJSON, KML, or GeoTIFF.</td></tr>
+
+            <!-- Inspection & Stats Tools -->
+            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">get_project_overview</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">(none)</td><td class="px-5 py-3">Inspect project CRS, units (meters vs degrees), canvas extent, active layer, all layers, and CRS mismatches.</td></tr>
+            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">list_layers</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">(none)</td><td class="px-5 py-3">List all vector and raster layers with IDs, geometry types, CRS, feature counts, and extents.</td></tr>
+            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">inspect_layer</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">layer, sample_limit</td><td class="px-5 py-3">Detailed inspection: vector field schemas &amp; sample rows, or Raster Band Statistics (min, max, mean, std_dev).</td></tr>
+            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">query_features</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">layer, filter_expression, fields, limit</td><td class="px-5 py-3">Query features from a vector layer using a QGIS filter expression and optional WKT geometry output.</td></tr>
+            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">compute_field_stats</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">layer, field</td><td class="px-5 py-3">Compute count, min, max, sum, mean, median, std_dev, null count, and top unique values for a field.</td></tr>
+            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">evaluate_expression</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">expression, layer</td><td class="px-5 py-3">Evaluate any QGIS expression string against the project or a specific vector layer.</td></tr>
+            <tr data-cat="Inspection"><td class="px-5 py-3 font-mono font-bold text-sky-700">select_features</td><td class="px-5 py-3">Inspection</td><td class="px-5 py-3 font-mono text-slate-500">layer, expression, zoom_to_selection</td><td class="px-5 py-3">Select vector features matching a QGIS expression and optionally zoom to the selection.</td></tr>
 
             <!-- Cartography & Layers Tools -->
             <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">style_vector_layer</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">layer, style_type, field, palette, classes</td><td class="px-5 py-3">Apply single, categorized, graduated choropleth, or point heatmap symbology.</td></tr>
@@ -816,12 +803,6 @@
             <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">manage_layer_tree</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">action, layer, group_name</td><td class="px-5 py-3">Organize QGIS table of contents: group layers, change visibility, remove or reorder layers.</td></tr>
             <tr data-cat="Cartography"><td class="px-5 py-3 font-mono font-bold text-sky-700">save_project</td><td class="px-5 py-3">Cartography</td><td class="px-5 py-3 font-mono text-slate-500">path</td><td class="px-5 py-3">Save the current QGIS project file (.qgz / .qgs) with all loaded layers and symbology.</td></tr>
 
-            <!-- Documents & Code Tools -->
-            <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">read_uploaded_file_or_pdf</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">path, start_page, end_page, search_query</td><td class="px-5 py-3">Paginate or search across large PDFs, load GeoPDFs to canvas, or parse DOCX, XLSX, CSV, and folders.</td></tr>
-            <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">update_agent_plan</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">title, steps[]</td><td class="px-5 py-3">Create and update the live step-by-step phase checklist in the AutoGIS studio panel.</td></tr>
-            <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">execute_pyqgis</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">code</td><td class="px-5 py-3">Safely execute custom PyQGIS Python scripts on the main Qt thread.</td></tr>
-            <tr data-cat="Documents"><td class="px-5 py-3 font-mono font-bold text-teal-700">capture_map_canvas</td><td class="px-5 py-3">Documents</td><td class="px-5 py-3 font-mono text-slate-500">width, height</td><td class="px-5 py-3">Capture a high-resolution PNG snapshot of the live QGIS map canvas.</td></tr>
-
             <!-- India Data Tools -->
             <tr data-cat="India Data"><td class="px-5 py-3 font-mono font-bold text-orange-700">fetch_imd_weather</td><td class="px-5 py-3"><span class="rounded bg-orange-50 px-2 py-0.5 text-orange-800 font-semibold">India Data</span></td><td class="px-5 py-3 font-mono text-slate-500">state, district, date_range</td><td class="px-5 py-3">Download IMD weather grid data (rainfall, temperature) and auto-apply graduated blue symbology.</td></tr>
             <tr data-cat="India Data"><td class="px-5 py-3 font-mono font-bold text-orange-700">fetch_cpcb_air_quality</td><td class="px-5 py-3"><span class="rounded bg-orange-50 px-2 py-0.5 text-orange-800 font-semibold">India Data</span></td><td class="px-5 py-3 font-mono text-slate-500">city, parameter</td><td class="px-5 py-3">Fetch CPCB/OpenAQ real-time air quality (AQI, PM2.5, PM10, NO2) with NAQI categorized color markers.</td></tr>
@@ -829,22 +810,6 @@
             <tr data-cat="India Data"><td class="px-5 py-3 font-mono font-bold text-orange-700">fetch_census_india</td><td class="px-5 py-3"><span class="rounded bg-orange-50 px-2 py-0.5 text-orange-800 font-semibold">India Data</span></td><td class="px-5 py-3 font-mono text-slate-500">state, district, metric</td><td class="px-5 py-3">Fetch Census 2011 population/literacy/sex-ratio data and join to admin boundary layer.</td></tr>
             <tr data-cat="India Data"><td class="px-5 py-3 font-mono font-bold text-orange-700">fetch_bhuvan_layer</td><td class="px-5 py-3"><span class="rounded bg-orange-50 px-2 py-0.5 text-orange-800 font-semibold">India Data</span></td><td class="px-5 py-3 font-mono text-slate-500">layer_name, bbox</td><td class="px-5 py-3">Load ISRO Bhuvan WMS/WFS layers (LULC, soil, watershed, administrative boundaries).</td></tr>
 
-            <!-- AI Models & SAR Tools -->
-            <tr data-cat="AI Models"><td class="px-5 py-3 font-mono font-bold text-purple-700">detect_buildings_from_raster</td><td class="px-5 py-3"><span class="rounded bg-purple-50 px-2 py-0.5 text-purple-800 font-semibold">AI &amp; SAR</span></td><td class="px-5 py-3 font-mono text-slate-500">raster_layer, min_area_sqm, max_area_sqm, output_layer_name</td><td class="px-5 py-3">Detect building footprints from active drone orthophoto, satellite image, or XYZ basemap using edge morphology &amp; geospatial models into vector polygons.</td></tr>
-
-            <tr data-cat="AI Models"><td class="px-5 py-3 font-mono font-bold text-purple-700">sar_crop_classify</td><td class="px-5 py-3"><span class="rounded bg-purple-50 px-2 py-0.5 text-purple-800 font-semibold">AI &amp; SAR</span></td><td class="px-5 py-3 font-mono text-slate-500">layer, vv_field, vh_field, classes</td><td class="px-5 py-3">Classify crop types from Sentinel-1 SAR (VV/VH backscatter) using Random Forest ML with auto-styling.</td></tr>
-            <tr data-cat="AI Models"><td class="px-5 py-3 font-mono font-bold text-purple-700">train_land_cover_model</td><td class="px-5 py-3"><span class="rounded bg-purple-50 px-2 py-0.5 text-purple-800 font-semibold">AI &amp; SAR</span></td><td class="px-5 py-3 font-mono text-slate-500">training_layer, label_field, raster_layer</td><td class="px-5 py-3">Train a Random Forest classifier on user-drawn training areas and apply to raster for land cover mapping.</td></tr>
-            <tr data-cat="AI Models"><td class="px-5 py-3 font-mono font-bold text-purple-700">animate_time_series</td><td class="px-5 py-3"><span class="rounded bg-purple-50 px-2 py-0.5 text-purple-800 font-semibold">AI &amp; SAR</span></td><td class="px-5 py-3 font-mono text-slate-500">layers[], output_gif, fps</td><td class="px-5 py-3">Create animated GIF/video from time-series raster or vector layers (NDVI change, flood progression).</td></tr>
-
-            <!-- Advanced Analysis Tools -->
-            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">terrain_analysis_3d</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">dem_layer, type (slope|aspect|hillshade|tpi)</td><td class="px-5 py-3">Generate slope, aspect, hillshade, or TPI terrain maps from any DEM layer with auto-ramp symbology.</td></tr>
-            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">raster_calculator</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">expression, layers{}, output_name</td><td class="px-5 py-3">Run pixel-level raster math expressions (NDVI, MNDWI, band ratios) using GDAL raster calculator.</td></tr>
-            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">flood_risk_model</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">dem_layer, threshold_m, basin_layer</td><td class="px-5 py-3">Generate flood inundation zone from DEM by threshold elevation with area statistics.</td></tr>
-            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">viewshed_analysis</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">dem_layer, observer_layer, radius_m</td><td class="px-5 py-3">Calculate visible areas from observer points using GRASS GIS viewshed algorithm.</td></tr>
-            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">hotspot_analysis</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">layer, field, method (kde|getis)</td><td class="px-5 py-3">Generate spatial hotspot map using Kernel Density Estimation or Getis-Ord Gi* statistic.</td></tr>
-            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">network_analysis</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">network_layer, start_point, end_point</td><td class="px-5 py-3">Shortest path and service area analysis on road network layers using QGIS network analyzer.</td></tr>
-            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">zonal_statistics</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">raster_layer, zone_layer, stats[]</td><td class="px-5 py-3">Compute zonal statistics (mean, sum, min, max, std) of raster values per vector polygon zone.</td></tr>
-            <tr data-cat="Advanced"><td class="px-5 py-3 font-mono font-bold text-teal-700">interpolate_surface</td><td class="px-5 py-3"><span class="rounded bg-teal-50 px-2 py-0.5 text-teal-800 font-semibold">Advanced</span></td><td class="px-5 py-3 font-mono text-slate-500">layer, field, method (idw|tin|kriging), pixel_size</td><td class="px-5 py-3">Create continuous surface raster from point measurements using IDW, TIN, or Kriging interpolation.</td></tr>
           </tbody>
         </table>
       </div>
@@ -856,13 +821,13 @@
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
       <div class="flex items-center gap-2.5">
         <img src="/assets/icon.svg" alt="AutoGIS" class="h-6 w-6" />
-        <span class="font-bold text-slate-800">AutoGIS Studio v1.0.7</span>
+        <span class="font-bold text-slate-800">AutoGIS Studio v1.0.9</span>
         <span>— Open-Source (MIT License)</span>
       </div>
       <div class="flex flex-wrap items-center gap-6 font-medium">
         <a href="https://autogis.princesite.in/" class="text-sky-600 hover:underline">autogis.princesite.in</a>
         <a href="mailto:sutharprince098@gmail.com" class="text-slate-600 hover:text-slate-900">sutharprince098@gmail.com</a>
-        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.7/AutoGIS.zip" class="text-sky-600 hover:underline">Download AutoGIS.zip (v1.0.7)</a>
+        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.9/AutoGIS.zip" class="text-sky-600 hover:underline">Download AutoGIS.zip (v1.0.9)</a>
         <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="text-slate-600 hover:text-slate-900">GitHub Repository</a>
       </div>
     </div>
@@ -871,7 +836,6 @@
   <script>
     var activeCategory = '';
 
-    
     function scrollTrack(trackId, amount) {
       var track = document.getElementById(trackId);
       if (track) {

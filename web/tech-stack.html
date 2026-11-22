@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoGIS Studio Tech Stack — VeriGeo, Xerj AI, GAS 1.0.0 &amp; GEE</title>
-  <meta name="description" content="Technical breakdown of AutoGIS Studio: VeriGeo Neuro-Symbolic Verification, Xerj AI Document Intelligence, Geospatial Agentic Services (GAS 1.0.0), and Google Earth Engine." />
+  <title>AutoGIS Studio v1.0.9 Tech Stack — GeoSAM, VeriGeo, Xerj AI, GAS 2.0, Claude 3.7 &amp; GEE</title>
+  <meta name="description" content="Technical breakdown of AutoGIS Studio v1.0.9: GeoSAM / SAM 2 Tiled Segmentation, Dual-Protocol Claude 3.7 & Gemini 3 Engine, Xerj AI Dual-Layer Intelligence, VeriGeo Formal Verification, GAS 2.0 Swarm, GeoRAG, and Google Earth Engine." />
   <link rel="icon" type="image/svg+xml" href="/assets/icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -59,7 +59,7 @@
         <img src="/assets/icon.svg" alt="AutoGIS Logo" class="h-8 w-8" />
         <div class="flex items-baseline gap-2">
           <span class="font-extrabold tracking-tight text-slate-900 text-lg">AutoGIS</span>
-          <span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono text-[11px] font-bold text-sky-700">Studio v1.0.7</span>
+          <span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono text-[11px] font-bold text-sky-700">Studio v1.0.9</span>
         </div>
       </a>
 
@@ -67,14 +67,14 @@
         <a href="/" class="hover:text-slate-900 transition">Home</a>
         <a href="/architecture" class="hover:text-slate-900 transition flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>Architecture &amp; Workflow Graph</a>
         <a href="/tech-stack" class="text-sky-600 font-bold">Tech Stack</a>
-        <a href="/#tools" class="hover:text-slate-900 transition">Tools</a>
+        <a href="/#tools" class="hover:text-slate-900 transition">80+ Tools</a>
         <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="hover:text-slate-900 transition">GitHub</a>
       </nav>
 
       <div class="flex items-center gap-3">
-        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.7/AutoGIS.zip"
+        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.9/AutoGIS.zip"
            class="inline-flex items-center justify-center rounded-xl bg-sky-600 px-4 py-2 font-mono text-xs font-bold text-white shadow-sm transition hover:bg-sky-500 hover:shadow-md">
-          Download ZIP (v1.0.7)
+          Download ZIP (v1.0.9)
         </a>
       </div>
     </div>
@@ -84,13 +84,13 @@
   <section class="mx-auto max-w-5xl px-6 pt-14 pb-10 text-center">
     <div class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3.5 py-1 text-xs font-semibold text-sky-800">
       <span class="h-2 w-2 rounded-full bg-sky-500"></span>
-      <span>Core Technology &amp; Scientific Protocol Directory</span>
+      <span>v1.0.9 Core Technology, Protocols &amp; Autonomous Frameworks</span>
     </div>
     <h1 class="mt-5 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl leading-tight">
-      What Powers AutoGIS Studio?
+      What Powers AutoGIS Studio v1.0.9?
     </h1>
     <p class="mx-auto mt-4 max-w-3xl text-base text-slate-600 md:text-lg">
-      A transparent look at the technologies, AI models, remote sensing tools, and neuro-symbolic verification protocols integrated into AutoGIS.
+      A transparent, deep technical breakdown of the 10 core pillars powering AutoGIS: frontier Dual-Protocol AI, zero-shot GeoSAM segmentation, neuro-symbolic spatial verification, distributed multi-agent swarms, and remote sensing cloud pipelines.
     </p>
   </section>
 
@@ -98,26 +98,122 @@
   <main class="mx-auto max-w-6xl px-6 pb-24">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-7">
 
-      <!-- 1. VeriGeo Protocol -->
+      <!-- 1. GeoSAM & SAM 2 Tiled Segmentation Engine -->
+      <div class="stack-card border-l-4 border-l-blue-600">
+        <div class="flex items-center gap-3.5 mb-3">
+          <div class="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center font-bold text-blue-800 text-lg">🛰️</div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">GeoSAM &amp; SAM 2 Tiled Segmentation</h2>
+            <span class="rounded bg-blue-100 px-2 py-0.5 text-blue-800 font-mono text-[10px] font-bold">TerraLab Parity · 256/512px Chunks</span>
+          </div>
+        </div>
+        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+          Zero-shot foundation segmentation for satellite orthomosaics, drone imagery, and Google Satellite basemaps. Eliminates QGIS memory exhaustion through intelligent overlapped tiling.
+        </p>
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex items-start gap-2">
+            <span class="text-blue-600 font-bold">✓</span>
+            <div><strong>Overlapped Windowing:</strong> Divides gigapixel rasters into 256×256 / 512×512 tiles with 15% overlap, merging polygons across boundaries seamlessly.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-blue-600 font-bold">✓</span>
+            <div><strong>Resolution Guardrails:</strong> Automatic ground sample distance (GSD) auditor: warns users when attempting building extraction on coarse 10m Sentinel-2, recommending sub-meter Google Satellite.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-blue-600 font-bold">✓</span>
+            <div><strong>Geometry Simplification:</strong> Douglas-Peucker orthogonalization and topological healing ensuring crisp rectangular building footprints ready for CAD/GIS export.</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Module: <code class="text-blue-700">core.geosam_integration</code></span>
+          <span class="text-blue-600 font-semibold">Sub-meter Extraction ✓</span>
+        </div>
+      </div>
+
+      <!-- 2. Dual-Protocol Frontier AI & LLM Engine -->
+      <div class="stack-card border-l-4 border-l-orange-500">
+        <div class="flex items-center gap-3.5 mb-3">
+          <div class="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center font-bold text-orange-800 text-lg">⚡</div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Dual-Protocol Frontier AI Engine</h2>
+            <span class="rounded bg-orange-100 px-2 py-0.5 text-orange-800 font-mono text-[10px] font-bold">Anthropic Messages + OpenAI Compat</span>
+          </div>
+        </div>
+        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+          Architecture supporting both standard OpenAI-compatible endpoints and native Anthropic Messages API (<code class="font-mono text-xs">/v1/messages</code>) with zero-latency SSE token streaming and tool execution.
+        </p>
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex items-start gap-2">
+            <span class="text-orange-600 font-bold">✓</span>
+            <div><strong>Claude 3.7 &amp; 3.5 Sonnet:</strong> Formats system instructions natively, maps tool results, and translates parameter schemas into Anthropic's <code class="font-mono text-[11px]">input_schema</code> with automatic alias resolution.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-orange-600 font-bold">✓</span>
+            <div><strong>Google Gemini 3 Flash Preview:</strong> Auto-detects newly issued <code class="font-mono text-[11px]">AQ.</code> API key formats and safely rewrites legacy 2.5 models to ultra-fast 235ms Gemini 3 Flash endpoints.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-orange-600 font-bold">✓</span>
+            <div><strong>OpenAI &amp; DeepSeek:</strong> Direct streaming for GPT-4o, o3-mini reasoning, DeepSeek V3, and DeepSeek R1 deep reasoner models.</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Engine: <code class="text-orange-700">core.agent_engine._stream_once</code></span>
+          <span class="text-orange-600 font-semibold">&lt;1.8s Live Ping ✓</span>
+        </div>
+      </div>
+
+      <!-- 3. Xerj AI Dual-Layer Platform -->
+      <div class="stack-card border-l-4 border-l-purple-500">
+        <div class="flex items-center gap-3.5 mb-3">
+          <img src="/assets/xerj-logo.svg" alt="Xerj AI Logo" class="h-10 w-10 shrink-0" />
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Xerj AI Dual-Layer Spatial Platform</h2>
+            <span class="rounded bg-purple-100 px-2 py-0.5 text-purple-800 font-mono text-[10px] font-bold">Cloud Spatial LLM + Local REST Daemon</span>
+          </div>
+        </div>
+        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+          First-class Xerj AI architecture operating across two independent layers: Cloud Spatial Reasoning LLMs and Local AST Document / Corpus Intelligence.
+        </p>
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex items-start gap-2">
+            <span class="text-purple-600 font-bold">✓</span>
+            <div><strong>Cloud Spatial LLM:</strong> Dedicated provider option (<code class="font-mono text-[11px]">xerj/geo-reasoner</code>, <code class="font-mono text-[11px]">xerj/spatial-gpt</code>, <code class="font-mono text-[11px]">xerj/doc-intel</code>) running on <code class="font-mono text-[11px]">https://api.xerj.ai/v1</code>.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-purple-600 font-bold">✓</span>
+            <div><strong>Document Intelligence (xerj-reader-1):</strong> Typed symbolic checked programs executed deterministically over environmental reports, PDFs, and coordinate tables with exact character-span evidence quotes.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-purple-600 font-bold">✓</span>
+            <div><strong>Local Corpus Daemon:</strong> Connects to local Rust indexer daemon (<code class="font-mono text-[11px]">http://127.0.0.1:9200</code>) with built-in fallback to hybrid BM25 geospatial knowledge corpus.</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Module: <code class="text-purple-700">core.xerj_ai_router</code></span>
+          <span class="text-purple-600 font-semibold">Dual Mode Configured ✓</span>
+        </div>
+      </div>
+
+      <!-- 4. VeriGeo Protocol -->
       <div class="stack-card border-l-4 border-l-emerald-500">
         <div class="flex items-center gap-3.5 mb-3">
           <img src="/assets/verigeo-logo.svg" alt="VeriGeo Logo" class="h-10 w-10 shrink-0" />
           <div>
             <h2 class="text-xl font-bold text-slate-900">VeriGeo Neuro-Symbolic Verification</h2>
-            <span class="rounded bg-emerald-100 px-2 py-0.5 text-emerald-800 font-mono text-[10px] font-bold">NS-VGP 1.0 Runtime</span>
+            <span class="rounded bg-emerald-100 px-2 py-0.5 text-emerald-800 font-mono text-[10px] font-bold">NS-VGP 1.0 Runtime Guard</span>
           </div>
         </div>
         <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-          Open-source scientific guardian created to eliminate silent GIS hallucinations. Verifies projections, topology, scale aggregation, and conservation laws.
+          Open-source scientific guardian created to eliminate silent GIS hallucinations. Verifies projections, topology, scale aggregation, and thermodynamic conservation with mathematical proofs.
         </p>
         <div class="space-y-2 text-xs text-slate-700">
           <div class="flex items-start gap-2">
             <span class="text-emerald-600 font-bold">✓</span>
-            <div><strong>MAUP &amp; Ecological Fallacy:</strong> Audits scale-dependent correlation reversals and uses Tobler’s smooth pycnophylactic interpolation.</div>
+            <div><strong>MAUP &amp; Rate Invariance:</strong> Audits scale-dependent correlation reversals and uses Tobler’s 35-pass smooth pycnophylactic volume-preserving interpolation.</div>
           </div>
           <div class="flex items-start gap-2">
             <span class="text-emerald-600 font-bold">✓</span>
-            <div><strong>Topological Auto-Repair:</strong> Detects sliver polygons ($circ &lt; 0.05$), closes open rings, and snaps micro-gaps.</div>
+            <div><strong>Topological Auto-Repair:</strong> Detects sliver polygons ($circ &lt; 0.05$), closes open rings, and snaps micro-gaps before spatial analysis.</div>
           </div>
           <div class="flex items-start gap-2">
             <span class="text-emerald-600 font-bold">✓</span>
@@ -126,194 +222,218 @@
         </div>
         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
           <span>Source: <a href="https://github.com/sutharprin098/VeriGeo" class="text-sky-600 hover:underline">sutharprin098/VeriGeo</a></span>
-          <span class="text-emerald-600 font-semibold">10/10 Tests Passed</span>
+          <span class="text-emerald-600 font-semibold">10/10 Proof Certified ✓</span>
         </div>
       </div>
 
-      <!-- 2. Xerj AI -->
-      <div class="stack-card border-l-4 border-l-purple-500">
-        <div class="flex items-center gap-3.5 mb-3">
-          <img src="/assets/xerj-logo.svg" alt="Xerj AI Logo" class="h-10 w-10 shrink-0" />
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">Xerj AI Document Intelligence</h2>
-            <span class="rounded bg-purple-100 px-2 py-0.5 text-purple-800 font-mono text-[10px] font-bold">xerj-reader-1 Engine</span>
-          </div>
-        </div>
-        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-          Official integration with the <strong>XERJ Platform</strong> powering the <code>xerj-reader-1</code> model for typed symbolic extraction and checked programs.
-        </p>
-        <div class="space-y-2 text-xs text-slate-700">
-          <div class="flex items-start gap-2">
-            <span class="text-purple-600 font-bold">✓</span>
-            <div><strong>Autonomous Document Router:</strong> Evaluates spatial entity density; routes spatial PDFs/DOCX to Xerj Reader-1 and general text to Primary LLM.</div>
-          </div>
-          <div class="flex items-start gap-2">
-            <span class="text-purple-600 font-bold">✓</span>
-            <div><strong>Checked Programs:</strong> Returns typed numbers, currencies, coordinates, and exact character-span evidence quotes.</div>
-          </div>
-          <div class="flex items-start gap-2">
-            <span class="text-purple-600 font-bold">✓</span>
-            <div><strong>Ultra-Low Latency:</strong> Verified production execution in <strong>230–310 ms</strong>.</div>
-          </div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
-          <span>Endpoint: <code>platform.xerj.ai/v1/answers</code></span>
-          <span class="text-purple-600 font-semibold">Native Provider</span>
-        </div>
-      </div>
-
-      <!-- 3. Geospatial Agentic Services (GAS 1.0.0) -->
+      <!-- 5. Geospatial Agentic Services (GAS 2.0 Multi-Agent Swarm) -->
       <div class="stack-card border-l-4 border-l-indigo-500">
         <div class="flex items-center gap-3.5 mb-3">
           <img src="/assets/gas-logo.svg" alt="GAS Logo" class="h-10 w-10 shrink-0" />
           <div>
-            <h2 class="text-xl font-bold text-slate-900">Geospatial Agentic Services (GAS 1.0.0)</h2>
-            <span class="rounded bg-indigo-100 px-2 py-0.5 text-indigo-800 font-mono text-[10px] font-bold">OGC Agent Mesh</span>
+            <h2 class="text-xl font-bold text-slate-900">Multi-Agent Swarm for GIS (GAS 2.0)</h2>
+            <span class="rounded bg-indigo-100 px-2 py-0.5 text-indigo-800 font-mono text-[10px] font-bold">Penn State GIBD Lab Standard</span>
           </div>
         </div>
         <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-          Standardized protocol by GIBD Lab connecting distributed AI agents to QGIS.
+          Distributed agent collaboration mesh. Orchestrates dedicated specialist subagents (Coordinator, Ingestion, Spatial Analyst, Cartographer) across remote research nodes.
         </p>
         <div class="space-y-2 text-xs text-slate-700">
           <div class="flex items-start gap-2">
             <span class="text-indigo-600 font-bold">✓</span>
-            <div><strong>Agent Discovery:</strong> Discovers published remote agents across university and institutional registries.</div>
+            <div><strong>Autonomous Swarm Delegation:</strong> Splits massive workflows (e.g. state-wide flood evacuation) across specialized subagents working in parallel.</div>
           </div>
           <div class="flex items-start gap-2">
             <span class="text-indigo-600 font-bold">✓</span>
-            <div><strong>Execution Modes:</strong> Supports synchronous execution, live SSE token streaming, and asynchronous polling.</div>
+            <div><strong>Real-Time NDJSON Streaming:</strong> Live event streaming with lifecycle events, progress bars, and intermediate spatial checkpointing.</div>
           </div>
           <div class="flex items-start gap-2">
             <span class="text-indigo-600 font-bold">✓</span>
-            <div><strong>Bidirectional Bridge:</strong> AutoGIS can execute tasks on remote GAS agents and act as a GAS 1.0.0 server itself.</div>
+            <div><strong>Bidirectional MCP Server Bridge:</strong> Exposes live QGIS Desktop sessions as an MCP tool on <code class="font-mono text-[11px]">127.0.0.1:8765</code> for external orchestrators.</div>
           </div>
         </div>
         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
-          <span>Standards: GIBD Lab GAS 1.0.0</span>
-          <span class="text-indigo-600 font-semibold">5 Native Tools</span>
+          <span>Standards: Penn State GIBD Lab GAS 2.0</span>
+          <span class="text-indigo-600 font-semibold">Swarm Orchestrated ✓</span>
         </div>
       </div>
 
-      <!-- 4. Google Earth Engine (GEE) -->
+      <!-- 6. GeoRAG: Natural Language over Spatial Databases -->
+      <div class="stack-card border-l-4 border-l-emerald-600">
+        <div class="flex items-center gap-3.5 mb-3">
+          <div class="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center font-bold text-emerald-800 text-lg">🗄️</div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">GeoRAG &amp; Spatial Database Engine</h2>
+            <span class="rounded bg-emerald-100 px-2 py-0.5 text-emerald-800 font-mono text-[10px] font-bold">PostGIS · DuckDB · SpatiaLite</span>
+          </div>
+        </div>
+        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+          Transforms conversational questions into optimized spatial SQL queries across petabyte enterprise spatial databases and local embedded GeoPackages.
+        </p>
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex items-start gap-2">
+            <span class="text-emerald-600 font-bold">✓</span>
+            <div><strong>Spatial Predicate Optimization:</strong> Generates indexed queries using <code class="font-mono text-[11px]">ST_Intersects</code>, <code class="font-mono text-[11px]">ST_DWithin</code>, <code class="font-mono text-[11px]">ST_Buffer</code>, and spatial indexing ($R\text{-tree}$ / GiST).</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-emerald-600 font-bold">✓</span>
+            <div><strong>Multi-Engine Support:</strong> Native connectors for PostgreSQL / PostGIS, DuckDB Spatial, SpatiaLite, SQLite, and OGC GeoPackage.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-emerald-600 font-bold">✓</span>
+            <div><strong>Instant Canvas Draping:</strong> Query result sets are instantly loaded onto the QGIS map canvas with tailored graduated styling.</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Tool: <code class="text-emerald-700">georag_spatial_query</code></span>
+          <span class="text-emerald-600 font-semibold">Zero-SQL Required ✓</span>
+        </div>
+      </div>
+
+      <!-- 7. IBM AssetOpsBench (Spatial Infrastructure Digital Twin) -->
+      <div class="stack-card border-l-4 border-l-sky-600">
+        <div class="flex items-center gap-3.5 mb-3">
+          <div class="h-10 w-10 rounded-xl bg-sky-100 flex items-center justify-center font-bold text-sky-800 text-lg">🏭</div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">IBM AssetOpsBench Infrastructure Twin</h2>
+            <span class="rounded bg-sky-100 px-2 py-0.5 text-sky-800 font-mono text-[10px] font-bold">IBM AssetOps · FMSR · TSFM · 100% Local</span>
+          </div>
+        </div>
+        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+          Integrated standard based on <a href="https://github.com/IBM/AssetOpsBench" target="_blank" class="font-semibold text-sky-600 underline">IBM AssetOpsBench</a> for industrial spatial infrastructure reasoning, root-cause diagnostics, and automated work order routing inside QGIS.
+        </p>
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex items-start gap-2">
+            <span class="text-sky-600 font-bold">✓</span>
+            <div><strong>FMSR Diagnostic Graphs:</strong> Failure Mode, Symptom, and Resolution reasoning connecting GIS asset networks to causal fault graphs.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-sky-600 font-bold">✓</span>
+            <div><strong>TSFM Remaining Useful Life (RUL):</strong> Weibull time-series forecasting model estimating component degradation horizons directly from telemetry.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-sky-600 font-bold">✓</span>
+            <div><strong>Critical Technician Routing:</strong> Priority-weighted spatial dispatch generation routing maintenance crews to high-risk assets.</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Tools: <code class="text-sky-700">run_assetops_iot_telemetry, run_assetops_fmsr_diagnostics, run_assetops_tsfm_forecast</code></span>
+          <span class="text-sky-600 font-semibold">Zero External API · Offline Safe ✓</span>
+        </div>
+      </div>
+
+      <!-- 8. Earth Observation & Satellite Change Detection -->
+      <div class="stack-card border-l-4 border-l-rose-500">
+        <div class="flex items-center gap-3.5 mb-3">
+          <div class="h-10 w-10 rounded-xl bg-rose-100 flex items-center justify-center font-bold text-rose-800 text-lg">🛰️</div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Earth Observation &amp; Change Detection</h2>
+            <span class="rounded bg-rose-100 px-2 py-0.5 text-rose-800 font-mono text-[10px] font-bold">Bi-Temporal Delta · Spectral Indices · Land Cover</span>
+          </div>
+        </div>
+        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+          Automated multi-spectral raster analysis and bi-temporal change detection across Sentinel-2 and Landsat-9 imagery for environmental and urban monitoring.
+        </p>
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex items-start gap-2">
+            <span class="text-rose-600 font-bold">✓</span>
+            <div><strong>Spectral Index Extraction:</strong> Automated NDVI, NDWI, NBR, and SAVI band-math calculations with standardized cartographic color ramps.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-rose-600 font-bold">✓</span>
+            <div><strong>Bi-Temporal Differencing:</strong> Multi-temporal pixel and vector delta analysis detecting urban growth, deforestation, and flood damage.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-rose-600 font-bold">✓</span>
+            <div><strong>Automated Zonal Summaries:</strong> Aggregates spectral metrics and land-use changes across administrative boundaries into clean attribute tables.</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Tools: <code class="text-rose-700">change_detection_multitemporal, train_land_cover_model</code></span>
+          <span class="text-rose-600 font-semibold">Native QGIS Raster ✓</span>
+        </div>
+      </div>
+
+      <!-- 9. Google Earth Engine (GEE Catalog) -->
       <div class="stack-card border-l-4 border-l-teal-500">
         <div class="flex items-center gap-3.5 mb-3">
-          <img src="/assets/icon.svg" alt="AutoGIS QGIS" class="h-10 w-10 shrink-0" />
+          <div class="h-10 w-10 rounded-xl bg-teal-100 flex items-center justify-center font-bold text-teal-800 text-lg">🌍</div>
           <div>
-            <h2 class="text-xl font-bold text-slate-900">Google Earth Engine &amp; PyQGIS</h2>
-            <span class="rounded bg-teal-100 px-2 py-0.5 text-teal-800 font-mono text-[10px] font-bold">GEE + PyQGIS Core</span>
+            <h2 class="text-xl font-bold text-slate-900">Google Earth Engine (GEE) Catalog</h2>
+            <span class="rounded bg-teal-100 px-2 py-0.5 text-teal-800 font-mono text-[10px] font-bold">Petabyte Cloud Catalog · SRTM · Sentinel-2</span>
           </div>
         </div>
         <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-          Planetary-scale geospatial analysis and native QGIS processing integration.
+          Deep integration communicating natively with Earth Engine's planetary satellite catalog without requiring complex Earth Engine JavaScript scripts.
         </p>
         <div class="space-y-2 text-xs text-slate-700">
           <div class="flex items-start gap-2">
             <span class="text-teal-600 font-bold">✓</span>
-            <div><strong>Petabyte-Scale Satellite Catalogs:</strong> Direct integration with Sentinel, Landsat, and MODIS image collections.</div>
+            <div><strong>30m DEM Streaming:</strong> Download high-resolution SRTM or Copernicus DEM GeoTIFFs directly for any bounding box or place name.</div>
           </div>
           <div class="flex items-start gap-2">
             <span class="text-teal-600 font-bold">✓</span>
-            <div><strong>Automated Spectral Indices:</strong> Computes NDVI, NDWI, EVI, and NBR directly in the cloud and streams back to QGIS.</div>
+            <div><strong>Cloud-Masked Optical Bands:</strong> Automated extraction of cloud-free Sentinel-2 Level-2A and Landsat 8/9 true and false color composites.</div>
           </div>
           <div class="flex items-start gap-2">
             <span class="text-teal-600 font-bold">✓</span>
-            <div><strong>Local PyQGIS Canvas:</strong> Native layout generation, 300 DPI exports, 3D terrain visualizer, and animated time series maps.</div>
+            <div><strong>Server-Side Spectral Indices:</strong> Cloud computation of NDVI, NDWI, and NBR streamed directly as high-precision GeoTIFF layers.</div>
           </div>
         </div>
         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
-          <span>Engine: GEE API + PyQGIS 3.22+</span>
-          <span class="text-teal-600 font-semibold">Fully Autonomous</span>
+          <span>Module: <code class="text-teal-700">core.gee_credentials</code></span>
+          <span class="text-teal-600 font-semibold">Multi-Petabyte Cloud ✓</span>
+        </div>
+      </div>
+
+      <!-- 10. Native PyQGIS Core & Safe Threading -->
+      <div class="stack-card border-l-4 border-l-slate-700">
+        <div class="flex items-center gap-3.5 mb-3">
+          <div class="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-800 text-lg">🛡️</div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">PyQGIS Core &amp; Non-Blocking Threading</h2>
+            <span class="rounded bg-slate-100 px-2 py-0.5 text-slate-800 font-mono text-[10px] font-bold">Zero-Crash · Qt5 &amp; Qt6 · Pure Python</span>
+          </div>
+        </div>
+        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+          Robust execution architecture separating intensive background network/AI inference from the main Qt GUI thread with 35ms event pacing.
+        </p>
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex items-start gap-2">
+            <span class="text-slate-700 font-bold">✓</span>
+            <div><strong>Pre-Flight AST Sandbox:</strong> Pre-validates generated Python scripts against prohibited calls, preventing accidental infinite loops or crashes.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-slate-700 font-bold">✓</span>
+            <div><strong>Automatic UTM Reprojection:</strong> Detects unprojected geographic degrees (<code class="font-mono text-[11px]">EPSG:4326</code>) and reprojects to local UTM Zone meters automatically.</div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-slate-700 font-bold">✓</span>
+            <div><strong>No Heavy Dependencies:</strong> Pure Python standard library + native PyQGIS bindings — installs cleanly in any stock QGIS without pip compilation errors.</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Compatibility: QGIS 3.22 – 3.40+ (Qt5 &amp; Qt6)</span>
+          <span class="text-slate-800 font-semibold">100% Native PyQGIS ✓</span>
         </div>
       </div>
 
     </div>
-
-    <!-- Supported AI Models Table -->
-    <section class="mt-16 stack-card">
-      <h2 class="text-2xl font-bold text-slate-900 mb-2">Supported Foundation Models &amp; AI Providers</h2>
-      <p class="text-sm text-slate-600 mb-6">AutoGIS Studio is provider-neutral. Bring your own API key or run 100% offline with local open-weight models.</p>
-      
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead>
-            <tr class="border-b border-slate-200 font-mono text-slate-500">
-              <th class="py-2.5">Provider</th>
-              <th class="py-2.5">Supported Models</th>
-              <th class="py-2.5">Primary Capability</th>
-              <th class="py-2.5">Auth Method</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 text-slate-700">
-            <tr>
-              <td class="py-3 font-bold text-slate-900">Xerj AI</td>
-              <td class="font-mono">xerj-reader-1</td>
-              <td>Document Intelligence, typed symbolic extraction &amp; spatial entity parsing</td>
-              <td class="font-mono text-sky-700">xerj_... API Key</td>
-            </tr>
-            <tr>
-              <td class="py-3 font-bold text-slate-900">Google Gemini</td>
-              <td class="font-mono">gemini-2.5-pro, gemini-2.5-flash, gemini-2.0-flash</td>
-              <td>Complex spatial reasoning, multimodal map vision, 1M+ context window</td>
-              <td class="font-mono text-sky-700">Gemini API Key</td>
-            </tr>
-            <tr>
-              <td class="py-3 font-bold text-slate-900">OpenAI</td>
-              <td class="font-mono">gpt-4o, gpt-4o-mini, o3-mini</td>
-              <td>High-speed tool calling, automated PyQGIS code generation</td>
-              <td class="font-mono text-sky-700">OpenAI API Key</td>
-            </tr>
-            <tr>
-              <td class="py-3 font-bold text-slate-900">Anthropic</td>
-              <td class="font-mono">claude-sonnet-4.5, claude-haiku-4.5</td>
-              <td>Precise architectural planning, long-form spatial report synthesis</td>
-              <td class="font-mono text-sky-700">Anthropic Key</td>
-            </tr>
-            <tr>
-              <td class="py-3 font-bold text-slate-900">DeepSeek</td>
-              <td class="font-mono">deepseek-chat (V3), deepseek-reasoner (R1)</td>
-              <td>Deep mathematical and topological constraint derivation</td>
-              <td class="font-mono text-sky-700">DeepSeek Key</td>
-            </tr>
-            <tr>
-              <td class="py-3 font-bold text-slate-900">OpenRouter</td>
-              <td class="font-mono">100+ Models (Nemotron, Llama 3.3 70B, Qwen 2.5)</td>
-              <td>Free-tier access &amp; instant failover routing across 100+ open models</td>
-              <td class="font-mono text-sky-700">OpenRouter Key</td>
-            </tr>
-            <tr>
-              <td class="py-3 font-bold text-slate-900">Local AI (Ollama / LM Studio)</td>
-              <td class="font-mono">qwen2.5-coder:14b, llama3.3, mistral</td>
-              <td>100% offline execution for classified, sensitive, or defense datasets</td>
-              <td class="font-mono text-emerald-700">No Key Needed (Localhost)</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Bottom CTA -->
-    <div class="mt-16 text-center">
-      <h3 class="text-xl font-bold text-slate-900">Ready to explore how these modules connect?</h3>
-      <p class="text-sm text-slate-600 mt-1 mb-5">Inspect the end-to-end execution pipeline from natural language prompt to validated cartography.</p>
-      <a href="/architecture" class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 font-mono text-xs font-bold text-white shadow-md hover:bg-slate-800 transition">
-        <span>View System Architecture &amp; Workflow Graph</span>
-        <span>→</span>
-      </a>
-    </div>
-
   </main>
 
-  <!-- Footer -->
-  <footer class="border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500">
-    <div class="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-2 font-mono">
-        <span>AutoGIS Studio v1.0.7</span> · <span>Authored by Prince</span>
+  <!-- Minimal Clean Footer -->
+  <footer class="border-t border-slate-200 bg-white py-10 text-xs text-slate-500">
+    <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
+      <div class="flex items-center gap-2.5">
+        <img src="/assets/icon.svg" alt="AutoGIS" class="h-6 w-6" />
+        <span class="font-bold text-slate-800">AutoGIS Studio v1.0.9</span>
+        <span>— Open-Source (MIT License)</span>
       </div>
-      <div class="flex items-center gap-5">
-        <a href="/" class="hover:text-slate-900">Home</a>
-        <a href="/architecture" class="hover:text-slate-900">Architecture</a>
-        <a href="/tech-stack" class="text-sky-600 font-bold">Tech Stack</a>
-        <a href="https://github.com/sutharprin098/AutoGIS" class="hover:text-slate-900">GitHub</a>
+      <div class="flex flex-wrap items-center gap-6 font-medium">
+        <a href="https://autogis.princesite.in/" class="text-sky-600 hover:underline">autogis.princesite.in</a>
+        <a href="mailto:sutharprince098@gmail.com" class="text-slate-600 hover:text-slate-900">sutharprince098@gmail.com</a>
+        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.9/AutoGIS.zip" class="text-sky-600 hover:underline">Download AutoGIS.zip (v1.0.9)</a>
+        <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="text-slate-600 hover:text-slate-900">GitHub Repository</a>
       </div>
     </div>
   </footer>

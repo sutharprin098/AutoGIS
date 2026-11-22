@@ -134,15 +134,15 @@ class AutoGISMCPBridge:
                 "description": spec.description,
                 "parameters": spec.parameters,
             }
-            for spec in list(self._engine.tools.values())[:65]
+            for spec in list(self._engine.tools.values())[:90]
         ]
         return {
             "$schema": "https://www.geospatial-agentic-services.online/schemas/describe_agent.schema.json",
             "profile": {
                 "agent_id": agent_id,
                 "name": "AutoGIS QGIS Autonomous Agent",
-                "description": f"Autonomous QGIS Geospatial Agent providing {len(self._engine.tools)} tools for vector/raster processing, GEE, OSM, STAC, PyQGIS, and cartography.",
-                "version": "1.0.6",
+                "description": f"Autonomous QGIS Geospatial Agent providing {len(self._engine.tools)} tools for vector/raster processing, GEE, OSM, STAC, PyQGIS, IBM AssetOpsBench Infrastructure Agents, and cartography.",
+                "version": "1.0.9",
                 "base_url": f"{base}/agents/{agent_id}",
                 "provider": {
                     "name": "AutoGIS Studio for QGIS",

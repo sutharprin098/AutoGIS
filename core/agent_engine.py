@@ -19,6 +19,194 @@ from .gis_tools import GISToolSpec, _tool_get_project_overview, build_autogis_to
 MAX_AUTONOMOUS_STEPS = 30
 
 
+# ── Thematic Tool Clusters for Dynamic Intent Routing ────────────────────────
+CORE_TOOL_NAMES = frozenset({
+    "update_agent_plan",
+    "get_project_overview",
+    "get_layer_info",
+    "execute_pyqgis",
+    "run_processing_algorithm",
+    "search_processing_algorithms",
+    "get_algorithm_help",
+    "spatial_buffer",
+    "spatial_overlay",
+    "clip_raster_by_mask",
+    "run_raster_calculator",
+    "apply_layer_style",
+    "create_print_layout",
+    "export_map_image",
+    "export_layer",
+    "load_vector_file",
+    "load_raster_file",
+    "create_vector_layer",
+    "zoom_to_layer",
+    "zoom_to_coordinate",
+    "set_layer_visibility",
+    "remove_layer",
+    "undo_project_checkpoint",
+    "create_project_checkpoint",
+})
+
+ACQUISITION_TOOL_NAMES = frozenset({
+    "fetch_place_boundary",
+    "fetch_osm_features",
+    "compute_road_route",
+    "georeference_helper",
+})
+
+GEE_STAC_RASTER_TOOL_NAMES = frozenset({
+    "gee_download_dem",
+    "gee_export_image",
+    "gee_compute_index",
+    "gee_image_collection",
+    "gee_image_preview",
+    "fetch_stac_earth_data",
+    "classify_crops_sentinel1_sar",
+    "inspect_raster_layer",
+    "style_raster_layer",
+    "hillshade_analysis",
+    "generate_contours",
+})
+
+INDIA_LIVE_TOOL_NAMES = frozenset({
+    "load_india_national_gis",
+    "load_india_rail_and_metro",
+    "fetch_imd_weather_data",
+    "load_india_census_data",
+    "fetch_air_quality_heatmap",
+})
+
+HAZARD_TOOL_NAMES = frozenset({
+    "fetch_live_hazard_feed",
+})
+
+CARTOGRAPHY_3D_TOOL_NAMES = frozenset({
+    "create_map_graticule",
+    "visualize_3d_terrain",
+    "export_temporal_animation",
+    "generate_spatial_report",
+    "analyze_map_vision",
+})
+
+VERIGEO_MCDM_TOOL_NAMES = frozenset({
+    "verigeo_verify_and_repair",
+    "verigeo_maup_and_physics_guard",
+    "datacube_manage_100_layers",
+    "autonomous_mcdm_100plus",
+    "autonomous_datalake_crawl",
+})
+
+GAS_AGENTIC_TOOL_NAMES = frozenset({
+    "gas_discover_agents",
+    "gas_describe_agent",
+    "gas_execute_task",
+    "gas_manage_task",
+    "gas_registry_search",
+})
+
+DOCUMENT_RAG_TOOL_NAMES = frozenset({
+    "read_uploaded_file_or_pdf",
+    "xerj_document_intelligence",
+    "query_xerj_corpus",
+    "manage_agent_memory",
+})
+
+GEOSAM_TOOL_NAMES = frozenset({
+    "geosam_segment_features",
+})
+
+GEORAG_TOOL_NAMES = frozenset({
+    "georag_spatial_query",
+})
+
+WEBGIS_TOOL_NAMES = frozenset({
+    "export_interactive_webgis",
+})
+
+CHANGE_DETECTION_TOOL_NAMES = frozenset({
+    "detect_raster_change",
+})
+
+LIDAR_3D_TOOL_NAMES = frozenset({
+    "drone_lidar_lod2_builder",
+})
+
+SWARM_GAS_TOOL_NAMES = frozenset({
+    "gas_multi_agent_swarm",
+})
+
+ASSETOPS_TOOL_NAMES = frozenset({
+    "assetops_iot_telemetry",
+    "assetops_fmsr_diagnostics",
+    "assetops_tsfm_forecast",
+    "assetops_work_order_dispatch",
+    "geo_assetops_benchmark_eval",
+})
+
+
+def repair_and_parse_json(raw_args: str) -> dict[str, Any]:
+    """Robustly parse JSON arguments emitted by diverse AI models."""
+    raw = (raw_args or "").strip()
+    if not raw or raw in ("{}", '""', "null"):
+        return {}
+
+    # 1. Direct standard parse
+    try:
+        parsed = json.loads(raw)
+        if isinstance(parsed, dict):
+            return parsed
+    except Exception:
+        pass
+
+    # 2. Strip markdown code fences ```json ... ```
+    cleaned = raw
+    if "```" in cleaned:
+        import re
+        match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", cleaned)
+        if match:
+            cleaned = match.group(1).strip()
+            try:
+                parsed = json.loads(cleaned)
+                if isinstance(parsed, dict):
+                    return parsed
+            except Exception:
+                pass
+
+    # 3. Strip trailing commas before } or ]
+    import re
+    cleaned_commas = re.sub(r",\s*([\}\]])", r"\1", cleaned)
+    try:
+        parsed = json.loads(cleaned_commas)
+        if isinstance(parsed, dict):
+            return parsed
+    except Exception:
+        pass
+
+    # 4. Extract outer { ... }
+    b_start = cleaned.find("{")
+    b_end = cleaned.rfind("}")
+    if b_start != -1 and b_end > b_start:
+        snippet = cleaned[b_start:b_end + 1]
+        snippet_commas = re.sub(r",\s*([\}\]])", r"\1", snippet)
+        try:
+            parsed = json.loads(snippet_commas)
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            pass
+
+    # 5. ast.literal_eval fallback (single-quoted python dicts)
+    try:
+        import ast
+        eval_res = ast.literal_eval(cleaned)
+        if isinstance(eval_res, dict):
+            return eval_res
+    except Exception:
+        pass
+
+    return {}
+
+
 class AutoGISEngine(QObject):
     """Thread-safe, multi-step autonomous AI agent engine for AutoGIS Studio."""
 
@@ -64,6 +252,16 @@ class AutoGISEngine(QObject):
         "autonomous_mcdm_100plus",
         "autonomous_datalake_crawl",
         "xerj_document_intelligence",
+        "geosam_segment_features",
+        "export_interactive_webgis",
+        "detect_raster_change",
+        "drone_lidar_lod2_builder",
+        "gas_multi_agent_swarm",
+        "assetops_iot_telemetry",
+        "assetops_fmsr_diagnostics",
+        "assetops_tsfm_forecast",
+        "assetops_work_order_dispatch",
+        "geo_assetops_benchmark_eval",
     })
 
     def __init__(self, iface, config: AutoGISConfig, parent=None) -> None:
@@ -79,6 +277,8 @@ class AutoGISEngine(QObject):
         self._auto_nudge_count = 0
         self._lock = threading.Lock()
         self._active_workers = 0
+        self._active_user_prompt: str = ""
+        self._executed_tools_in_run: set[str] = set()
 
         # Pending write-tool approval queue when in 'ask_write' mode
         self._awaiting_permission: dict[str, tuple[str, list[dict], int]] = {}
@@ -149,64 +349,161 @@ class AutoGISEngine(QObject):
     def _post(self, kind: str, *payload: Any) -> None:
         self._queue.put((kind, payload))
 
-    def _build_tools_schema(self) -> list[dict[str, Any]]:
+    def _select_active_tool_names(self, prompt: str) -> set[str]:
+        p = prompt.lower()
+        active = set(CORE_TOOL_NAMES)
+        active.update(ACQUISITION_TOOL_NAMES)
+
+        if any(k in p for k in ("gee", "earth engine", "dem", "elevation", "sentinel", "landsat", "satellite", "ndvi", "ndwi", "sar", "crop", "raster", "contour", "hillshade", "stac", "stretch", "terrain")):
+            active.update(GEE_STAC_RASTER_TOOL_NAMES)
+
+        if any(k in p for k in ("india", "census", "imd", "weather", "railway", "rail", "metro", "cpcb", "aqi", "air quality", "pm2.5", "pm10", "tehsil", "taluk", "panchayat", "state boundary")):
+            active.update(INDIA_LIVE_TOOL_NAMES)
+
+        if any(k in p for k in ("hazard", "disaster", "flood", "earthquake", "fire", "alert", "gdacs", "usgs")):
+            active.update(HAZARD_TOOL_NAMES)
+
+        if any(k in p for k in ("mcdm", "suitability", "verigeo", "entropy", "ahp", "topsis", "datacube", "solar", "wind", "criteria", "maup", "datalake", "100")):
+            active.update(VERIGEO_MCDM_TOOL_NAMES)
+
+        if any(k in p for k in ("3d", "graticule", "animation", "temporal", "vision", "screenshot", "atlas", "report", "cartography")):
+            active.update(CARTOGRAPHY_3D_TOOL_NAMES)
+
+        if any(k in p for k in ("gas", "remote agent", "external agent", "registry", "getcapabilities")):
+            active.update(GAS_AGENTIC_TOOL_NAMES)
+
+        if any(k in p for k in ("pdf", "document", "docx", "excel", "csv", "upload", "xerj", "corpus")):
+            active.update(DOCUMENT_RAG_TOOL_NAMES)
+
+        if any(k in p for k in ("sam", "segment", "sam 2", "geosam", "extract building", "extract tree")):
+            active.update(GEOSAM_TOOL_NAMES)
+
+        if any(k in p for k in ("georag", "spatial query", "sql", "select where", "database query", "filter where")):
+            active.update(GEORAG_TOOL_NAMES)
+
+        if any(k in p for k in ("webgis", "web map", "maplibre", "kepler", "cesium", "export html", "browser map")):
+            active.update(WEBGIS_TOOL_NAMES)
+
+        if any(k in p for k in ("change detection", "deforestation", "forest loss", "urban sprawl", "burn severity", "wildfire", "difference")):
+            active.update(CHANGE_DETECTION_TOOL_NAMES)
+
+        if any(k in p for k in ("lidar", "drone", "lod2", "lod-2", "ndsm", "canopy height", "3d building", "extrusion", "dsm", "dtm")):
+            active.update(LIDAR_3D_TOOL_NAMES)
+
+        if any(k in p for k in ("swarm", "gas 2", "multi-agent", "agent team", "consensus", "roster", "agenthive", "metaagent")):
+            active.update(SWARM_GAS_TOOL_NAMES)
+
+        if any(k in p for k in (
+            "assetops", "assetopsbench", "iot", "sensor", "telemetry", "fmsr", "failure mode",
+            "root cause", "tsfm", "time series forecast", "remaining useful life", "rul",
+            "work order", "maximo", "maintenance", "dispatch", "crew", "transformer",
+            "power grid", "pipeline", "telecom tower", "benchmark", "industry 4.0", "anomaly",
+        )):
+            active.update(ASSETOPS_TOOL_NAMES)
+            active.update(SWARM_GAS_TOOL_NAMES)
+
+        if self._executed_tools_in_run:
+            active.update(self._executed_tools_in_run)
+
+        return active
+
+    def _build_tools_schema(self, user_prompt: str = "") -> list[dict[str, Any]]:
         if self._config.execution_mode == "chat_only":
             return []
+        active_names = self._select_active_tool_names(user_prompt)
         schemas = []
-        for spec in self._tools.values():
-            schemas.append({
-                "type": "function",
-                "function": {
-                    "name": spec.name,
-                    "description": spec.description,
-                    "parameters": spec.parameters,
-                },
-            })
+        for name, spec in self._tools.items():
+            if name in active_names:
+                schemas.append({
+                    "type": "function",
+                    "function": {
+                        "name": spec.name,
+                        "description": spec.description,
+                        "parameters": spec.parameters,
+                    },
+                })
         return schemas
 
-    def _build_system_prompt(self) -> str:
+    def _get_canvas_context_markdown(self) -> str:
+        """Extract structured, clear markdown representation of the live QGIS canvas."""
         try:
-            ov = _tool_get_project_overview(self._iface, {})
-            lyrs = ov.get("layers") or []
-            compact_lyrs = []
-            for li in lyrs[:20]:  # limit to 20 layers max
-                tag = f"{li.get('name')}[{li.get('geometry')},{li.get('crs')}]"
-                if "feature_count" in li:
-                    tag += f"({li['feature_count']}f"
-                    if li.get("fields"):
-                        tag += f",{','.join(li['fields'][:4])}"
-                    tag += ")"
-                compact_lyrs.append(tag)
-            ctx = (
-                f"CRS:{ov.get('crs')} Active:{ov.get('active_layer')} "
-                f"Layers({ov.get('layer_count')}):{';'.join(compact_lyrs)}"
-            )
-            if ov.get("crs_mismatches"):
-                ctx += f" CRS_mismatch:{','.join(ov['crs_mismatches'][:4])}"
-        except Exception as exc:
-            ctx = f"unavailable:{exc}"
+            from qgis.core import QgsProject, QgsVectorLayer, QgsRasterLayer
+            proj = QgsProject.instance()
+            proj_crs = proj.crs()
+            crs_authid = proj_crs.authid() if proj_crs.isValid() else "EPSG:4326"
+            crs_units = "degrees (geographic)" if (proj_crs.isValid() and proj_crs.isGeographic()) else "meters (projected)"
 
+            active_lyr = self._iface.activeLayer() if self._iface else None
+            active_name = active_lyr.name() if active_lyr else None
+
+            extent_str = ""
+            if self._iface and self._iface.mapCanvas():
+                ext = self._iface.mapCanvas().extent()
+                if ext.isValid():
+                    extent_str = f"[{round(ext.xMinimum(), 4)}, {round(ext.yMinimum(), 4)}, {round(ext.xMaximum(), 4)}, {round(ext.yMaximum(), 4)}]"
+
+            root = proj.layerTreeRoot()
+            layers_lines = []
+            for lyr in proj.mapLayers().values():
+                node = root.findLayer(lyr.id()) if root else None
+                vis = "visible" if (node is None or node.isVisible()) else "hidden"
+                lcrs = lyr.crs().authid() if lyr.crs().isValid() else ""
+
+                if isinstance(lyr, QgsVectorLayer):
+                    gtype = lyr.geometryType()
+                    gname = {0: "Point", 1: "LineString", 2: "Polygon", 3: "Unknown", 4: "Null"}.get(int(gtype), "Vector")
+                    fcount = lyr.featureCount()
+                    fnames = [f.name() for f in lyr.fields()][:8]
+                    f_str = f" | Fields: [{', '.join(fnames)}]" if fnames else ""
+                    layers_lines.append(f"- \"{lyr.name()}\" [Vector: {gname} | {fcount} features | CRS: {lcrs} | {vis}{f_str}]")
+                elif isinstance(lyr, QgsRasterLayer):
+                    layers_lines.append(f"- \"{lyr.name()}\" [Raster: {lyr.bandCount()} bands | CRS: {lcrs} | {vis}]")
+                else:
+                    layers_lines.append(f"- \"{lyr.name()}\" [Layer | CRS: {lcrs} | {vis}]")
+
+            md_parts = [
+                "### Live QGIS Project Canvas Context:",
+                f"- **Project CRS**: `{crs_authid}` ({crs_units})",
+                f"- **Active Layer**: {f'`{active_name}`' if active_name else 'None'}",
+            ]
+            if extent_str:
+                md_parts.append(f"- **Canvas View Extent**: {extent_str}")
+            if layers_lines:
+                md_parts.append(f"- **Available Project Layers ({len(layers_lines)})**:")
+                md_parts.extend(layers_lines[:25])
+            else:
+                md_parts.append("- **Available Project Layers**: *(None - Canvas is currently empty)*")
+
+            return "\n".join(md_parts)
+        except Exception as exc:
+            return f"### Live QGIS Canvas Context: (unavailable: {exc})"
+
+    def _build_system_prompt(self) -> str:
+        canvas_md = self._get_canvas_context_markdown()
         custom = self._config.custom_instructions.strip()
-        extra = f"\nPrefs:{custom}" if custom else ""
+        extra = f"\nUser Preferences:\n{custom}" if custom else ""
 
         try:
             persisted_mem = _read_persistent_memory()
             if persisted_mem:
                 mem_items = [f"{k}={v.get('value')}" for k, v in list(persisted_mem.items())[:5]]
-                extra += "\nMem:" + ",".join(mem_items)
+                extra += "\nAgent Memory: " + ", ".join(mem_items)
         except Exception as _mem_err:
             _ = _mem_err
 
         return (
-            "You are AutoGIS, an Autonomous Geospatial AI Agent in QGIS.\n"
-            f"QGIS:{ctx}{extra}\n"
-            "Rules:\n"
-            "1. CRS: Check EPSG always; spatial_buffer/spatial_overlay auto-reproject; for run_processing_algorithm verify CRS alignment first.\n"
-            "2. Plans: For 2+ steps call update_agent_plan AND execution tools in same turn. Never stop while steps are pending/in_progress.\n"
-            "3. No hardcoding: Inspect project first. Use search_processing_algorithms+get_algorithm_help before run_processing_algorithm. EXTENT can be passed directly as layer name or [w,s,e,n]. Use get_layer_info to inspect layers. Use GEE tools or GAS (Geospatial Agentic Services: gas_discover_agents, gas_describe_agent, gas_execute_task, gas_manage_task, gas_registry_search) when requested.\n"
-            "4. Execute don't describe: Use tools, never dump code for user to run. Clip to AOI polygon. Preserve user layers. Verify outputs before reporting done.\n"
-            "5. execute_pyqgis rules: ALWAYS call list_layers first. Use get_layer('name') helper (pre-injected). Check qgis_version_int before QGIS 3.30+ APIs. On NameError retry with get_layer(); on AttributeError use Processing algorithm instead.\n"
-            "6. Concise responses, no emojis."
+            "You are AutoGIS, an Autonomous Geospatial AI Agent in QGIS.\n\n"
+            f"{canvas_md}\n{extra}\n\n"
+            "Execution Rules:\n"
+            "1. Inspect Available Project Layers above before writing code. Use exact layer names in quotes.\n"
+            "2. CRS Awareness: Always check layer CRS. AutoGIS tools auto-reproject, but for run_processing_algorithm verify CRS alignment first.\n"
+            "3. Plans: For multi-step workflows, call update_agent_plan AND execution tools in same turn. Never stop while steps are pending.\n"
+            "4. Self-Healing & Verification: If a tool fails with an error, inspect the provided hint and available layers, correct your parameters or code, and retry.\n"
+            "5. Safety & Rollback: Checkpoints are automatically recorded before write actions. You can call undo_project_checkpoint if a step fails irreversibly.\n"
+            "6. Execute directly: Use tools to load and style layers directly in QGIS; do not ask the user to run scripts manually.\n"
+            "7. Target Layer Constraint: When a Target Layer is selected by the user, prioritize and operate strictly on that layer.\n"
+            "8. Physical Resolution & Buildings: Sentinel-2 optical resolution is 10m/pixel; individual building footprints (8-15m) cannot be resolved directly from 10m raster pixels. For building footprints, use High-Resolution imagery (<1m drone/aerial) with GeoSAM, OR fetch true surveyed building vector footprints using fetch_osm_features(category='buildings').\n"
+            "9. Concise professional responses, no emojis."
         )
 
     def start_user_turn(self, user_text: str, attachments: list[str] | None = None,
@@ -234,7 +531,14 @@ class AutoGISEngine(QObject):
 
         extra_blocks = []
         if layer_mentions:
-            extra_blocks.append("Referenced Layers: " + ", ".join(f"`{m}`" for m in layer_mentions))
+            target_lyr = layer_mentions[0]
+            extra_blocks.append(
+                f"### 🎯 Explicit Target Working Layer: `{target_lyr}`\n"
+                f"STRICT CONSTRAINT: The user explicitly selected `{target_lyr}`. All geoprocessing, GeoSAM segmentation, "
+                f"GeoRAG queries, buffering, and analysis MUST strictly execute on `{target_lyr}`."
+            )
+            if len(layer_mentions) > 1:
+                extra_blocks.append("Additional Context Layers: " + ", ".join(f"`{m}`" for m in layer_mentions[1:]))
         if attachments:
             att_summaries = [summarize_attached_path(p) for p in attachments]
             extra_blocks.append("### Attached User Files / Documents / Folders:\n" + "\n\n".join(att_summaries))
@@ -245,6 +549,8 @@ class AutoGISEngine(QObject):
         sys_prompt = self._build_system_prompt()
         with self._lock:
             self._active_run_id = run_id
+            self._active_user_prompt = full_user_prompt
+            self._executed_tools_in_run.clear()
             self._step_count = 0
             self._current_plan_steps = []
             self._auto_nudge_count = 0
@@ -292,7 +598,7 @@ class AutoGISEngine(QObject):
         or_key = self._config.api_key
         max_tokens = self._config.max_tokens
         auto_fallback = self._config.auto_fallback_free
-        tools_schema = self._build_tools_schema()
+        tools_schema = self._build_tools_schema(self._active_user_prompt)
 
         self.status_updated.emit(run_id, "Thinking...")
 
@@ -320,41 +626,120 @@ class AutoGISEngine(QObject):
     def _stream_once(self, run_id: str, api_key: str, base_url: str, model: str,
                      max_tokens: int, messages: list[dict], tools: list[dict]) -> tuple[str, str, list[dict]]:
         is_openrouter = "openrouter.ai" in base_url
+        is_anthropic = ("anthropic.com" in base_url) or (not is_openrouter and (model.startswith("claude-") or "anthropic" in model.lower()))
         is_free_model = model.endswith(":free")
 
-        payload: dict[str, Any] = {
-            "model": model,
-            "messages": messages,
-            # Cap free model tokens to avoid long slow responses; paid models keep user setting
-            "max_tokens": min(max_tokens, 1536) if is_free_model else max_tokens,
-            "stream": True,
-        }
-        if tools:
-            payload["tools"] = tools
+        if is_anthropic:
+            # Build native Anthropic Messages API request
+            clean_m = model.split("/", 1)[1] if "/" in model else model
+            alias_map = {
+                "claude-3.7-sonnet": "claude-3-7-sonnet-20250219",
+                "claude-sonnet-4.5": "claude-3-7-sonnet-20250219",
+                "claude-3.5-sonnet": "claude-3-5-sonnet-20241022",
+                "claude-3.5-haiku": "claude-3-5-haiku-20241022",
+                "claude-haiku-4.5": "claude-3-5-haiku-20241022",
+                "claude-3-haiku": "claude-3-haiku-20240307",
+            }
+            clean_m = alias_map.get(clean_m, clean_m)
 
-        # OpenRouter: disable extended chain-of-thought reasoning for ALL free models
-        # (reasoning = 60s+ "Reasoning..." freeze with no useful output for GIS tasks)
-        if is_openrouter and is_free_model:
-            payload["reasoning"] = {"exclude": True}
-        # For known reasoning models on paid tier, also disable to keep responses fast
-        elif is_openrouter and any(rm in model for rm in self._REASONING_MODELS):
-            payload["reasoning"] = {"max_tokens": 300}
+            sys_parts = []
+            ant_msgs = []
+            for m in messages:
+                role = m.get("role")
+                content = m.get("content", "")
+                if role == "system":
+                    sys_parts.append(str(content))
+                elif role == "tool":
+                    ant_msgs.append({
+                        "role": "user",
+                        "content": [{
+                            "type": "tool_result",
+                            "tool_use_id": m.get("tool_call_id", f"call_{uuid.uuid4().hex[:8]}"),
+                            "content": str(content),
+                        }],
+                    })
+                elif role == "assistant" and m.get("tool_calls"):
+                    blocks = []
+                    if content:
+                        blocks.append({"type": "text", "text": str(content)})
+                    for tc in m["tool_calls"]:
+                        fn = tc.get("function") or {}
+                        blocks.append({
+                            "type": "tool_use",
+                            "id": tc.get("id") or f"call_{uuid.uuid4().hex[:8]}",
+                            "name": fn.get("name", ""),
+                            "input": repair_and_parse_json(fn.get("arguments", "{}")),
+                        })
+                    ant_msgs.append({"role": "assistant", "content": blocks})
+                elif role in ("user", "assistant"):
+                    ant_msgs.append({"role": role, "content": str(content)})
 
-        # OpenRouter compression — reduces input token cost and latency
-        if is_openrouter:
-            payload["transforms"] = ["middle-out"]
+            ant_tools = []
+            for t in tools:
+                fn = t.get("function") or {}
+                ant_tools.append({
+                    "name": fn.get("name", ""),
+                    "description": fn.get("description", ""),
+                    "input_schema": fn.get("parameters") or {"type": "object", "properties": {}},
+                })
 
-        req = urllib.request.Request(
-            f"{base_url}/chat/completions",
-            data=json.dumps(payload).encode("utf-8"),
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "https://qgis.org",
-                "X-Title": "AutoGIS Studio for QGIS",
-            },
-            method="POST",
-        )
+            payload: dict[str, Any] = {
+                "model": clean_m,
+                "max_tokens": max(512, min(max_tokens, 4096)),
+                "messages": ant_msgs,
+                "stream": True,
+            }
+            if sys_parts:
+                payload["system"] = "\n\n".join(sys_parts)
+            if ant_tools:
+                payload["tools"] = ant_tools
+
+            req = urllib.request.Request(
+                f"{base_url.rstrip('/')}/messages",
+                data=json.dumps(payload).encode("utf-8"),
+                headers={
+                    "x-api-key": api_key,
+                    "anthropic-version": "2023-06-01",
+                    "Content-Type": "application/json",
+                    "User-Agent": "AutoGIS-Studio/1.0",
+                },
+                method="POST",
+            )
+        else:
+            # Standard OpenAI-compatible payload (Gemini, OpenAI, DeepSeek, OpenRouter, Ollama, Xerj)
+            payload: dict[str, Any] = {
+                "model": model,
+                "messages": messages,
+                # Cap free model tokens to avoid long slow responses; paid models keep user setting
+                "max_tokens": min(max_tokens, 1536) if is_free_model else max_tokens,
+                "stream": True,
+            }
+            if tools:
+                payload["tools"] = tools
+
+            # OpenRouter: disable extended chain-of-thought reasoning for ALL free models
+            # (reasoning = 60s+ "Reasoning..." freeze with no useful output for GIS tasks)
+            if is_openrouter and is_free_model:
+                payload["reasoning"] = {"exclude": True}
+            # For known reasoning models on paid tier, also disable to keep responses fast
+            elif is_openrouter and any(rm in model for rm in self._REASONING_MODELS):
+                payload["reasoning"] = {"max_tokens": 300}
+
+            # OpenRouter compression — reduces input token cost and latency
+            if is_openrouter:
+                payload["transforms"] = ["middle-out"]
+
+            req = urllib.request.Request(
+                f"{base_url}/chat/completions",
+                data=json.dumps(payload).encode("utf-8"),
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "https://qgis.org",
+                    "X-Title": "AutoGIS Studio for QGIS",
+                },
+                method="POST",
+            )
 
         text_acc = ""
         reasoning_acc = ""
@@ -390,6 +775,36 @@ class AutoGISEngine(QObject):
                     msg = err.get("message", str(err)) if isinstance(err, dict) else str(err)
                     raise RuntimeError(msg)
 
+                # --- 1. Anthropic Native Stream Event Handling ---
+                chunk_type = chunk.get("type")
+                if chunk_type == "content_block_start":
+                    cb = chunk.get("content_block") or {}
+                    if cb.get("type") == "tool_use":
+                        idx = chunk.get("index", len(tc_map))
+                        tc_map[idx] = {
+                            "id": cb.get("id") or f"call_{uuid.uuid4().hex[:8]}",
+                            "name": cb.get("name", ""),
+                            "arguments": "",
+                        }
+                    continue
+                elif chunk_type == "content_block_delta":
+                    d = chunk.get("delta") or {}
+                    if d.get("type") == "text_delta":
+                        t = d.get("text", "")
+                        if first_token_at is None:
+                            first_token_at = time.monotonic()
+                            self._post("status", run_id, "")
+                        text_acc += t
+                        self._post("token", run_id, t)
+                    elif d.get("type") == "input_json_delta":
+                        idx = chunk.get("index", 0)
+                        if idx in tc_map:
+                            tc_map[idx]["arguments"] += d.get("partial_json", "")
+                    continue
+                elif chunk_type in ("message_start", "message_delta", "message_stop", "ping"):
+                    continue
+
+                # --- 2. OpenAI / Gemini / DeepSeek / OpenRouter / Ollama Choices Handling ---
                 choices = chunk.get("choices") or []
                 if not choices:
                     continue
@@ -542,12 +957,7 @@ class AutoGISEngine(QObject):
                     cid = tc["id"]
                     cname = tc["name"].strip()
                     raw_args = tc["arguments"].strip() or "{}"
-                    try:
-                        args_dict = json.loads(raw_args)
-                        if not isinstance(args_dict, dict):
-                            args_dict = {}
-                    except json.JSONDecodeError:
-                        args_dict = {}
+                    args_dict = repair_and_parse_json(raw_args)
                     assistant_tc_payload.append({
                         "id": cid,
                         "type": "function",
@@ -717,6 +1127,15 @@ class AutoGISEngine(QObject):
         self.status_updated.emit(run_id, f"{step_prefix}Running {cname}...")
         self.tool_call_started.emit(run_id, cid, cname, cargs)
 
+        # Automatic Checkpoint before write operations
+        if spec is not None and getattr(spec, "risk", "") == "write" and not getattr(tc, "_checkpoint_taken", False):
+            try:
+                from .checkpoint_manager import ProjectCheckpointManager
+                ProjectCheckpointManager.get_instance(self._iface).create_checkpoint(f"Before tool '{cname}'")
+                tc["_checkpoint_taken"] = True
+            except Exception as _chk_err:
+                log_warn(f"AutoGIS Checkpoint error: {_chk_err}")
+
         t0 = time.monotonic()
 
         # Execute network-heavy download tools on a background worker thread
@@ -788,6 +1207,15 @@ class AutoGISEngine(QObject):
 
         if isinstance(res, dict) and res.get("image_path") and not is_err:
             self.map_captured.emit(run_id, str(res["image_path"]))
+
+        with self._lock:
+            self._executed_tools_in_run.add(cname)
+
+        if is_err and isinstance(res, dict):
+            res["_self_healing_directive"] = (
+                "Notice: This tool step failed. Review the error details and live canvas context above, "
+                "correct your parameters or PyQGIS code, and call the tool again to self-heal."
+            )
 
         try:
             res_str = json.dumps(res, ensure_ascii=False, default=str)

@@ -1632,13 +1632,15 @@ def _tool_execute_pyqgis(iface, args: dict) -> dict:  # noqa: C901
     except NameError as exc:
         tb = traceback.format_exc()
         lineno = _extract_lineno(tb, "<AutoGIS_PyQGIS>")
+        curr_layers = [l.name() for l in _proj.mapLayers().values()]
         return {
             "error": str(exc),
             "error_type": "NameError",
             "line": lineno,
+            "available_layers": curr_layers,
             "hint": (
-                "Use get_layer('layer_name') to safely resolve layers. "
-                "Call list_layers tool first to check available layer names."
+                f"Layer or variable not found. Active layers in QGIS are: {curr_layers}. "
+                "Use get_layer('exact_name') to safely resolve layers."
             ),
             "traceback": tb[-2000:],
             "stdout": stdout_buf.getvalue()[:4000],
@@ -1652,7 +1654,9 @@ def _tool_execute_pyqgis(iface, args: dict) -> dict:  # noqa: C901
             "line": lineno,
             "hint": (
                 f"This QGIS API method may not exist in QGIS version {_qgis_version_int}. "
-                "Use inspect_layer or get_algorithm_help to verify available methods."
+                "Common PyQGIS fixes: use layer.name() instead of layer.name; "
+                "use feature.geometry() instead of feature.geometry; "
+                "or use run_processing_algorithm instead."
             ),
             "traceback": tb[-2000:],
             "stdout": stdout_buf.getvalue()[:4000],
@@ -1669,14 +1673,35 @@ def _tool_execute_pyqgis(iface, args: dict) -> dict:  # noqa: C901
     except Exception as exc:
         tb = traceback.format_exc()
         lineno = _extract_lineno(tb, "<AutoGIS_PyQGIS>")
+        curr_layers = [l.name() for l in _proj.mapLayers().values()]
         return {
             "error": str(exc),
             "error_type": type(exc).__name__,
             "line": lineno,
-            "hint": "Check the traceback. Use list_layers / inspect_layer tools to verify layer state.",
+            "available_layers": curr_layers,
+            "hint": f"Execution error in PyQGIS. Check syntax or active layers: {curr_layers}.",
             "traceback": tb[-2000:],
             "stdout": stdout_buf.getvalue()[:4000],
         }
+
+
+def _tool_undo_project_checkpoint(iface, args: dict) -> dict:
+    """Roll back to the previous project checkpoint state."""
+    from .checkpoint_manager import ProjectCheckpointManager
+    return ProjectCheckpointManager.get_instance(iface).rollback()
+
+
+def _tool_create_project_checkpoint(iface, args: dict) -> dict:
+    """Create a manual checkpoint of the current QGIS project state."""
+    from .checkpoint_manager import ProjectCheckpointManager
+    desc = str(args.get("description") or "User requested checkpoint").strip()
+    chk = ProjectCheckpointManager.get_instance(iface).create_checkpoint(desc)
+    return {
+        "status": "created",
+        "checkpoint_id": chk.id,
+        "description": chk.description,
+        "layers_count": len(chk.layer_ids),
+    }
 
 
 def _extract_lineno(tb_text: str, filename: str) -> int | None:
@@ -1784,6 +1809,137 @@ def _gee_collection(iface, args: dict, run_on_main=None) -> dict:
 
 def _gee_preview(iface, args: dict, run_on_main=None) -> dict:
     return tool_gee_image_preview(args)
+
+
+def tool_geosam_segment_features(iface, args: dict, run_on_main=None) -> dict:
+    from .geosam_engine import run_geosam_segmentation
+    return run_geosam_segmentation(
+        iface,
+        raster_layer_name_or_path=str(args.get("raster_layer") or "").strip(),
+        prompt=str(args.get("prompt") or "buildings").strip(),
+        bbox=args.get("bbox"),
+        point_coords=args.get("point_coords"),
+        confidence_threshold=float(args.get("confidence_threshold", 0.5)),
+        output_layer_name=str(args.get("output_layer_name") or "").strip(),
+        tile_size=int(args.get("tile_size", 512)),
+        overlap_px=int(args.get("overlap_px", 64)),
+        max_tiles=int(args.get("max_tiles", 25)),
+        run_on_main=run_on_main,
+    )
+
+
+def tool_georag_spatial_query(iface, args: dict, run_on_main=None) -> dict:
+    from .georag_engine import execute_georag_query
+    return execute_georag_query(
+        iface,
+        query_text=str(args.get("query") or "").strip(),
+        target_layer_or_database=str(args.get("layer_or_database") or "").strip(),
+        create_result_layer=bool(args.get("create_result_layer", True)),
+        output_layer_name=str(args.get("output_layer_name") or "").strip(),
+    )
+
+
+def tool_export_interactive_webgis(iface, args: dict, run_on_main=None) -> dict:
+    from .webgis_exporter import export_project_to_interactive_webgis
+    return export_project_to_interactive_webgis(
+        iface,
+        output_html_path=str(args.get("output_path") or "").strip(),
+        title=str(args.get("title") or "AutoGIS Interactive Web Map").strip(),
+        template=str(args.get("template") or "maplibre").strip(),
+        include_layers=args.get("layers"),
+        enable_3d=bool(args.get("enable_3d", True)),
+    )
+
+
+def tool_detect_raster_change(iface, args: dict, run_on_main=None) -> dict:
+    from .change_detection import run_spatial_change_detection
+    return run_spatial_change_detection(
+        iface,
+        baseline_layer_or_path=str(args.get("baseline_layer") or "").strip(),
+        target_layer_or_path=str(args.get("target_layer") or "").strip(),
+        change_type=str(args.get("change_type") or "vegetation_deforestation").strip(),
+        threshold=float(args.get("threshold", -0.2)),
+        output_layer_name=str(args.get("output_layer_name") or "").strip(),
+    )
+
+
+def tool_drone_lidar_lod2_builder(iface, args: dict, run_on_main=None) -> dict:
+    from .lidar_3d_engine import run_drone_lidar_lod2_pipeline
+    return run_drone_lidar_lod2_pipeline(
+        iface,
+        dsm_layer_or_path=str(args.get("dsm_layer") or "").strip(),
+        dtm_layer_or_path=str(args.get("dtm_layer") or "").strip(),
+        building_footprints_layer=str(args.get("building_footprints_layer") or "").strip(),
+        target_mode=str(args.get("mode") or "lod2_buildings").strip(),
+        output_layer_name=str(args.get("output_layer_name") or "").strip(),
+    )
+
+
+def tool_gas_multi_agent_swarm(iface, args: dict, run_on_main=None) -> dict:
+    from .swarm_gas_engine import run_gas_multi_agent_swarm
+    return run_gas_multi_agent_swarm(
+        iface,
+        goal=str(args.get("goal") or "").strip(),
+        target_region=str(args.get("target_region") or "").strip(),
+        agents_roster=args.get("agents_roster"),
+        execution_strategy=str(args.get("strategy") or "pipeline").strip(),
+    )
+
+
+def tool_assetops_iot_telemetry(iface, args: dict, run_on_main=None) -> dict:
+    from .spatial_assetops import run_assetops_iot_telemetry
+    return run_assetops_iot_telemetry(
+        iface,
+        asset_domain=str(args.get("asset_domain") or "power_grid").strip(),
+        target_layer_or_region=str(args.get("target_layer_or_region") or "").strip(),
+        sensor_count=int(args.get("sensor_count", 16)),
+        anomaly_injection_rate=float(args.get("anomaly_injection_rate", 0.25)),
+        output_layer_name=str(args.get("output_layer_name") or "").strip(),
+    )
+
+
+def tool_assetops_fmsr_diagnostics(iface, args: dict, run_on_main=None) -> dict:
+    from .spatial_assetops import run_assetops_fmsr_diagnostics
+    return run_assetops_fmsr_diagnostics(
+        iface,
+        telemetry_layer_or_domain=str(args.get("telemetry_layer_or_domain") or "power_grid").strip(),
+        environmental_context=str(args.get("environmental_context") or "High flood & thermal stress zone").strip(),
+        include_iso_compliance=bool(args.get("include_iso_compliance", True)),
+        output_layer_name=str(args.get("output_layer_name") or "").strip(),
+    )
+
+
+def tool_assetops_tsfm_forecast(iface, args: dict, run_on_main=None) -> dict:
+    from .spatial_assetops import run_assetops_tsfm_forecast
+    return run_assetops_tsfm_forecast(
+        iface,
+        asset_domain=str(args.get("asset_domain") or "power_grid").strip(),
+        forecast_horizon_days=int(args.get("forecast_horizon_days", 30)),
+        model_backbone=str(args.get("model_backbone") or "IBM-Granite-TSFM-TinyTimeMixer").strip(),
+        output_layer_name=str(args.get("output_layer_name") or "").strip(),
+    )
+
+
+def tool_assetops_work_order_dispatch(iface, args: dict, run_on_main=None) -> dict:
+    from .spatial_assetops import run_assetops_work_order_dispatch
+    return run_assetops_work_order_dispatch(
+        iface,
+        asset_domain=str(args.get("asset_domain") or "power_grid").strip(),
+        depot_location=args.get("depot_location"),
+        max_crews=int(args.get("max_crews", 3)),
+        sla_priority=str(args.get("sla_priority") or "P1_EMERGENCY").strip(),
+        output_layer_name=str(args.get("output_layer_name") or "").strip(),
+    )
+
+
+def tool_geo_assetops_benchmark_eval(iface, args: dict, run_on_main=None) -> dict:
+    from .spatial_assetops import run_geo_assetops_benchmark_eval
+    return run_geo_assetops_benchmark_eval(
+        iface,
+        suite_domain=str(args.get("suite_domain") or "all").strip(),
+        orchestration_mode=str(args.get("orchestration_mode") or "AgentHive_CodeReAct").strip(),
+        execute_live_pipeline=bool(args.get("execute_live_pipeline", True)),
+    )
 
 
 # ============================================================================
@@ -2355,6 +2511,30 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
                 "required": [],
             },
             handler=_tool_save_project,
+        ),
+        GISToolSpec(
+            name="undo_project_checkpoint",
+            description="One-Click Undo: Roll back QGIS project to the previous checkpoint, cleanly removing newly added layers and restoring CRS/state.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {},
+                "required": [],
+            },
+            handler=_tool_undo_project_checkpoint,
+        ),
+        GISToolSpec(
+            name="create_project_checkpoint",
+            description="Create a manual checkpoint of the current QGIS project state before performing risky or complex operations.",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "description": {"type": "string", "description": "Short note describing the checkpoint."},
+                },
+                "required": [],
+            },
+            handler=_tool_create_project_checkpoint,
         ),
     ]
 
@@ -2969,6 +3149,221 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
                 },
             },
             handler=tool_xerj_document_intelligence,
+        ),
+        GISToolSpec(
+            name="geosam_segment_features",
+            description="GeoSAM / SAM 2 Zero-Shot Spatial Feature Extraction. Segments vector polygons (buildings, trees, water bodies, agricultural fields, roads) directly from raster satellite or drone imagery via text prompt or bounding box.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "raster_layer": {"type": "string", "description": "Raster layer name or path to segment."},
+                    "prompt": {"type": "string", "description": "Feature type to extract (e.g. 'buildings', 'trees', 'water', 'fields')."},
+                    "bbox": {"type": "array", "items": {"type": "number"}, "description": "Optional [xmin, ymin, xmax, ymax] sub-bounding box prompt."},
+                    "point_coords": {"type": "array", "items": {"type": "array", "items": {"type": "number"}}, "description": "Optional [[x, y]] coordinate prompts."},
+                    "confidence_threshold": {"type": "number", "description": "Segmentation confidence threshold (default 0.5)."},
+                    "output_layer_name": {"type": "string", "description": "Custom name for output vector polygon layer."},
+                    "tile_size": {"type": "integer", "description": "Tile chip window size in pixels (default 512, e.g. 256, 512, 1024)."},
+                    "overlap_px": {"type": "integer", "description": "Tile chip overlap in pixels to prevent boundary cuts (default 64)."},
+                    "max_tiles": {"type": "integer", "description": "Maximum tile chips to process in one run (default 25)."},
+                },
+                "required": ["raster_layer"],
+            },
+            handler=tool_geosam_segment_features,
+        ),
+        GISToolSpec(
+            name="georag_spatial_query",
+            description="GeoRAG Natural Language Spatial Database Query Engine. Translates natural language or Spatial SQL into queries over vector layers, GeoPackage, or SpatiaLite databases, filtering and highlighting matching features.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "Natural language spatial query or Spatial SQL (e.g. 'parcels where area > 2000 sqm', 'select * from layer where population > 50000')."},
+                    "layer_or_database": {"type": "string", "description": "Target layer name or database path to query."},
+                    "create_result_layer": {"type": "boolean", "description": "If true, exports matching features into a new memory layer (default true)."},
+                    "output_layer_name": {"type": "string", "description": "Optional name for output result layer."},
+                },
+                "required": ["query"],
+            },
+            handler=tool_georag_spatial_query,
+        ),
+        GISToolSpec(
+            name="export_interactive_webgis",
+            description="1-Click Interactive WebGIS Application Exporter. Exports active QGIS project layers to a single standalone, production-ready interactive HTML web map (MapLibre GL JS) with 3D buildings, dark basemap, and popup inspection.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "output_path": {"type": "string", "description": "Optional destination HTML file path."},
+                    "title": {"type": "string", "description": "Web map header title."},
+                    "template": {"type": "string", "enum": ["maplibre", "kepler", "cesium_3d"], "description": "WebGIS mapping framework (default 'maplibre')."},
+                    "layers": {"type": "array", "items": {"type": "string"}, "description": "Specific layer names to include (default all active vector layers)."},
+                    "enable_3d": {"type": "boolean", "description": "Enable 3D pitch and building extrusion (default true)."},
+                },
+                "required": [],
+            },
+            handler=tool_export_interactive_webgis,
+        ),
+        GISToolSpec(
+            name="detect_raster_change",
+            description="Automated Multi-Temporal Spatial Change Detection. Compares two satellite rasters (T1 vs T2) to detect Deforestation / Vegetation Loss, Urban Sprawl, or Wildfire Burn Scars with exact surface area in hectares.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "baseline_layer": {"type": "string", "description": "Baseline (T1) raster layer name or file path."},
+                    "target_layer": {"type": "string", "description": "Target (T2) raster layer name or file path."},
+                    "change_type": {"type": "string", "enum": ["vegetation_deforestation", "urban_sprawl", "wildfire_burn_severity"], "description": "Type of change to detect."},
+                    "threshold": {"type": "number", "description": "Differencing threshold for significant change (default -0.2)."},
+                    "output_layer_name": {"type": "string", "description": "Custom name for output vector hotspot layer."},
+                },
+                "required": ["baseline_layer"],
+            },
+            handler=tool_detect_raster_change,
+        ),
+        GISToolSpec(
+            name="drone_lidar_lod2_builder",
+            description="Drone & 3D LiDAR Engine. Ingests DSM/DTM elevation rasters or point clouds, computes Normalized Digital Surface Model (nDSM), and extrudes building footprints into 3D LoD-2 City Models with floor counts and roof profiles.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "dsm_layer": {"type": "string", "description": "Digital Surface Model (DSM) raster layer or file path."},
+                    "dtm_layer": {"type": "string", "description": "Digital Terrain Model (DTM) raster layer or file path (optional)."},
+                    "building_footprints_layer": {"type": "string", "description": "2D building footprints vector layer name (optional)."},
+                    "mode": {"type": "string", "enum": ["lod2_buildings", "canopy_height_model"], "description": "Output processing mode."},
+                    "output_layer_name": {"type": "string", "description": "Custom name for 3D LoD-2 layer."},
+                },
+                "required": [],
+            },
+            handler=tool_drone_lidar_lod2_builder,
+        ),
+        GISToolSpec(
+            name="gas_multi_agent_swarm",
+            description="Geospatial Agentic Services (GAS 2.0 + IBM AssetOpsBench AgentHive/MetaAgent) Multi-Agent Swarm. Coordinates Data Scout, Spatial Analytics, AssetOps Infrastructure, Cartography, and VeriGeo QA Agents collaboratively to execute complex, end-to-end GIS and infrastructure workflows with peer validation.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "goal": {"type": "string", "description": "High-level goal for the agent swarm (e.g. 'Assess solar suitability and generate publication map')."},
+                    "target_region": {"type": "string", "description": "Target city or geographic region."},
+                    "agents_roster": {"type": "array", "items": {"type": "string"}, "description": "List of sub-agents to mobilize."},
+                    "strategy": {"type": "string", "enum": ["pipeline", "parallel", "consensus", "agenthive", "metaagent"], "description": "Swarm execution strategy."},
+                },
+                "required": ["goal"],
+            },
+            handler=tool_gas_multi_agent_swarm,
+        ),
+        GISToolSpec(
+            name="assetops_iot_telemetry",
+            description="IBM AssetOpsBench Spatial IoT Sensor Telemetry & Anomaly Agent. Ingests or synthesizes real-time spatial IoT sensor streams (temperature, vibration RMS, load/pressure, harmonic THD, health index, Z-score) across power grids, water pipelines, telecom towers, solar farms, or bridges and plots live anomaly points in QGIS.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "asset_domain": {
+                        "type": "string",
+                        "enum": ["power_grid", "water_pipeline", "telecom_tower", "renewable_solar", "smart_city_bridge"],
+                        "description": "Industrial infrastructure asset domain (default 'power_grid').",
+                    },
+                    "target_layer_or_region": {"type": "string", "description": "Optional vector layer name or region extent."},
+                    "sensor_count": {"type": "integer", "description": "Number of spatial IoT sensor nodes to monitor (default 16)."},
+                    "anomaly_injection_rate": {"type": "number", "description": "Fraction of critical anomaly nodes (default 0.25)."},
+                    "output_layer_name": {"type": "string", "description": "Optional custom name for the IoT telemetry point layer."},
+                },
+                "required": [],
+            },
+            handler=tool_assetops_iot_telemetry,
+        ),
+        GISToolSpec(
+            name="assetops_fmsr_diagnostics",
+            description="IBM AssetOpsBench Spatial Failure Mode & Symptoms Reasoning (FMSR) Agent. Performs neuro-symbolic Root-Cause Analysis (RCA) by correlating IoT sensor anomalies with geospatial hazards (flood zones, heat islands, terrain slope, vegetation encroachment) and generates an ISO 55001 / ISO 14224 failure diagnostic polygon layer.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "telemetry_layer_or_domain": {
+                        "type": "string",
+                        "description": "Target IoT telemetry layer name or asset domain ('power_grid', 'water_pipeline', 'telecom_tower', 'renewable_solar', 'smart_city_bridge').",
+                    },
+                    "environmental_context": {"type": "string", "description": "Surrounding geospatial hazard context (e.g. 'High flood & thermal stress zone')."},
+                    "include_iso_compliance": {"type": "boolean", "description": "Attach ISO 55001 / ISO 14224 / IEEE failure standard references (default true)."},
+                    "output_layer_name": {"type": "string", "description": "Optional custom name for the FMSR diagnostic layer."},
+                },
+                "required": [],
+            },
+            handler=tool_assetops_fmsr_diagnostics,
+        ),
+        GISToolSpec(
+            name="assetops_tsfm_forecast",
+            description="IBM AssetOpsBench Spatio-Temporal Time-Series Foundation Model (TSFM) Forecaster. Runs zero-shot multivariate time-series forecasting (IBM Granite TSFM / TinyTimeMixer) over spatial infrastructure zones to predict Remaining Useful Life (RUL in days) and failure probability over a 7 to 365 day horizon.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "asset_domain": {
+                        "type": "string",
+                        "enum": ["power_grid", "water_pipeline", "telecom_tower", "renewable_solar", "smart_city_bridge"],
+                        "description": "Infrastructure domain to forecast (default 'power_grid').",
+                    },
+                    "forecast_horizon_days": {"type": "integer", "description": "Forecast horizon in days (default 30, range 7-365)."},
+                    "model_backbone": {"type": "string", "description": "TSFM model architecture (default 'IBM-Granite-TSFM-TinyTimeMixer')."},
+                    "output_layer_name": {"type": "string", "description": "Optional custom name for the TSFM risk forecast polygon layer."},
+                },
+                "required": [],
+            },
+            handler=tool_assetops_tsfm_forecast,
+        ),
+        GISToolSpec(
+            name="assetops_work_order_dispatch",
+            description="IBM AssetOpsBench Automated Geo-Work Order & Field Crew Dispatch Agent. Generates structured IBM Maximo / SAP PM maintenance work orders for failing infrastructure assets and plots optimized multi-crew road dispatch routes on the QGIS canvas.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "asset_domain": {
+                        "type": "string",
+                        "enum": ["power_grid", "water_pipeline", "telecom_tower", "renewable_solar", "smart_city_bridge"],
+                        "description": "Infrastructure domain for work order generation (default 'power_grid').",
+                    },
+                    "depot_location": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "Optional [lon, lat] coordinate of the field maintenance depot.",
+                    },
+                    "max_crews": {"type": "integer", "description": "Number of field engineering crews to dispatch (default 3)."},
+                    "sla_priority": {"type": "string", "enum": ["P1_EMERGENCY", "P2_URGENT", "P3_SCHEDULED"], "description": "SLA response tier."},
+                    "output_layer_name": {"type": "string", "description": "Optional custom name for the work order dispatch route layer."},
+                },
+                "required": [],
+            },
+            handler=tool_assetops_work_order_dispatch,
+        ),
+        GISToolSpec(
+            name="geo_assetops_benchmark_eval",
+            description="GeoAssetOpsBench Multi-Agent Evaluation & Benchmark Runner (IBM AssetOpsBench Architecture). Runs end-to-end Industry 4.0 geospatial scenarios across IoT, FMSR, TSFM, WorkOrder, and VeriGeo QA agents, producing reproducible evaluation scores for Task Completion, Tool Precision, Trajectory Optimality, and CodeReAct Error Recovery.",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "suite_domain": {
+                        "type": "string",
+                        "enum": ["all", "power_grid", "water_pipeline", "telecom_tower", "renewable_solar", "smart_city_bridge"],
+                        "description": "Benchmark domain suite to evaluate (default 'all').",
+                    },
+                    "orchestration_mode": {
+                        "type": "string",
+                        "enum": ["AgentHive_CodeReAct", "MetaAgent_Hierarchical", "GAS_2_0_Consensus"],
+                        "description": "Multi-agent orchestration blueprint (default 'AgentHive_CodeReAct').",
+                    },
+                    "execute_live_pipeline": {
+                        "type": "boolean",
+                        "description": "Execute live spatial layers for IoT, FMSR, TSFM, and Work Orders during evaluation (default true).",
+                    },
+                },
+                "required": [],
+            },
+            handler=tool_geo_assetops_benchmark_eval,
         ),
     ])
     return {s.name: s for s in specs}

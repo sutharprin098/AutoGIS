@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoGIS Studio System Architecture — VeriGeo, GAS 1.0.0 &amp; Xerj AI</title>
-  <meta name="description" content="Complete detailed architecture and execution lifecycle of AutoGIS: VeriGeo Neuro-Symbolic Verification, Geospatial Agentic Services (GAS 1.0.0), and Xerj AI Document Intelligence." />
+  <title>AutoGIS Studio v1.0.9 System Architecture — IBM AssetOpsBench, GeoSAM, VeriGeo &amp; Xerj AI</title>
+  <meta name="description" content="Core system execution architecture of AutoGIS v1.0.9: IBM AssetOpsBench spatial digital twin, GeoSAM tiled segmentation, VeriGeo verification, Xerj AI dual layer, and GAS 2.0." />
   <link rel="icon" type="image/svg+xml" href="/assets/icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -59,25 +59,6 @@
       backdrop-filter: blur(16px);
       border-bottom: 1px solid #E2E8F0;
     }
-    .step-card {
-      background: #FFFFFF;
-      border: 1px solid #E2E8F0;
-      border-radius: 1rem;
-      padding: 1.5rem;
-      box-shadow: 0 4px 15px -3px rgba(15, 23, 42, 0.04);
-      transition: all 0.2s ease;
-    }
-    .step-card:hover {
-      border-color: #0284C7;
-      box-shadow: 0 10px 25px -4px rgba(2, 132, 199, 0.08);
-      transform: translateY(-2px);
-    }
-    .prompt-tab.active {
-      background-color: #0F172A;
-      color: #FFFFFF;
-      border-color: #0F172A;
-    }
-    /* Detailed Mermaid Diagram Container with Smooth Pan & Zoom */
     .mermaid-box {
       width: 100%;
       overflow: auto;
@@ -89,7 +70,7 @@
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
     }
     .mermaid-viewport {
-      min-width: 1050px;
+      min-width: 1080px;
       display: flex;
       justify-content: center;
       transition: transform 0.2s ease-out;
@@ -97,12 +78,12 @@
     }
     .mermaid svg {
       width: 100% !important;
-      max-width: 1100px !important;
+      max-width: 1120px !important;
       height: auto !important;
     }
     .mermaid .nodeLabel {
       font-family: 'Inter', system-ui, sans-serif !important;
-      font-size: 14px !important;
+      font-size: 13.5px !important;
       font-weight: 600 !important;
       line-height: 1.4 !important;
     }
@@ -123,75 +104,76 @@
         <img src="/assets/icon.svg" alt="AutoGIS Logo" class="h-8 w-8" />
         <div class="flex items-baseline gap-2">
           <span class="font-extrabold tracking-tight text-slate-900 text-lg">AutoGIS</span>
-          <span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono text-[11px] font-bold text-sky-700">Studio v1.0.7</span>
+          <span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono text-[11px] font-bold text-sky-700">Studio v1.0.9</span>
         </div>
       </a>
 
       <nav class="hidden md:flex items-center gap-7 text-xs font-semibold text-slate-600">
         <a href="/" class="hover:text-slate-900 transition">Home</a>
-        <a href="/architecture" class="text-sky-600 font-bold flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-sky-500"></span>Architecture &amp; Workflow Graph</a>
+        <a href="/architecture" class="text-sky-600 font-bold flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-sky-500"></span>Architecture</a>
         <a href="/tech-stack" class="hover:text-slate-900 transition">Tech Stack</a>
         <a href="/#tools" class="hover:text-slate-900 transition">Tools</a>
         <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="hover:text-slate-900 transition">GitHub</a>
       </nav>
 
       <div class="flex items-center gap-3">
-        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.7/AutoGIS.zip"
+        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.9/AutoGIS.zip"
            class="inline-flex items-center justify-center rounded-xl bg-sky-600 px-4 py-2 font-mono text-xs font-bold text-white shadow-sm transition hover:bg-sky-500 hover:shadow-md">
-          Download ZIP (v1.0.7)
+          Download ZIP (v1.0.9)
         </a>
       </div>
     </div>
   </header>
 
-  <!-- Hero Header with All 3 Ecosystem Logos -->
+  <!-- Hero Header -->
   <section class="mx-auto max-w-5xl px-6 pt-12 pb-8 text-center">
     
-    <!-- Badges Row with Logos -->
-    <div class="inline-flex flex-wrap items-center justify-center gap-3 mb-4">
+    <!-- Badges Row -->
+    <div class="inline-flex flex-wrap items-center justify-center gap-2.5 mb-4">
+      <a href="https://github.com/IBM/AssetOpsBench" target="_blank" class="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-800 shadow-sm hover:border-slate-400">
+        <span class="h-2 w-2 rounded-full bg-blue-600"></span>
+        <span>IBM AssetOpsBench Architecture</span>
+      </a>
+      <div class="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800 shadow-sm">
+        <span>🛰️ GeoSAM Tiled AI</span>
+      </div>
       <div class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 shadow-sm">
         <img src="/assets/verigeo-logo.svg" alt="VeriGeo Logo" class="h-4 w-4" />
         <span>VeriGeo (NS-VGP 1.0)</span>
       </div>
-      <div class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-800 shadow-sm">
-        <img src="/assets/gas-logo.svg" alt="GAS Logo" class="h-4 w-4" />
-        <span>GAS 1.0.0 Multi-Agent Mesh</span>
-      </div>
       <div class="inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-800 shadow-sm">
         <img src="/assets/xerj-logo.svg" alt="Xerj AI Logo" class="h-4 w-4" />
-        <span>Xerj AI Document Intelligence</span>
+        <span>Xerj AI Dual Layer</span>
       </div>
     </div>
 
-    <!-- Main Title with All 3 Names -->
+    <!-- Main Title -->
     <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl leading-tight">
-      VeriGeo, GAS 1.0.0 &amp; Xerj AI Integrated Architecture
+      AutoGIS Studio v1.0.9 System Architecture
     </h1>
     
     <p class="mx-auto mt-4 max-w-3xl text-base text-slate-600 md:text-lg">
-      Detailed end-to-end execution lifecycle: tracing autonomous data flow across <strong>VeriGeo Neuro-Symbolic Guardian</strong>, <strong>GAS 1.0.0 Distributed Mesh</strong>, <strong>Xerj AI Document Intelligence</strong>, and the <strong>PyQGIS Engine</strong>.
+      A transparent, essential overview of the AutoGIS execution pipeline: integrating <strong>IBM AssetOpsBench</strong> spatial digital twin algorithms, <strong>GeoSAM</strong> tiled foundation segmentation, <strong>Xerj AI</strong> document intelligence, <strong>VeriGeo</strong> mathematical validation, and the <strong>PyQGIS</strong> desktop canvas.
     </p>
 
-    <!-- Visual Logo Partner Bar -->
-    <div class="mt-8 flex flex-wrap items-center justify-center gap-6 sm:gap-10 pt-6 border-t border-slate-200/60 text-slate-400">
-      <div class="flex items-center gap-2 font-mono text-xs font-bold text-slate-700">
-        <img src="/assets/icon.svg" alt="AutoGIS" class="h-7 w-7" />
-        <span>AutoGIS Studio</span>
+    <!-- Partner / Standard Bar -->
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-6 sm:gap-8 pt-6 border-t border-slate-200/60 text-slate-400">
+      <div class="flex items-center gap-2 font-mono text-xs font-bold text-slate-800">
+        <span>AutoGIS v1.0.9</span>
       </div>
       <span class="text-slate-300">•</span>
+      <a href="https://github.com/IBM/AssetOpsBench" target="_blank" class="flex items-center gap-2 font-mono text-xs font-bold text-blue-700 hover:underline">
+        <span>IBM AssetOpsBench</span>
+      </a>
+      <span class="text-slate-300">•</span>
       <div class="flex items-center gap-2 font-mono text-xs font-bold text-emerald-700">
-        <img src="/assets/verigeo-logo.svg" alt="VeriGeo" class="h-7 w-7" />
+        <img src="/assets/verigeo-logo.svg" alt="VeriGeo" class="h-4 w-4" />
         <span>VeriGeo Protocol</span>
       </div>
       <span class="text-slate-300">•</span>
-      <div class="flex items-center gap-2 font-mono text-xs font-bold text-indigo-700">
-        <img src="/assets/gas-logo.svg" alt="GAS 1.0.0" class="h-7 w-7" />
-        <span>GAS 1.0.0 Mesh</span>
-      </div>
-      <span class="text-slate-300">•</span>
       <div class="flex items-center gap-2 font-mono text-xs font-bold text-purple-700">
-        <img src="/assets/xerj-logo.svg" alt="Xerj AI" class="h-7 w-7" />
-        <span>Xerj AI Engine</span>
+        <img src="/assets/xerj-logo.svg" alt="Xerj AI" class="h-4 w-4" />
+        <span>Xerj AI Platform</span>
       </div>
     </div>
   </section>
@@ -202,33 +184,27 @@
     <!-- Visual Architecture Main Card -->
     <div class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm mb-16">
       
-      <!-- Top Badges & Title -->
+      <!-- Top Title -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-100 gap-3">
         <div>
-          <h2 class="text-xl font-bold text-slate-900">End-to-End System Execution Graph</h2>
-          <p class="text-xs text-slate-500">Autonomous workflow across VeriGeo Guardian, GAS Agentic Services, Xerj AI, and PyQGIS Engine.</p>
+          <h2 class="text-xl font-bold text-slate-900">System Execution Graph (Clean &amp; Essential)</h2>
+          <p class="text-xs text-slate-500">End-to-end execution lifecycle without unnecessary complexity or external fluff.</p>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 font-mono text-[11px] font-bold">
-            <img src="/assets/verigeo-logo.svg" alt="VeriGeo" class="h-3 w-3" /> VeriGeo
-          </span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 text-indigo-800 px-2.5 py-0.5 font-mono text-[11px] font-bold">
-            <img src="/assets/gas-logo.svg" alt="GAS" class="h-3 w-3" /> GAS 1.0.0
-          </span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-purple-100 text-purple-800 px-2.5 py-0.5 font-mono text-[11px] font-bold">
-            <img src="/assets/xerj-logo.svg" alt="Xerj AI" class="h-3 w-3" /> Xerj AI
-          </span>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-100 text-blue-800 px-2.5 py-0.5 font-mono text-[11px] font-bold">IBM AssetOps</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 font-mono text-[11px] font-bold">VeriGeo</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-purple-100 text-purple-800 px-2.5 py-0.5 font-mono text-[11px] font-bold">Xerj AI</span>
         </div>
       </div>
 
-      <!-- 1. Executive 5-Stage Visual Workflow Cards (With Logos & 100% Real) -->
+      <!-- 1. Executive 5 Core Lifecycle Stages -->
       <div class="my-8">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
             <span class="flex h-5 w-5 items-center justify-center rounded-full bg-sky-100 text-sky-700 text-xs font-bold">✓</span>
-            Core Execution Lifecycle (5 Real Stages)
+            Essential 5-Stage Execution Lifecycle
           </h3>
-          <span class="text-[11px] text-slate-500 font-mono">100% Real Pipeline · No Unnecessary Fluff</span>
+          <span class="text-[11px] text-slate-500 font-mono">100% Real PyQGIS Pipeline</span>
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
@@ -237,10 +213,10 @@
             <div>
               <div class="flex items-center justify-between mb-2">
                 <span class="font-mono text-[10px] font-bold text-slate-500 uppercase tracking-wider">Stage 01</span>
-                <img src="/assets/icon.svg" alt="Input" class="h-5 w-5" />
+                <span class="text-sm">🗣️</span>
               </div>
               <h4 class="text-sm font-bold text-slate-900">User Ingestion</h4>
-              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Natural prompt, voice query, or attached spatial document (PDF, TXT, DOCX).</p>
+              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Natural prompt, active QGIS map layer, or attached infrastructure document/spreadsheet.</p>
             </div>
             <div class="mt-3 pt-2 border-t border-slate-200 font-mono text-[10px] text-slate-500 font-semibold">
               Input Layer
@@ -248,146 +224,142 @@
           </div>
 
           <!-- Stage 2 -->
-          <div class="rounded-xl border border-purple-200 bg-purple-50/50 p-4 flex flex-col justify-between hover:border-purple-300 transition">
+          <div class="rounded-xl border border-orange-200 bg-orange-50/50 p-4 flex flex-col justify-between hover:border-orange-300 transition">
             <div>
               <div class="flex items-center justify-between mb-2">
-                <span class="font-mono text-[10px] font-bold text-purple-700 uppercase tracking-wider">Stage 02</span>
-                <img src="/assets/xerj-logo.svg" alt="Xerj AI" class="h-5 w-5" />
+                <span class="font-mono text-[10px] font-bold text-orange-700 uppercase tracking-wider">Stage 02</span>
+                <span class="text-sm">⚡</span>
               </div>
-              <h4 class="text-sm font-bold text-slate-900">Planner &amp; Xerj AI</h4>
-              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Task decomposition into steps. If document is attached, Xerj AI extracts coordinates and parameters.</p>
+              <h4 class="text-sm font-bold text-slate-900">Frontier AI Reasoning</h4>
+              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Task decomposition using Claude 3.7 native messages, Gemini 3 Flash, GPT-4o, DeepSeek, or Xerj AI.</p>
             </div>
-            <div class="mt-3 pt-2 border-t border-purple-200 font-mono text-[10px] text-purple-700 font-semibold">
-              AI Router &amp; Parsing
+            <div class="mt-3 pt-2 border-t border-orange-200 font-mono text-[10px] text-orange-700 font-semibold">
+              Dual-Protocol AI
             </div>
           </div>
 
           <!-- Stage 3 -->
+          <div class="rounded-xl border border-purple-200 bg-purple-50/50 p-4 flex flex-col justify-between hover:border-purple-300 transition">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-[10px] font-bold text-purple-700 uppercase tracking-wider">Stage 03</span>
+                <img src="/assets/xerj-logo.svg" alt="Xerj AI" class="h-4 w-4" />
+              </div>
+              <h4 class="text-sm font-bold text-slate-900">Xerj AI Intelligence</h4>
+              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">xerj-reader-1 checked programs extract coordinates &amp; specs; local daemon queries spatial knowledge.</p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-purple-200 font-mono text-[10px] text-purple-700 font-semibold">
+              Symbolic Parser
+            </div>
+          </div>
+
+          <!-- Stage 4 -->
           <div class="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 flex flex-col justify-between hover:border-emerald-300 transition">
             <div>
               <div class="flex items-center justify-between mb-2">
-                <span class="font-mono text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Stage 03</span>
-                <img src="/assets/verigeo-logo.svg" alt="VeriGeo" class="h-5 w-5" />
+                <span class="font-mono text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Stage 04</span>
+                <img src="/assets/verigeo-logo.svg" alt="VeriGeo" class="h-4 w-4" />
               </div>
               <h4 class="text-sm font-bold text-slate-900">VeriGeo Guardian</h4>
-              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Pre-execution verification: Metric UTM/Equal-Area CRS, sliver ring auto-repair, and MAUP bounds.</p>
+              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Enforces Metric UTM/Equal-Area CRS, fixes sliver polygon rings, and validates spatial rate boundaries.</p>
             </div>
             <div class="mt-3 pt-2 border-t border-emerald-200 font-mono text-[10px] text-emerald-800 font-semibold">
               NS-VGP 1.0 Runtime
             </div>
           </div>
 
-          <!-- Stage 4 -->
-          <div class="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 flex flex-col justify-between hover:border-indigo-300 transition">
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <span class="font-mono text-[10px] font-bold text-indigo-800 uppercase tracking-wider">Stage 04</span>
-                <img src="/assets/gas-logo.svg" alt="GAS" class="h-5 w-5" />
-              </div>
-              <h4 class="text-sm font-bold text-slate-900">Dual Execution</h4>
-              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Local PyQGIS algorithms (GDAL, GeoPandas) OR remote GAS 1.0.0 specialist agents (SAR, Hydrology).</p>
-            </div>
-            <div class="mt-3 pt-2 border-t border-indigo-200 font-mono text-[10px] text-indigo-800 font-semibold">
-              PyQGIS &amp; GAS Mesh
-            </div>
-          </div>
-
           <!-- Stage 5 -->
-          <div class="rounded-xl border border-green-300 bg-green-50/70 p-4 flex flex-col justify-between hover:border-green-400 transition">
+          <div class="rounded-xl border border-blue-200 bg-blue-50/70 p-4 flex flex-col justify-between hover:border-blue-300 transition">
             <div>
               <div class="flex items-center justify-between mb-2">
-                <span class="font-mono text-[10px] font-bold text-green-800 uppercase tracking-wider">Stage 05</span>
-                <span class="text-base">🗺️</span>
+                <span class="font-mono text-[10px] font-bold text-blue-800 uppercase tracking-wider">Stage 05</span>
+                <span class="text-sm">🗺️</span>
               </div>
-              <h4 class="text-sm font-bold text-slate-900">Certified Output</h4>
-              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Direct QGIS canvas layer draping, 300 DPI publication map export, and SHA-256 proof certificate.</p>
+              <h4 class="text-sm font-bold text-slate-900">Execution &amp; Draping</h4>
+              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Runs IBM AssetOpsBench, GeoSAM tiling, or PyQGIS tools, draping verified layers onto QGIS canvas.</p>
             </div>
-            <div class="mt-3 pt-2 border-t border-green-200 font-mono text-[10px] text-green-800 font-semibold">
-              Canvas &amp; Proof
+            <div class="mt-3 pt-2 border-t border-blue-200 font-mono text-[10px] text-blue-800 font-semibold">
+              QGIS Canvas Drape
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 2. Detailed Technical Execution Flowchart with Zoom Controls & Fullscreen -->
+      <!-- 2. Clean Mermaid Diagram -->
       <div class="mt-10 pt-6 border-t border-slate-100">
         
-        <!-- Zoom Controls Toolbar -->
         <div class="flex flex-wrap items-center justify-between pb-4 gap-3">
           <div>
             <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>Detailed System Execution Flowchart</span>
-              <span class="rounded bg-sky-100 px-2 py-0.5 text-sky-800 font-mono text-[10px] font-bold">Interactive Deep-Dive</span>
+              <span>Technical Execution Flowchart</span>
+              <span class="rounded bg-sky-100 px-2 py-0.5 text-sky-800 font-mono text-[10px] font-bold">Standard PyQGIS Flow</span>
             </h3>
-            <p class="text-xs text-slate-500">Zoom in to inspect every condition diamond, decision branch, axiom verification, and self-healing loop.</p>
+            <p class="text-xs text-slate-500">Precise decision branching across AI reasoning, document intelligence, verification, and spatial execution.</p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
             <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
-              <button onclick="zoomMermaid(0.2)" title="Zoom In" class="px-3 py-1.5 text-xs font-mono font-bold bg-white hover:bg-slate-50 text-slate-800 rounded-lg border border-slate-200 shadow-sm transition flex items-center gap-1">
-                <span>🔍+</span> <span>Zoom In</span>
+              <button onclick="zoomMermaid(0.2)" title="Zoom In" class="px-3 py-1.5 text-xs font-mono font-bold bg-white hover:bg-slate-50 text-slate-800 rounded-lg border border-slate-200 shadow-sm transition">
+                🔍+ In
               </button>
-              <button onclick="zoomMermaid(-0.2)" title="Zoom Out" class="px-3 py-1.5 text-xs font-mono font-bold bg-white hover:bg-slate-50 text-slate-800 rounded-lg border border-slate-200 shadow-sm transition flex items-center gap-1">
-                <span>🔍-</span> <span>Zoom Out</span>
+              <button onclick="zoomMermaid(-0.2)" title="Zoom Out" class="px-3 py-1.5 text-xs font-mono font-bold bg-white hover:bg-slate-50 text-slate-800 rounded-lg border border-slate-200 shadow-sm transition">
+                🔍- Out
               </button>
               <button onclick="resetZoomMermaid()" title="Reset to 100%" class="px-3 py-1.5 text-xs font-mono font-bold bg-white hover:bg-slate-50 text-slate-800 rounded-lg border border-slate-200 shadow-sm transition">
                 ↺ Reset
               </button>
               <span id="zoom-level" class="px-2.5 py-1 text-xs font-mono font-bold text-sky-700 bg-sky-50 rounded-md border border-sky-200">100%</span>
             </div>
-            <button onclick="toggleFullscreenDiagram()" title="Open Full Screen View" class="px-3.5 py-1.5 text-xs font-mono font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm transition flex items-center gap-1.5">
-              <span>⛶</span> <span>Fullscreen</span>
-            </button>
           </div>
         </div>
 
-        <!-- Mermaid Diagram Viewport with Scrollbars & Pan-Zoom -->
+        <!-- Mermaid Container -->
         <div id="diagram-container" class="mermaid-box">
           <div id="mermaid-viewport" class="mermaid-viewport">
             <pre class="mermaid text-sm">
 flowchart TD
-    %% Detailed Architecture Graph Nodes Styling
+    %% Architecture Styling
     classDef mainNode fill:#F8FAFC,stroke:#0284C7,stroke-width:2px,color:#0F172A,font-weight:600,font-size:14px;
     classDef decisionNode fill:#FEF3C7,stroke:#D97706,stroke-width:2px,color:#78350F,font-weight:700,font-size:13px;
     classDef xerjNode fill:#FAF5FF,stroke:#9333EA,stroke-width:2px,color:#6B21A8,font-weight:600,font-size:14px;
     classDef veriNode fill:#ECFDF5,stroke:#059669,stroke-width:2px,color:#065F46,font-weight:600,font-size:13px;
-    classDef gasNode fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81,font-weight:600,font-size:13px;
+    classDef assetNode fill:#EFF6FF,stroke:#1D4ED8,stroke-width:2px,color:#1E3A8A,font-weight:600,font-size:13px;
     classDef outputNode fill:#F0FDF4,stroke:#16A34A,stroke-width:3px,color:#14532D,font-weight:800,font-size:15px;
     classDef healNode fill:#FEF2F2,stroke:#DC2626,stroke-width:2px,color:#991B1B,font-weight:700,font-size:13px;
 
-    subgraph S1 ["1. USER INGESTION &amp; AGENT PLANNER"]
-        A["🗣️ User Prompt / Voice / Uploaded Document"]:::mainNode --> B["🤖 AutoGIS Agent Planner\n(Task Decomposition &amp; Step Tracker)"]:::mainNode
+    subgraph S1 ["1. USER INGESTION &amp; AI REASONING"]
+        A["🗣️ User Natural Language / Layer Selection / Document"]:::mainNode --> B{"Provider Routing"}:::decisionNode
+        B -- "Native Messages" --> C1["Claude 3.7 / 3.5 Sonnet\n(/v1/messages API)"]:::mainNode
+        B -- "OpenAI-Compatible" --> C2["Gemini 3 Flash (AQ. Keys) · GPT-4o\nDeepSeek R1 · Xerj Geo-Reasoner"]:::mainNode
+        C1 &amp; C2 --> D["AutoGIS Task Planner &amp; Step Decomposition"]:::mainNode
     end
 
-    subgraph S2 ["2. XERJ AI DOCUMENT ROUTER"]
-        B --> C{"Document Attached?"}:::decisionNode
-        C -- "YES: Has Xerj API Key" --> D{"Spatial Entity Density &ge; 0.25"}:::decisionNode
-        D -- "Spatial" --> E["🌟 Xerj AI Reader-1\n(/v1/answers Typed Extraction)"]:::xerjNode
-        D -- "General" --> F["Primary LLM\n(Gemini / GPT-4o / Claude)"]:::mainNode
-        C -- "NO / Plain Prompt" --> G["Direct Spatial Workflow Engine"]:::mainNode
+    subgraph S2 ["2. XERJ AI SPATIAL DOCUMENT INTELLIGENCE"]
+        D --> E{"Document Attached?"}:::decisionNode
+        E -- "YES" --> F1["🌟 Xerj AI Reader-1 (/v1/answers)\nTyped Symbolic Checked Programs"]:::xerjNode
+        E -- "NO / Plain Prompt" --> G["Direct Spatial Dispatch"]:::mainNode
+        F1 --> G
     end
 
-    subgraph S3 ["🛡️ 3. VERIGEO NEURO-SYMBOLIC GUARDIAN (NS-VGP 1.0)"]
-        G &amp; E &amp; F --> H["VeriGeo Pre-Execution Axiom Verification"]:::veriNode
-        H --> I1["Axiom 1: Equal-Area &amp; Metric UTM CRS"]:::veriNode
-        H --> I2["Axiom 2: Counts vs Ratios (MAUP &amp; Pycnophylactic Interpolation)"]:::veriNode
-        H --> I3["Axiom 3: Sliver Polygon &amp; Ring Auto-Repair (circ &lt; 0.05)"]:::veriNode
-        H --> I4["Axiom 4: Physical Mass/Energy Conservation Limits"]:::veriNode
+    subgraph S3 ["3. VERIGEO FORMAL VERIFICATION (NS-VGP 1.0)"]
+        G --> H["VeriGeo Pre-Execution Axiom Verification"]:::veriNode
+        H --> I1["Axiom 1: Metric UTM &amp; Equal-Area CRS Enforcement"]:::veriNode
+        H --> I2["Axiom 2: MAUP &amp; Tobler Pycnophylactic Interpolation"]:::veriNode
+        H --> I3["Axiom 3: Sliver Ring Auto-Repair &amp; Gap Snapping"]:::veriNode
     end
 
-    subgraph S4 ["🤝 4. GEOSPATIAL AGENTIC SERVICES (GAS 1.0.0 MESH)"]
-        I1 &amp; I2 &amp; I3 &amp; I4 --> J{"Task Requires Remote\nSpecialist Agent?"}:::decisionNode
-        J -- "YES: Remote Specialized Tool" --> K["GAS 1.0.0 Client Registry Search"]:::gasNode
-        K --> L["Remote GAS Agents\n(SAR Crop Agent · Hydrology Agent · GIBD Lab)"]:::gasNode
-        L --> M["ExecuteTask\n(Sync · SSE Stream · Async Polling)"]:::gasNode
-        M --> N["Automatic QGIS Layer &amp; Artifact Loader"]:::gasNode
-        J -- "NO: Local Operation" --> O["Local PyQGIS Core Engine"]:::mainNode
+    subgraph S4 ["4. CORE SPATIAL EXECUTION ENGINES"]
+        I1 &amp; I2 &amp; I3 --> J{"Execution Module"}:::decisionNode
+        J -- "Infrastructure IoT / FMSR" --> K1["🏭 IBM AssetOpsBench Suite\n(IoT Telemetry, FMSR Diagnostics, Work Orders)"]:::assetNode
+        J -- "AI Building Extraction" --> K2["🛰️ GeoSAM Tiled Segmentation\n(256/512px Overlapped Windowing)"]:::mainNode
+        J -- "Satellite Imagery" --> K3["🌍 Google Earth Engine (GEE)\n(DEMs, Sentinel-2 Optical, NDVI)"]:::mainNode
+        J -- "Desktop Geoprocessing" --> K4["🗺️ Native PyQGIS Processing Engine\n(Buffers, Overlays, Spatial Joins, Symbology)"]:::mainNode
     end
 
-    subgraph S5 ["5. OUTPUT &amp; FORMAL PROOF CERTIFICATE"]
-        N &amp; O --> P{"VeriGeo Final Quality Gate"}:::decisionNode
-        P -- "Passed" --> Q["🗺️ QGIS Live Canvas + 300 DPI Print Layout + .vgeo SHA-256 Proof"]:::outputNode
-        P -- "Empty / Mismatch" --> R["Self-Healing Backtracking Engine"]:::healNode
-        R ==> B
+    subgraph S5 ["5. QUALITY GATE &amp; LIVE QGIS CANVAS"]
+        K1 &amp; K2 &amp; K3 &amp; K4 --> L{"VeriGeo Quality Gate"}:::decisionNode
+        L -- "Valid Output" --> M["🗺️ QGIS Live Canvas Layer + Verified Symbology + SHA-256 Proof"]:::outputNode
+        L -- "CRS Mismatch / Empty" --> N["Self-Healing Backtracking Loop"]:::healNode
+        N ==> D
     end
             </pre>
           </div>
@@ -397,361 +369,178 @@ flowchart TD
 
     </div>
 
-    <!-- 3 Highlighted Deep-Dive Sections: VeriGeo, GAS 1.0.0, and Xerj AI (With Logos) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+    <!-- 4 Essential Pillars: IBM AssetOpsBench, GeoSAM, VeriGeo, and Xerj AI -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
 
-      <!-- 1. VeriGeo Deep Dive -->
-      <div class="rounded-2xl border-2 border-emerald-500 bg-white p-6 shadow-sm flex flex-col justify-between">
+      <!-- 1. IBM AssetOpsBench Pillar -->
+      <div class="rounded-2xl border-2 border-blue-600 bg-white p-5 shadow-sm flex flex-col justify-between">
         <div>
-          <div class="flex items-center gap-3 mb-4">
-            <img src="/assets/verigeo-logo.svg" alt="VeriGeo Logo" class="h-10 w-10 shrink-0" />
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">🏭</span>
             <div>
-              <h3 class="text-base font-bold text-slate-900">VeriGeo Runtime Guardian</h3>
-              <p class="text-xs text-emerald-700 font-mono font-semibold">NS-VGP 1.0 Protocol</p>
+              <h3 class="text-sm font-bold text-slate-900">IBM AssetOpsBench</h3>
+              <a href="https://github.com/IBM/AssetOpsBench" target="_blank" class="text-[11px] text-blue-700 font-mono font-semibold hover:underline">Official Benchmark ↗</a>
             </div>
           </div>
-          <p class="text-xs text-slate-600 leading-relaxed mb-4">
-            Neuro-Symbolic guardian eliminating silent spatial hallucinations. General LLMs check only Python syntax; VeriGeo enforces non-negotiable scientific axioms:
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">
+            Spatial infrastructure digital twin adapted from IBM's AssetOpsBench standard:
           </p>
-          <div class="space-y-2 text-xs">
-            <div class="rounded-lg bg-emerald-50/70 p-2.5 border border-emerald-100">
-              <strong class="text-emerald-900">Axiom 1 (Projections):</strong> Equal-Area CRS for area/carbon sums; Metric UTM for buffer distances.
+          <div class="space-y-1.5 text-xs">
+            <div class="rounded-lg bg-blue-50/70 p-2 border border-blue-100">
+              <strong class="text-blue-900">Spatial IoT Telemetry:</strong> Ingests sensor data &amp; computes anomaly z-scores.
             </div>
-            <div class="rounded-lg bg-emerald-50/70 p-2.5 border border-emerald-100">
-              <strong class="text-emerald-900">Axiom 2 (MAUP Guard):</strong> 35-pass pycnophylactic smooth interpolation prevents summing intensive ratios.
+            <div class="rounded-lg bg-blue-50/70 p-2 border border-blue-100">
+              <strong class="text-blue-900">ISO 55001 Diagnostics:</strong> FMSR root-cause reasoning across power, water &amp; bridges.
             </div>
-            <div class="rounded-lg bg-emerald-50/70 p-2.5 border border-emerald-100">
-              <strong class="text-emerald-900">Axiom 3 (Topology):</strong> Auto-prunes micro slivers ($circ &lt; 0.05$) and snaps self-intersecting rings.
-            </div>
-            <div class="rounded-lg bg-emerald-50/70 p-2.5 border border-emerald-100">
-              <strong class="text-emerald-900">Axiom 4 (Thermodynamics):</strong> Enforces thermodynamic limits and hydrological mass conservation.
+            <div class="rounded-lg bg-blue-50/70 p-2 border border-blue-100">
+              <strong class="text-blue-900">Geo-Work Orders:</strong> Automated maintenance dispatch &amp; crew routing.
             </div>
           </div>
         </div>
-        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
-          <span>Repo: <a href="https://github.com/sutharprin098/VeriGeo" class="text-sky-600 font-semibold hover:underline">sutharprin098/VeriGeo</a></span>
-          <span class="text-emerald-600 font-bold">10/10 Verified</span>
+        <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Pure Local Math</span>
+          <span class="text-blue-600 font-bold">100% Offline ✓</span>
         </div>
       </div>
 
-      <!-- 2. GAS 1.0.0 Deep Dive -->
-      <div class="rounded-2xl border-2 border-indigo-500 bg-white p-6 shadow-sm flex flex-col justify-between">
+      <!-- 2. GeoSAM Deep Dive -->
+      <div class="rounded-2xl border-2 border-sky-500 bg-white p-5 shadow-sm flex flex-col justify-between">
         <div>
-          <div class="flex items-center gap-3 mb-4">
-            <img src="/assets/gas-logo.svg" alt="GAS Logo" class="h-10 w-10 shrink-0" />
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">🛰️</span>
             <div>
-              <h3 class="text-base font-bold text-slate-900">Geospatial Agentic Services</h3>
-              <p class="text-xs text-indigo-700 font-mono font-semibold">GAS 1.0.0 OGC Mesh</p>
+              <h3 class="text-sm font-bold text-slate-900">GeoSAM Tiled AI</h3>
+              <p class="text-[11px] text-sky-700 font-mono font-semibold">TerraLab Parity</p>
             </div>
           </div>
-          <p class="text-xs text-slate-600 leading-relaxed mb-4">
-            OGC-style standard protocol by GIBD Lab connecting local QGIS workflows to distributed remote agent nodes across research institutions:
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">
+            Zero-shot segmentation on satellite rasters without freezing QGIS:
           </p>
-          <div class="space-y-2 text-xs">
-            <div class="rounded-lg bg-indigo-50/70 p-2.5 border border-indigo-100">
-              <strong class="text-indigo-900">Discovery:</strong> Discovers published remote agents across university registries via <code>gas_registry_search</code>.
+          <div class="space-y-1.5 text-xs">
+            <div class="rounded-lg bg-sky-50/70 p-2 border border-sky-100">
+              <strong class="text-sky-900">256/512px Tiling:</strong> 15% overlap eliminates tile boundary cut artifacts.
             </div>
-            <div class="rounded-lg bg-indigo-50/70 p-2.5 border border-indigo-100">
-              <strong class="text-indigo-900">Schema Negotiation:</strong> Inspects JSON parameter schemas and agent status via <code>gas_describe_agent</code>.
+            <div class="rounded-lg bg-sky-50/70 p-2 border border-sky-100">
+              <strong class="text-sky-900">GSD Guardrail:</strong> Recommends sub-meter imagery over coarse 10m Sentinel-2.
             </div>
-            <div class="rounded-lg bg-indigo-50/70 p-2.5 border border-indigo-100">
-              <strong class="text-indigo-900">Live SSE &amp; Async:</strong> Supports synchronous tasks, live streaming tokens, and async compute jobs.
-            </div>
-            <div class="rounded-lg bg-indigo-50/70 p-2.5 border border-indigo-100">
-              <strong class="text-indigo-900">Canvas Draping:</strong> Returned GeoJSON, Shapefiles, and GeoTIFFs auto-drape directly into QGIS layers.
+            <div class="rounded-lg bg-sky-50/70 p-2 border border-sky-100">
+              <strong class="text-sky-900">Polygon Orthogonalize:</strong> Clean rectangular building outlines.
             </div>
           </div>
         </div>
-        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
-          <span>Standards: GIBD Lab GAS 1.0.0</span>
-          <span class="text-indigo-600 font-bold">5 Native Tools</span>
+        <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Sub-meter Footprints</span>
+          <span class="text-sky-600 font-bold">Zero Crash ✓</span>
         </div>
       </div>
 
-      <!-- 3. Xerj AI Deep Dive -->
-      <div class="rounded-2xl border-2 border-purple-500 bg-white p-6 shadow-sm flex flex-col justify-between">
+      <!-- 3. VeriGeo Deep Dive -->
+      <div class="rounded-2xl border-2 border-emerald-500 bg-white p-5 shadow-sm flex flex-col justify-between">
         <div>
-          <div class="flex items-center gap-3 mb-4">
-            <img src="/assets/xerj-logo.svg" alt="Xerj AI Logo" class="h-10 w-10 shrink-0" />
+          <div class="flex items-center gap-3 mb-3">
+            <img src="/assets/verigeo-logo.svg" alt="VeriGeo" class="h-8 w-8 shrink-0" />
             <div>
-              <h3 class="text-base font-bold text-slate-900">Xerj AI Document Intelligence</h3>
-              <p class="text-xs text-purple-700 font-mono font-semibold">xerj-reader-1 Engine</p>
+              <h3 class="text-sm font-bold text-slate-900">VeriGeo Guardian</h3>
+              <p class="text-[11px] text-emerald-700 font-mono font-semibold">NS-VGP 1.0 Runtime</p>
             </div>
           </div>
-          <p class="text-xs text-slate-600 leading-relaxed mb-4">
-            Official integration with the XERJ Platform for typed symbolic extraction and checked programs from environmental reports and spatial PDFs:
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">
+            Eliminates silent spatial hallucinations with mathematical verification:
           </p>
-          <div class="space-y-2 text-xs">
-            <div class="rounded-lg bg-purple-50/70 p-2.5 border border-purple-100">
-              <strong class="text-purple-900">Autonomous AI Router:</strong> Evaluates spatial entity density (&gt;0.25) to automatically route documents to Xerj.
+          <div class="space-y-1.5 text-xs">
+            <div class="rounded-lg bg-emerald-50/70 p-2 border border-emerald-100">
+              <strong class="text-emerald-900">Axiom 1 (CRS):</strong> Enforces Metric UTM &amp; Equal-Area projections.
             </div>
-            <div class="rounded-lg bg-purple-50/70 p-2.5 border border-purple-100">
-              <strong class="text-purple-900">Checked Programs:</strong> Extracts typed coordinates, EPSG codes, and buffer numbers with character offsets.
+            <div class="rounded-lg bg-emerald-50/70 p-2 border border-emerald-100">
+              <strong class="text-emerald-900">Axiom 2 (MAUP):</strong> Tobler 35-pass pycnophylactic volume conservation.
             </div>
-            <div class="rounded-lg bg-purple-50/70 p-2.5 border border-purple-100">
-              <strong class="text-purple-900">Sub-Second Speed:</strong> Production response time verified in <strong>230–310 ms</strong> per document query.
-            </div>
-            <div class="rounded-lg bg-purple-50/70 p-2.5 border border-purple-100">
-              <strong class="text-purple-900">User Key Protection:</strong> Active only when user provides their Xerj API key; falls back safely to Primary LLM.
+            <div class="rounded-lg bg-emerald-50/70 p-2 border border-emerald-100">
+              <strong class="text-emerald-900">Axiom 3 (Topology):</strong> Auto-repairs slivers &amp; self-intersecting rings.
             </div>
           </div>
         </div>
-        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
-          <span>Endpoint: <code>platform.xerj.ai/v1</code></span>
-          <span class="text-purple-600 font-bold">Checked Extraction</span>
+        <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Formal Verification</span>
+          <span class="text-emerald-600 font-bold">Proof Certified ✓</span>
         </div>
       </div>
 
-    </div>
-
-    <!-- Interactive Prompt Walkthrough Simulator -->
-    <section class="mb-16">
-      <div class="text-center max-w-3xl mx-auto mb-8">
-        <h2 class="text-2xl font-bold text-slate-900">Step-by-Step Prompt Walkthrough Simulator</h2>
-        <p class="text-sm text-slate-600 mt-1">Select a prompt below to trace how AutoGIS, VeriGeo, GAS, and Xerj execute together.</p>
-        
-        <!-- Tabs -->
-        <div class="flex flex-wrap items-center justify-center gap-2.5 mt-5">
-          <button onclick="switchScenario('scenario-gas')" id="tab-gas" class="prompt-tab active px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold transition flex items-center gap-1.5">
-            <img src="/assets/gas-logo.svg" alt="GAS" class="h-3.5 w-3.5" /> 1. GAS 1.0.0 Remote Collaboration
-          </button>
-          <button onclick="switchScenario('scenario-doc')" id="tab-doc" class="prompt-tab px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition flex items-center gap-1.5">
-            <img src="/assets/xerj-logo.svg" alt="Xerj" class="h-3.5 w-3.5" /> 2. Xerj AI Document Ingestion
-          </button>
-          <button onclick="switchScenario('scenario-verigeo')" id="tab-verigeo" class="prompt-tab px-4 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition flex items-center gap-1.5">
-            <img src="/assets/verigeo-logo.svg" alt="VeriGeo" class="h-3.5 w-3.5" /> 3. VeriGeo MAUP &amp; Topology Repair
-          </button>
+      <!-- 4. Xerj AI Deep Dive -->
+      <div class="rounded-2xl border-2 border-purple-500 bg-white p-5 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-3 mb-3">
+            <img src="/assets/xerj-logo.svg" alt="Xerj AI" class="h-8 w-8 shrink-0" />
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Xerj AI Dual Layer</h3>
+              <p class="text-[11px] text-purple-700 font-mono font-semibold">Cloud LLM + Local Daemon</p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">
+            Dedicated spatial reasoning and symbolic document extraction:
+          </p>
+          <div class="space-y-1.5 text-xs">
+            <div class="rounded-lg bg-purple-50/70 p-2 border border-purple-100">
+              <strong class="text-purple-900">Cloud Spatial LLM:</strong> Dedicated provider on api.xerj.ai/v1.
+            </div>
+            <div class="rounded-lg bg-purple-50/70 p-2 border border-purple-100">
+              <strong class="text-purple-900">xerj-reader-1:</strong> Checked programs with exact character offsets.
+            </div>
+            <div class="rounded-lg bg-purple-50/70 p-2 border border-purple-100">
+              <strong class="text-purple-900">Local Daemon:</strong> 127.0.0.1:9200 AST corpus search index.
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <span>Symbolic Programs</span>
+          <span class="text-purple-600 font-bold">230ms Ready ✓</span>
         </div>
       </div>
 
-      <!-- Scenario 1: GAS 1.0.0 Remote Collaboration -->
-      <div id="scenario-gas" class="scenario-panel space-y-4">
-        <div class="rounded-xl bg-slate-900 text-white p-4 font-mono text-xs flex items-center gap-3">
-          <span class="text-indigo-400 font-bold">User Prompt:</span>
-          <span>"Run deep Sentinel-1 SAR radar crop classification over Punjab using the remote GIBD Lab GAS Agent."</span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="step-card">
-            <span class="rounded bg-indigo-100 text-indigo-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 1</span>
-            <h3 class="font-bold text-slate-900 mt-2 text-sm">GAS Discovery</h3>
-            <p class="text-xs text-slate-600 mt-1">Calls <code>gas_registry_search</code> to discover the active remote SAR crop classification agent on the GAS 1.0.0 network.</p>
-          </div>
-          <div class="step-card">
-            <span class="rounded bg-indigo-100 text-indigo-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 2</span>
-            <h3 class="font-bold text-slate-900 mt-2 text-sm">Schema Negotiation</h3>
-            <p class="text-xs text-slate-600 mt-1">Executes <code>gas_describe_agent</code> to fetch JSON parameter requirements, bounding box coordinate types, and expected SAR polarization channels.</p>
-          </div>
-          <div class="step-card">
-            <span class="rounded bg-indigo-100 text-indigo-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 3</span>
-            <h3 class="font-bold text-slate-900 mt-2 text-sm">Remote Task Dispatch</h3>
-            <p class="text-xs text-slate-600 mt-1">Calls <code>gas_execute_task</code> in streaming mode. Receives live status updates and intermediate backscatter processing telemetry.</p>
-          </div>
-          <div class="step-card">
-            <span class="rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 4</span>
-            <h3 class="font-bold text-slate-900 mt-2 text-sm">VeriGeo &amp; Canvas Draping</h3>
-            <p class="text-xs text-slate-600 mt-1">VeriGeo audits the returned classification raster for projection integrity; AutoGIS automatically drapes the classified crop zones onto the QGIS canvas.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Scenario 2: Xerj AI Document Ingestion -->
-      <div id="scenario-doc" class="scenario-panel hidden space-y-4">
-        <div class="rounded-xl bg-slate-900 text-white p-4 font-mono text-xs flex items-center gap-3">
-          <span class="text-purple-400 font-bold">User Action:</span>
-          <span>Uploaded "Thar_Solar_EIA_Report.pdf" with query "What is the buffer distance and coordinates?"</span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="step-card">
-            <span class="rounded bg-purple-100 text-purple-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 1</span>
-            <h3 class="font-bold text-slate-900 mt-2 text-sm">AI Router Inspection</h3>
-            <p class="text-xs text-slate-600 mt-1">AI Document Router checks user's Xerj API key and scans spatial entity density (Score: 1.0 &gt; 0.25 threshold).</p>
-          </div>
-          <div class="step-card">
-            <span class="rounded bg-purple-100 text-purple-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 2</span>
-            <h3 class="font-bold text-slate-900 mt-2 text-sm">Xerj Reader-1 Dispatch</h3>
-            <p class="text-xs text-slate-600 mt-1">Dispatches document to <code>platform.xerj.ai/v1/answers</code>. Generates symbolic checked program in <strong>230 ms</strong>.</p>
-          </div>
-          <div class="step-card">
-            <span class="rounded bg-purple-100 text-purple-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 3</span>
-            <h3 class="font-bold text-slate-900 mt-2 text-sm">Typed Evidence Quotes</h3>
-            <p class="text-xs text-slate-600 mt-1">Extracts typed values: 500m wildlife buffer, coordinates 27.1823°N, 71.9321°E, and EPSG:32643 with 99.3% confidence.</p>
-          </div>
-          <div class="step-card">
-            <span class="rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 4</span>
-            <h3 class="font-bold text-slate-900 mt-2 text-sm">Automated Buffer on Map</h3>
-            <p class="text-xs text-slate-600 mt-1">AutoGIS passes extracted parameters directly into PyQGIS toolchain, drawing the exact 500m exclusion polygon.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Scenario 3: VeriGeo MAUP & Topology Repair -->
-      <div id="scenario-verigeo" class="scenario-panel hidden space-y-4">
-        <div class="rounded-xl bg-slate-900 text-white p-4 font-mono text-xs flex items-center gap-3">
-          <span class="text-emerald-400 font-bold">User Prompt:</span>
-          <span>"Aggregate census population into new watershed flood zones and remove overlay boundary slivers."</span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="step-card">
-            <span class="rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 1</span>
-            <h3 class="font-bold text-slate-900 mt-2 text-sm">Semantic Attribute Typing</h3>
-            <p class="text-xs text-slate-600 mt-1">VeriGeo classifies attributes into intensive ratios (median income, pop density) vs extensive counts (headcount).</p>
-          </div>
-          <div class="step-card">
-            <span class="rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 2</span>
-            <h3 class="font-bold text-slate-900 mt-2 text-sm">Pycnophylactic Interpolation</h3>
-            <p class="text-xs text-slate-600 mt-1">Applies Tobler's smooth pycnophylactic interpolation across zones. Eliminates 169% population overcount error.</p>
-          </div>
-          <div class="step-card">
-            <span class="rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 3</span>
-            <h3 class="font-bold text-slate-900 mt-2 text-sm">Sliver &amp; Gap Auto-Heal</h3>
-            <p class="text-xs text-slate-600 mt-1">Scans polygon fragments. Any sliver with circularity &lt; 0.05 and width &lt; 1.0m is automatically pruned and rings closed.</p>
-          </div>
-          <div class="step-card">
-            <span class="rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold px-2 py-0.5">STEP 4</span>
-            <h3 class="font-bold text-slate-900 mt-2 text-sm">Verified Audit Certificate</h3>
-            <p class="text-xs text-slate-600 mt-1">Exports output with an immutable SHA-256 Spatial Proof Certificate certifying zero MAUP bias and clean topology.</p>
-          </div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- Navigation Footer CTA -->
-    <div class="mt-16 text-center">
-      <a href="/tech-stack" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 font-mono text-xs font-bold text-slate-800 shadow-sm hover:bg-slate-50 transition mr-3">
-        <span>← Back to Tech Stack</span>
-      </a>
-      <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.7/AutoGIS.zip" class="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-5 py-2.5 font-mono text-xs font-bold text-white shadow-sm hover:bg-sky-500 transition">
-        <span>Download AutoGIS Studio v1.0.7 ZIP</span>
-        <span>↓</span>
-      </a>
     </div>
 
   </main>
 
-  <!-- Fullscreen Modal for High-Resolution Architecture Exploration -->
-  <div id="fullscreen-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex flex-col p-4 sm:p-6">
-    <div class="flex items-center justify-between pb-4 border-b border-slate-800 text-white">
-      <div class="flex items-center gap-3">
-        <span class="rounded-lg bg-sky-500/20 text-sky-400 font-mono text-xs px-2.5 py-1 font-bold">Fullscreen Inspector</span>
-        <h3 class="text-sm font-bold text-white">AutoGIS Detailed System Architecture Graph</h3>
+  <!-- Minimal Clean Footer -->
+  <footer class="border-t border-slate-200 bg-white py-10 text-xs text-slate-500">
+    <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
+      <div class="flex items-center gap-2.5">
+        <img src="/assets/icon.svg" alt="AutoGIS" class="h-6 w-6" />
+        <span class="font-bold text-slate-800">AutoGIS Studio v1.0.9</span>
+        <span>— Open-Source (MIT License)</span>
       </div>
-      <div class="flex items-center gap-2">
-        <button onclick="zoomMermaid(0.2)" class="px-3 py-1.5 text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 text-white rounded-lg border border-slate-700 transition">
-          + Zoom In
-        </button>
-        <button onclick="zoomMermaid(-0.2)" class="px-3 py-1.5 text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 text-white rounded-lg border border-slate-700 transition">
-          - Zoom Out
-        </button>
-        <button onclick="resetZoomMermaid()" class="px-3 py-1.5 text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 text-white rounded-lg border border-slate-700 transition">
-          ↺ Reset
-        </button>
-        <button onclick="toggleFullscreenDiagram()" class="px-3 py-1.5 text-xs font-mono font-bold bg-red-600/80 hover:bg-red-500 text-white rounded-lg transition ml-3">
-          ✕ Close
-        </button>
+      <div class="flex flex-wrap items-center gap-6 font-medium">
+        <a href="https://autogis.princesite.in/" class="text-sky-600 hover:underline">autogis.princesite.in</a>
+        <a href="https://github.com/IBM/AssetOpsBench" target="_blank" class="text-slate-600 hover:text-slate-900">IBM AssetOpsBench ↗</a>
+        <a href="https://github.com/sutharprin098/AutoGIS/releases/download/v1.0.9/AutoGIS.zip" class="text-sky-600 hover:underline">Download AutoGIS.zip (v1.0.9)</a>
+        <a href="https://github.com/sutharprin098/AutoGIS" target="_blank" class="text-slate-600 hover:text-slate-900">GitHub Repository</a>
       </div>
     </div>
-    <div id="modal-container" class="flex-1 overflow-auto bg-white rounded-xl mt-4 p-6 flex justify-center">
-      <!-- Diagram is moved here dynamically when in fullscreen -->
-    </div>
-  </div>
+  </footer>
 
-  <!-- Interactive script for scenario tabs, diagram zoom & fullscreen -->
   <script>
-    // Tab switching for simulator
-    function switchScenario(id) {
-      document.querySelectorAll('.scenario-panel').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.prompt-tab').forEach(el => {
-        el.classList.remove('active');
-        el.classList.remove('bg-slate-900', 'text-white');
-        el.classList.add('bg-white', 'text-slate-600');
-      });
-      document.getElementById(id).classList.remove('hidden');
+    var currentZoom = 1.0;
+    var viewport = document.getElementById('mermaid-viewport');
+    var zoomLevelText = document.getElementById('zoom-level');
 
-      const tabMap = {
-        'scenario-gas': 'tab-gas',
-        'scenario-doc': 'tab-doc',
-        'scenario-verigeo': 'tab-verigeo'
-      };
-      const activeTabId = tabMap[id];
-      if (activeTabId) {
-        const tab = document.getElementById(activeTabId);
-        tab.classList.add('active', 'bg-slate-900', 'text-white');
-        tab.classList.remove('bg-white', 'text-slate-600');
-      }
-    }
-
-    // Zoom controls for Mermaid diagram
-    let currentZoom = 1.0;
-    function zoomMermaid(factor) {
-      currentZoom = Math.min(Math.max(currentZoom + factor, 0.6), 2.5);
-      const el = document.getElementById('mermaid-viewport');
-      if (el) {
-        el.style.transform = `scale(${currentZoom})`;
-      }
-      const label = document.getElementById('zoom-level');
-      if (label) {
-        label.innerText = `${Math.round(currentZoom * 100)}%`;
-      }
+    function zoomMermaid(delta) {
+      currentZoom = Math.min(Math.max(0.5, currentZoom + delta), 2.2);
+      updateZoom();
     }
 
     function resetZoomMermaid() {
       currentZoom = 1.0;
-      const el = document.getElementById('mermaid-viewport');
-      if (el) {
-        el.style.transform = `scale(1.0)`;
-      }
-      const label = document.getElementById('zoom-level');
-      if (label) {
-        label.innerText = '100%';
-      }
+      updateZoom();
     }
 
-    // Fullscreen toggle
-    let isFullscreen = false;
-    function toggleFullscreenDiagram() {
-      const modal = document.getElementById('fullscreen-modal');
-      const modalContainer = document.getElementById('modal-container');
-      const normalContainer = document.getElementById('diagram-container');
-      const viewport = document.getElementById('mermaid-viewport');
-
-      isFullscreen = !isFullscreen;
-      if (isFullscreen) {
-        modal.classList.remove('hidden');
-        modalContainer.appendChild(viewport);
-        document.body.style.overflow = 'hidden';
-      } else {
-        modal.classList.add('hidden');
-        normalContainer.appendChild(viewport);
-        document.body.style.overflow = '';
+    function updateZoom() {
+      if (viewport) {
+        viewport.style.transform = 'scale(' + currentZoom + ')';
+      }
+      if (zoomLevelText) {
+        zoomLevelText.innerText = Math.round(currentZoom * 100) + '%';
       }
     }
-
-    // Escape key closes modal
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && isFullscreen) {
-        toggleFullscreenDiagram();
-      }
-    });
   </script>
-
-  <!-- Footer -->
-  <footer class="border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500">
-    <div class="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-2 font-mono">
-        <span>AutoGIS Studio v1.0.7</span> · <span>Authored by Prince</span>
-      </div>
-      <div class="flex items-center gap-5">
-        <a href="/" class="hover:text-slate-900">Home</a>
-        <a href="/architecture" class="text-sky-600 font-bold">Architecture</a>
-        <a href="/tech-stack" class="hover:text-slate-900">Tech Stack</a>
-        <a href="https://github.com/sutharprin098/AutoGIS" class="hover:text-slate-900">GitHub</a>
-      </div>
-    </div>
-  </footer>
 
 </body>
 </html>

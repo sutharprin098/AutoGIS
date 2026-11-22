@@ -1,11 +1,11 @@
 # AutoGIS Studio — Autonomous Geospatial AI Agent for QGIS
 
-[![Version](https://img.shields.io/badge/version-1.0.6-blue)](https://github.com/sutharprin098/AutoGIS/releases/tag/v1.0.6)
+[![Version](https://img.shields.io/badge/version-1.0.9-blue)](https://github.com/sutharprin098/AutoGIS/releases/tag/v1.0.9)
 [![QGIS](https://img.shields.io/badge/QGIS-3.22%2B-green)](https://qgis.org)
 [![License](https://img.shields.io/badge/license-GPL--3.0-orange)](LICENSE)
 [![Downloads](https://img.shields.io/github/downloads/sutharprin098/AutoGIS/total)](https://github.com/sutharprin098/AutoGIS/releases)
 
-**AutoGIS** is an open-source, fully autonomous Geospatial AI Agent, Live MCP & GAS 1.0.0 Server, and Spatial Analysis Studio built into QGIS. Connect any AI model — cloud or offline — to your GIS data and automate complex workflows with 69 built-in tools.
+**AutoGIS** is an open-source, fully autonomous Geospatial AI Agent, IBM AssetOpsBench Infrastructure Digital Twin, Live MCP & GAS 2.0 Server, and Spatial Analysis Studio built into QGIS. Connect any AI model — cloud or offline — to your GIS data and automate complex workflows with **82 built-in tools**, IBM AssetOpsBench (IoT Telemetry, FMSR Root-Cause Diagnostics, TSFM Time-Series Forecasting, Maximo Geo-Work Orders), GeoSAM-v2 Tiled AI, Xerj AI Dual Layer, VeriGeo Formal Verification, GeoRAG, Google Earth Engine, and GAS 2.0 Multi-Agent Swarms.
 
 ---
 
@@ -14,9 +14,8 @@
 You type a goal in plain language. AutoGIS plans, executes, and verifies the entire geospatial workflow autonomously — no scripting required.
 
 ```
-"Fetch OSM buildings for Jaipur, clip to city boundary, 
- buffer 500m, run kernel density, style as heatmap, 
- export 300 DPI PDF report"
+"Segment buildings from Google Satellite using GeoSAM-v2, diagnose industrial power asset anomalies using IBM AssetOpsBench, 
+ verify geometric topology with VeriGeo, and synthesize multi-criteria suitability reports"
 ```
 
 AutoGIS does all of that in one shot.
@@ -38,9 +37,28 @@ AutoGIS does all of that in one shot.
 
 ---
 
-## 🛠️ 69 Autonomous Tools (v1.0.7)
+## 🛠️ 82 Autonomous Tools (v1.0.9)
 
-### 🤝 Geospatial Agentic Services (GAS 1.0.0)
+### 🏭 New in v1.0.9: IBM AssetOpsBench — Spatial Digital Twin & Infrastructure AssetOps
+| Tool | Description |
+|---|---|
+| `assetops_iot_telemetry` | **Spatial IoT Telemetry Agent**: Ingests/synthesizes real-time sensor streams (temp, vibration RMS, load, health index, Z-score) across power grids, pipelines, telecom towers, solar farms & bridges |
+| `assetops_fmsr_diagnostics` | **Spatial FMSR Root-Cause Agent**: Neuro-symbolic Failure Mode & Symptoms Reasoning correlating IoT anomalies with geospatial hazards (floods, heat islands, slope) & ISO 55001 / 14224 standards |
+| `assetops_tsfm_forecast` | **Spatio-Temporal TSFM Forecaster**: Zero-shot multivariate time-series forecasting (IBM Granite TSFM) predicting Remaining Useful Life (RUL) and 7–365 day failure probability |
+| `assetops_work_order_dispatch` | **Automated Geo-Work Order Agent**: Generates IBM Maximo / SAP PM maintenance tickets and dispatches optimized multi-crew field repair routes |
+| `geo_assetops_benchmark_eval` | **GeoAssetOpsBench Evaluation Suite**: End-to-end Industry 4.0 multi-agent benchmark measuring Task Completion, Tool Precision, Trajectory Optimality & CodeReAct Self-Healing |
+
+### 🌟 New in v1.0.8: GeoSAM, GeoRAG & Swarms
+| Tool | Description |
+|---|---|
+| `detect_buildings_from_raster` | **GeoSAM / SAM 2**: Zero-shot 256/512px overlapped windowing feature extraction (buildings, roads, solar panels) from satellite/drone raster imagery |
+| `georag_spatial_query` | **GeoRAG Engine**: Natural language & Spatial SQL query engine over vector layers, PostGIS, DuckDB & SpatiaLite databases |
+| `detect_raster_change` | **Change Detection Engine**: Multi-temporal satellite differencing for Deforestation, Wildfire Burn, and Urban Sprawl |
+| `gas_multi_agent_swarm` | **GAS 2.0 Multi-Agent Swarm**: Coordinates Data Scout, Analytics, Cartography, and VeriGeo QA Agents with consensus |
+| `undo_project_checkpoint` | **One-Click Undo**: Rolls back project state, deletes newly added layers, and restores CRS/canvas |
+| `create_project_checkpoint` | **Project Snapshot**: Captures clean project checkpoint before complex/destructive workflows |
+
+### 🤝 Geospatial Agentic Services (GAS 2.0)
 | Tool | Description |
 |---|---|
 | `gas_discover_agents` | Discover published GAS agents via `GetCapabilities` or the GAS Registry |
@@ -151,7 +169,7 @@ AutoGIS does all of that in one shot.
 3. Search for **AutoGIS** → Click **Install**
 
 ### Method 2: Manual ZIP Install
-1. Download `AutoGIS.zip` from [Releases](https://github.com/sutharprin098/AutoGIS/releases/tag/v1.0.5)
+1. Download `AutoGIS.zip` from [Releases](https://github.com/sutharprin098/AutoGIS/releases/tag/v1.0.9)
 2. QGIS → **Plugins → Manage and Install Plugins → Install from ZIP**
 3. Select the downloaded `AutoGIS.zip` → **Install Plugin**
 
@@ -288,18 +306,24 @@ AutoGIS implements the multi-temporal SAR crop classification methodology from:
 ```
 AutoGIS Studio
 ├── core/
-│   ├── agent_engine.py      # Autonomous AI agent loop (multi-step, tool-use)
-│   ├── config.py            # Provider/model configuration manager
-│   ├── gis_tools.py         # Core 46 GIS tool implementations
-│   ├── extended_gis_tools.py # 13 extended tools (India data, SAR, 3D, etc.)
+│   ├── agent_engine.py      # Dual-Protocol AI Agent loop (Claude 3.7 & Gemini 3 & OpenRouter)
+│   ├── config.py            # Provider/model configuration manager & auto-migrator
+│   ├── gis_tools.py         # Native PyQGIS tool implementations
+│   ├── spatial_assetops.py  # IBM AssetOpsBench Spatial Digital Twin (FMSR, TSFM, Dispatch)
+│   ├── geosam_engine.py     # GeoSAM-v2 zero-shot overlapped tile segmentation
+│   ├── georag_engine.py     # Natural Language to PostGIS/DuckDB Spatial SQL
+│   ├── swarm_gas_engine.py  # Geospatial Agentic Services (GAS 2.0 Multi-Agent Swarm)
+│   ├── change_detection.py  # Bi-temporal satellite differencing & spectral indices
+│   ├── checkpoint_manager.py# 1-Click project rollback & snapshot checkpoints
 │   ├── document_tools.py    # File/PDF/folder context ingestion
-│   └── mcp_bridge.py        # MCP server bridge
+│   └── mcp_bridge.py        # Model Context Protocol (MCP) server bridge
 ├── ui/
-│   ├── dock_panel.py        # Main Studio dock widget
+│   ├── dock_panel.py        # Main Studio dock widget & responsive chat interface
 │   ├── history_panel.py     # Conversation history manager
-│   └── settings_dialog.py   # Settings UI
+│   └── settings_dialog.py   # Multi-provider settings dialog with key validation
+├── web/                     # Official documentation & repository website
 ├── icons/                   # Plugin icons
-├── metadata.txt             # QGIS plugin metadata
+├── metadata.txt             # QGIS official plugin repository metadata
 └── AutoGIS.zip              # Distributable package
 ```
 

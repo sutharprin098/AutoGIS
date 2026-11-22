@@ -27,7 +27,8 @@ USER_AGENT = "AutoGIS-Studio/1.0 (+https://autogis.princesite.in/ - contact: sut
 
 # Global public Overpass API mirrors
 OVERPASS_ENDPOINTS = [
-    "https://overpass.osm.ch/api/interpreter",
+    "https://overpass.openstreetmap.fr/api/interpreter",
+    "https://overpass.nchc.org.tw/api/interpreter",
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
     "https://overpass.private.coffee/api/interpreter",

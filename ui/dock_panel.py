@@ -138,6 +138,13 @@ class AutoGISPanel(QWidget):
 
         row.addStretch(1)
 
+        undo_btn = QPushButton("Undo", hdr)
+        undo_btn.setObjectName("AutoGISGhostBtn")
+        undo_btn.setToolTip("One-Click Undo: Rollback to previous project checkpoint")
+        undo_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        undo_btn.clicked.connect(self._undo_last_checkpoint)
+        row.addWidget(undo_btn)
+
         new_btn = QPushButton("New", hdr)
         new_btn.setObjectName("AutoGISGhostBtn")
         new_btn.setToolTip("New Session")
@@ -172,12 +179,20 @@ class AutoGISPanel(QWidget):
         self._chips_row.setContentsMargins(0, 0, 0, 0)
         self._chips_row.setSpacing(4)
 
-        pin_lyr_btn = QPushButton("+ Layer", host)
-        pin_lyr_btn.setObjectName("AutoGISGhostBtn")
-        pin_lyr_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        pin_lyr_btn.setToolTip("Pin active QGIS layer")
-        pin_lyr_btn.clicked.connect(self._pin_active_layer)
-        self._chips_row.addWidget(pin_lyr_btn)
+        self._layer_selector = QComboBox(host)
+        self._layer_selector.setObjectName("AutoGISGhostBtn")
+        self._layer_selector.setToolTip("Target Layer: Select specific layer for GeoSAM, GeoRAG, Buffer, Style")
+        self._layer_selector.setMinimumWidth(160)
+        self._populate_layer_selector()
+        self._layer_selector.currentIndexChanged.connect(self._on_layer_selector_changed)
+        self._chips_row.addWidget(self._layer_selector)
+
+        ref_btn = QPushButton("↺", host)
+        ref_btn.setObjectName("AutoGISGhostBtn")
+        ref_btn.setToolTip("Refresh layer list")
+        ref_btn.setFixedWidth(28)
+        ref_btn.clicked.connect(self._populate_layer_selector)
+        self._chips_row.addWidget(ref_btn)
 
         attach_btn = QPushButton("File / PDF", host)
         attach_btn.setObjectName("AutoGISGhostBtn")
@@ -287,6 +302,13 @@ class AutoGISPanel(QWidget):
         e.permission_requested.connect(self._on_permission_requested)
         e.run_finished.connect(self._on_run_finished)
 
+        try:
+            from qgis.core import QgsProject
+            QgsProject.instance().layersAdded.connect(self._populate_layer_selector)
+            QgsProject.instance().layersRemoved.connect(self._populate_layer_selector)
+        except Exception:
+            pass
+
     def _sync_model_combo(self) -> None:
         self._model_combo.blockSignals(True)
         self._model_combo.clear()
@@ -358,6 +380,37 @@ class AutoGISPanel(QWidget):
         if sb is not None:
             sb.setValue(sb.maximum())
 
+    def _populate_layer_selector(self) -> None:
+        if not hasattr(self, "_layer_selector"):
+            return
+        curr_text = self._layer_selector.currentData() or ""
+        self._layer_selector.blockSignals(True)
+        self._layer_selector.clear()
+        self._layer_selector.addItem("🎯 Layer: (Auto / Active)", "")
+
+        try:
+            from qgis.core import QgsProject, QgsRasterLayer
+            proj = QgsProject.instance()
+            for lyr in proj.mapLayers().values():
+                if lyr.isValid():
+                    tag = "🛰️" if isinstance(lyr, QgsRasterLayer) else "📍"
+                    self._layer_selector.addItem(f"{tag} {lyr.name()}", lyr.name())
+        except Exception:
+            pass
+
+        if curr_text:
+            idx = self._layer_selector.findData(curr_text)
+            if idx >= 0:
+                self._layer_selector.setCurrentIndex(idx)
+        self._layer_selector.blockSignals(False)
+
+    def _on_layer_selector_changed(self, idx: int) -> None:
+        selected = self._layer_selector.currentData()
+        self._pinned_layers.clear()
+        if selected:
+            self._pinned_layers.append(str(selected))
+        self._refresh_chips_ui()
+
     def _pin_active_layer(self) -> None:
         lyr = self._iface.activeLayer() if self._iface else None
         if lyr is None:
@@ -405,6 +458,10 @@ class AutoGISPanel(QWidget):
     def _clear_chips(self) -> None:
         self._pinned_layers.clear()
         self._attached_files.clear()
+        if hasattr(self, "_layer_selector"):
+            self._layer_selector.blockSignals(True)
+            self._layer_selector.setCurrentIndex(0)
+            self._layer_selector.blockSignals(False)
         self._refresh_chips_ui()
 
     def _refresh_chips_ui(self) -> None:
@@ -622,6 +679,24 @@ class AutoGISPanel(QWidget):
 
         self._welcome_card.show()
         self._current_thread_id = self._history.create_thread()["id"]
+
+    def _undo_last_checkpoint(self) -> None:
+        from ..core.checkpoint_manager import ProjectCheckpointManager
+        res = ProjectCheckpointManager.get_instance(self._iface).rollback()
+        if res.get("status") == "success":
+            msg = f"↩️ **Undo Complete:** {res.get('message')}"
+            self._history.append_user_message(self._current_thread_id, "[Action: One-Click Undo]")
+            self._history.append_assistant_message(self._current_thread_id, msg)
+            card = AssistantMessageCard(self._stream_host)
+            card.set_content(msg)
+            self._stream_layout.insertWidget(self._stream_layout.count() - 2, card)
+            self._scroll_to_bottom()
+        else:
+            err = res.get("error", "No checkpoints available.")
+            card = AssistantMessageCard(self._stream_host)
+            card.set_content(f"⚠️ **Undo Notice:** {err}")
+            self._stream_layout.insertWidget(self._stream_layout.count() - 2, card)
+            self._scroll_to_bottom()
 
     def _show_history_menu(self) -> None:
         menu = QMenu(self)

@@ -13,12 +13,12 @@ DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_MODEL = ""
 
 PROVIDERS: list[tuple[str, str, str]] = [
-    ("xerj", "Xerj AI (Geospatial & Document Intelligence)", "https://api.xerj.ai/v1"),
-    ("gemini", "Google Gemini", "https://generativelanguage.googleapis.com/v1beta/openai"),
-    ("openai", "OpenAI (ChatGPT)", "https://api.openai.com/v1"),
-    ("anthropic", "Anthropic (Claude)", "https://api.anthropic.com/v1"),
-    ("deepseek", "DeepSeek", "https://api.deepseek.com/v1"),
-    ("openrouter", "OpenRouter (All Models)", "https://openrouter.ai/api/v1"),
+    ("xerj", "Xerj AI (Geospatial & Spatial Reasoning)", "https://api.xerj.ai/v1"),
+    ("gemini", "Google Gemini (Fast & Free Tier)", "https://generativelanguage.googleapis.com/v1beta/openai"),
+    ("anthropic", "Anthropic (Claude 3.7 / 3.5)", "https://api.anthropic.com/v1"),
+    ("openai", "OpenAI (ChatGPT GPT-4o / o3-mini)", "https://api.openai.com/v1"),
+    ("deepseek", "DeepSeek (V3 / R1 Reasoner)", "https://api.deepseek.com/v1"),
+    ("openrouter", "OpenRouter (All Global Models)", "https://openrouter.ai/api/v1"),
     ("ollama", "Local AI (Ollama / LM Studio - Offline)", "http://127.0.0.1:11434/v1"),
 ]
 
@@ -31,6 +31,7 @@ FALLBACK_CHAIN: list[str] = [
     "cohere/command-r-plus-08-2024:free",      # Cohere free fallback
     "meta-llama/llama-3.3-70b-instruct:free",  # Llama free fallback
     # Paid models (only reached if user has respective API key)
+    "google/gemini-3-flash-preview",
     "google/gemini-2.5-flash",
     "openai/gpt-4o-mini",
     "anthropic/claude-haiku-4.5",
@@ -38,24 +39,33 @@ FALLBACK_CHAIN: list[str] = [
 ]
 
 PROVIDER_MODELS: dict[str, list[tuple[str, str]]] = {
-    "gemini": [
-        ("google/gemini-2.5-flash", "Gemini 2.5 Flash"),
-        ("google/gemini-2.5-pro", "Gemini 2.5 Pro"),
-        ("google/gemini-2.0-flash", "Gemini 2.0 Flash"),
+    "xerj": [
+        ("xerj/geo-reasoner", "⚡ Xerj Geo-Reasoner (Autonomous GIS)"),
+        ("xerj/spatial-gpt", "Xerj Spatial-GPT (Multi-Modal GIS)"),
+        ("xerj/doc-intel", "Xerj Document & Corpus Intelligence"),
     ],
-    "openai": [
-        ("openai/gpt-4o-mini", "GPT-4o Mini"),
-        ("openai/gpt-4o", "GPT-4o"),
-        ("openai/o3-mini", "OpenAI o3-mini"),
+    "gemini": [
+        ("google/gemini-3-flash-preview", "⚡ Gemini 3 Flash Preview (Fastest & Verified)"),
+        ("google/gemini-3.5-flash", "Gemini 3.5 Flash"),
+        ("google/gemini-3.8-flash", "Gemini 3.8 Flash"),
+        ("google/gemini-3.1-pro-preview", "Gemini 3.1 Pro Preview"),
+        ("google/gemini-flash-latest", "Gemini Flash Latest"),
     ],
     "anthropic": [
-        ("anthropic/claude-sonnet-4.5", "Claude Sonnet 4.5"),
-        ("anthropic/claude-haiku-4.5", "Claude Haiku 4.5"),
-        ("anthropic/claude-3.5-sonnet", "Claude 3.5 Sonnet"),
+        ("anthropic/claude-3-7-sonnet-20250219", "⚡ Claude 3.7 Sonnet (Latest)"),
+        ("anthropic/claude-3-5-sonnet-20241022", "Claude 3.5 Sonnet"),
+        ("anthropic/claude-3-5-haiku-20241022", "Claude 3.5 Haiku"),
+        ("anthropic/claude-3-haiku-20240307", "Claude 3 Haiku"),
+    ],
+    "openai": [
+        ("openai/gpt-4o-mini", "⚡ GPT-4o Mini (Fast & Smart)"),
+        ("openai/gpt-4o", "GPT-4o (Omni)"),
+        ("openai/o3-mini", "OpenAI o3-mini (Reasoning)"),
+        ("openai/o1-mini", "OpenAI o1-mini"),
     ],
     "deepseek": [
-        ("deepseek/deepseek-chat", "DeepSeek V3"),
-        ("deepseek/deepseek-reasoner", "DeepSeek R1"),
+        ("deepseek/deepseek-chat", "⚡ DeepSeek V3 (Coding & GIS)"),
+        ("deepseek/deepseek-reasoner", "DeepSeek R1 (Deep Reasoning)"),
     ],
     "openrouter": [
         ("nvidia/nemotron-3.5-lightning:free", "⚡ Nemotron 3.5 Lightning (Free)"),    # fastest, default
@@ -86,22 +96,24 @@ CURATED_MODELS: list[tuple[str, str]] = [
     ("meta-llama/llama-3.3-70b-instruct:free", "Llama 3.3 70B (Free)"),
     ("google/gemma-3-27b-it:free", "Gemma 3 27B (Free)"),
     ("mistralai/mistral-7b-instruct:free", "Mistral 7B (Free)"),
-    # --- Paid Models ---
-    ("google/gemini-2.5-flash", "Gemini 2.5 Flash"),
-    ("google/gemini-2.5-pro", "Gemini 2.5 Pro"),
-    ("google/gemini-2.0-flash", "Gemini 2.0 Flash"),
-    ("openai/gpt-4o-mini", "GPT-4o Mini"),
+    # --- Xerj AI Models ---
+    ("xerj/geo-reasoner", "⚡ Xerj Geo-Reasoner (Spatial AI)"),
+    ("xerj/spatial-gpt", "Xerj Spatial-GPT (Multi-Modal)"),
+    ("xerj/doc-intel", "Xerj Document & Vector Intelligence"),
+    # --- Google Gemini ---
+    ("google/gemini-3-flash-preview", "⚡ Gemini 3 Flash Preview [Gemini Key]"),
+    ("google/gemini-3.5-flash", "Gemini 3.5 Flash"),
+    # --- Anthropic Claude ---
+    ("anthropic/claude-3-7-sonnet-20250219", "⚡ Claude 3.7 Sonnet [Claude Key]"),
+    ("anthropic/claude-3-5-sonnet-20241022", "Claude 3.5 Sonnet"),
+    ("anthropic/claude-3-5-haiku-20241022", "Claude 3.5 Haiku"),
+    # --- OpenAI ---
+    ("openai/gpt-4o-mini", "GPT-4o Mini [OpenAI Key]"),
     ("openai/gpt-4o", "GPT-4o"),
     ("openai/o3-mini", "OpenAI o3-mini"),
-    ("anthropic/claude-sonnet-4.5", "Claude Sonnet 4.5"),
-    ("anthropic/claude-haiku-4.5", "Claude Haiku 4.5"),
-    ("deepseek/deepseek-chat", "DeepSeek V3"),
+    # --- DeepSeek ---
+    ("deepseek/deepseek-chat", "DeepSeek V3 [DeepSeek Key]"),
     ("deepseek/deepseek-reasoner", "DeepSeek R1"),
-    ("qwen/qwen-2.5-72b-instruct", "Qwen 2.5 72B"),
-    ("meta-llama/llama-3.3-70b-instruct", "Llama 3.3 70B"),
-    # --- Xerj AI ---
-    ("xerj/geo-reasoner", "Xerj AI: Geospatial Reasoner"),
-    ("xerj/geo-doc-intelligence", "Xerj AI: Document Intelligence"),
     # --- Local (Ollama) ---
     ("ollama/qwen2.5-coder:14b", "Local: Qwen 2.5 Coder 14B (Ollama)"),
     ("ollama/qwen2.5-coder:7b", "Local: Qwen 2.5 Coder 7B (Ollama)"),
@@ -347,25 +359,59 @@ class AutoGISConfig:
     def resolve_connection(self, model_id: str | None = None) -> tuple[str, str, str, str]:
         """Return (provider_type, api_key, base_url, api_model_name)."""
         m = (model_id if model_id is not None else self.model).strip()
-        if not m:
-            return ("none", "", self.base_url, "")
-
-        if m.startswith("ollama/") or self.active_provider == "ollama":
-            clean_m = m.split("/", 1)[1] if m.startswith("ollama/") else m
-            local_url = self.get_str("ollama_url", PROVIDER_ENDPOINTS["ollama"]) or PROVIDER_ENDPOINTS["ollama"]
-            return ("ollama", "ollama-local", local_url.rstrip("/"), clean_m)
 
         or_key = self.api_key
         gem_key = self.gemini_key
         oai_key = self.openai_key
         ant_key = self.anthropic_key
         ds_key = self.deepseek_key
+        xerj_key = self.xerj_key
 
-        # Auto-detect if user pasted an OpenRouter key (sk-or-...) into any provider box
-        for k in (or_key, gem_key, oai_key, ant_key, ds_key):
+        # Auto-detect if user pasted a key with known prefix into any provider box
+        for k in (or_key, gem_key, oai_key, ant_key, ds_key, xerj_key):
             if k.startswith("sk-or-"):
                 or_key = k
-                break
+            elif k.startswith("AQ.") or k.startswith("AIza"):
+                gem_key = k
+            elif k.startswith("sk-ant-"):
+                ant_key = k
+            elif k.startswith("sk-") and not (k.startswith("sk-or-") or k.startswith("sk-ant-")):
+                oai_key = k
+
+        # If model is empty, default based on active provider
+        if not m:
+            if self.active_provider == "gemini":
+                m = "google/gemini-3-flash-preview"
+            elif self.active_provider == "anthropic":
+                m = "anthropic/claude-3-7-sonnet-20250219"
+            elif self.active_provider == "xerj":
+                m = "xerj/geo-reasoner"
+            elif self.active_provider == "openai":
+                m = "openai/gpt-4o-mini"
+            elif self.active_provider == "deepseek":
+                m = "deepseek/deepseek-chat"
+            elif self.active_provider == "ollama":
+                m = "ollama/qwen2.5-coder:14b"
+            elif or_key:
+                m = "nvidia/nemotron-3.5-lightning:free"
+            elif gem_key:
+                m = "google/gemini-3-flash-preview"
+            elif ant_key:
+                m = "anthropic/claude-3-7-sonnet-20250219"
+            elif oai_key:
+                m = "openai/gpt-4o-mini"
+            elif ds_key:
+                m = "deepseek/deepseek-chat"
+            elif xerj_key:
+                m = "xerj/geo-reasoner"
+
+        if not m and not (or_key or gem_key or oai_key or ant_key or ds_key or xerj_key):
+            return ("none", "", self.base_url, "")
+
+        if m.startswith("ollama/") or self.active_provider == "ollama":
+            clean_m = m.split("/", 1)[1] if m.startswith("ollama/") else m
+            local_url = self.get_str("ollama_url", PROVIDER_ENDPOINTS["ollama"]) or PROVIDER_ENDPOINTS["ollama"]
+            return ("ollama", "ollama-local", local_url.rstrip("/"), clean_m)
 
         # If active provider is openrouter and we have an openrouter key, route directly via openrouter
         if self.active_provider == "openrouter" and or_key:
@@ -376,33 +422,46 @@ class AutoGISConfig:
             x_url = self.get_str("xerj_url", PROVIDER_ENDPOINTS.get("xerj", "https://api.xerj.ai/v1")) or "https://api.xerj.ai/v1"
             return ("xerj", self.xerj_key, x_url.rstrip("/"), clean_m)
 
-        if (m.startswith("google/gemini") or m.startswith("gemini-")) and gem_key and not gem_key.startswith("sk-or-"):
-            clean_m = m.split("/", 1)[1] if "/" in m else m
+        if (m.startswith("google/gemini") or m.startswith("gemini-") or self.active_provider == "gemini") and gem_key and not gem_key.startswith("sk-or-"):
+            clean_m = m.split("/", 1)[1] if "/" in m else (m or "gemini-3-flash-preview")
+            if clean_m in ("", "gemini", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash-lite"):
+                clean_m = "gemini-3-flash-preview"
             return ("gemini", gem_key, PROVIDER_ENDPOINTS["gemini"], clean_m)
 
-        if (m.startswith("openai/") or m.startswith("gpt-") or m.startswith("o1") or m.startswith("o3")) and oai_key and not oai_key.startswith("sk-or-"):
-            clean_m = m.split("/", 1)[1] if "/" in m else m
+        if (m.startswith("openai/") or m.startswith("gpt-") or m.startswith("o1") or m.startswith("o3") or self.active_provider == "openai") and oai_key and not oai_key.startswith("sk-or-"):
+            clean_m = m.split("/", 1)[1] if "/" in m else (m or "gpt-4o-mini")
             return ("openai", oai_key, PROVIDER_ENDPOINTS["openai"], clean_m)
 
-        if (m.startswith("anthropic/") or m.startswith("claude-")) and ant_key and not ant_key.startswith("sk-or-"):
-            clean_m = m.split("/", 1)[1] if "/" in m else m
+        if (m.startswith("anthropic/") or m.startswith("claude-") or self.active_provider == "anthropic") and ant_key and not ant_key.startswith("sk-or-"):
+            clean_m = m.split("/", 1)[1] if "/" in m else (m or "claude-3-7-sonnet-20250219")
+            alias_map = {
+                "claude-3.7-sonnet": "claude-3-7-sonnet-20250219",
+                "claude-sonnet-4.5": "claude-3-7-sonnet-20250219",
+                "claude-3.5-sonnet": "claude-3-5-sonnet-20241022",
+                "claude-3.5-haiku": "claude-3-5-haiku-20241022",
+                "claude-haiku-4.5": "claude-3-5-haiku-20241022",
+                "claude-3-haiku": "claude-3-haiku-20240307",
+            }
+            clean_m = alias_map.get(clean_m, clean_m)
             return ("anthropic", ant_key, PROVIDER_ENDPOINTS["anthropic"], clean_m)
 
-        if (m.startswith("deepseek/") or m.startswith("deepseek-")) and ds_key and not ds_key.startswith("sk-or-"):
-            clean_m = m.split("/", 1)[1] if "/" in m else m
+        if (m.startswith("deepseek/") or m.startswith("deepseek-") or self.active_provider == "deepseek") and ds_key and not ds_key.startswith("sk-or-"):
+            clean_m = m.split("/", 1)[1] if "/" in m else (m or "deepseek-chat")
             return ("deepseek", ds_key, PROVIDER_ENDPOINTS["deepseek"], clean_m)
 
         if or_key:
             return ("openrouter", or_key, PROVIDER_ENDPOINTS["openrouter"], m)
 
         if gem_key:
-            clean_m = m.split("/", 1)[1] if (m.startswith("google/gemini") or m.startswith("gemini-")) else "gemini-2.5-flash"
+            clean_m = m.split("/", 1)[1] if (m.startswith("google/gemini") or m.startswith("gemini-")) else "gemini-3-flash-preview"
+            if clean_m in ("", "gemini", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash-lite"):
+                clean_m = "gemini-3-flash-preview"
             return ("gemini", gem_key, PROVIDER_ENDPOINTS["gemini"], clean_m)
         if oai_key:
             clean_m = m.split("/", 1)[1] if (m.startswith("openai/") or m.startswith("gpt-")) else "gpt-4o-mini"
             return ("openai", oai_key, PROVIDER_ENDPOINTS["openai"], clean_m)
         if ant_key:
-            clean_m = m.split("/", 1)[1] if (m.startswith("anthropic/") or m.startswith("claude-")) else "claude-haiku-4-5"
+            clean_m = m.split("/", 1)[1] if (m.startswith("anthropic/") or m.startswith("claude-")) else "claude-3-7-sonnet-20250219"
             return ("anthropic", ant_key, PROVIDER_ENDPOINTS["anthropic"], clean_m)
         if ds_key:
             clean_m = m.split("/", 1)[1] if m.startswith("deepseek/") else "deepseek-chat"

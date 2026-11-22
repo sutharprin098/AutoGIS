@@ -4,6 +4,7 @@ import json
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 from qgis.PyQt.QtCore import Qt, pyqtSignal
@@ -18,6 +19,7 @@ from qgis.PyQt.QtWidgets import (
     QLineEdit,
     QPlainTextEdit,
     QPushButton,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -33,11 +35,13 @@ class AutoGISSettingsDialog(QDialog):
 
     settings_saved = pyqtSignal()
     _test_result_signal = pyqtSignal(bool, str)
+    _daemon_test_signal = pyqtSignal(bool, str)
 
     def __init__(self, config: AutoGISConfig, parent=None) -> None:
         super().__init__(parent)
         self._config = config
         self._test_result_signal.connect(self._on_test_done)
+        self._daemon_test_signal.connect(self._on_daemon_test_done)
 
         # Local working copy of provider keys
         self._keys: dict[str, str] = {
@@ -48,8 +52,8 @@ class AutoGISSettingsDialog(QDialog):
         self.setObjectName("AutoGISRoot")
         self.setWindowTitle("AutoGIS — Settings")
         self.setWindowIcon(create_autogis_icon())
-        self.setMinimumSize(500, 520)
-        self.resize(560, 620)
+        self.setMinimumSize(540, 560)
+        self.resize(600, 680)
         self.setStyleSheet(get_studio_stylesheet())
 
         root = QVBoxLayout(self)
@@ -70,8 +74,13 @@ class AutoGISSettingsDialog(QDialog):
         hdr.addStretch(1)
         root.addLayout(hdr)
 
-        # Unified Form Card
-        card = QFrame(self)
+        # Scroll area for clean responsive layout on all screen sizes
+        scroll = QScrollArea(self)
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setObjectName("AutoGISScroll")
+
+        card = QFrame(scroll)
         card.setObjectName("AutoGISCard")
         form = QFormLayout(card)
         form.setContentsMargins(14, 14, 14, 14)
@@ -86,7 +95,7 @@ class AutoGISSettingsDialog(QDialog):
             if pid == self._current_pid:
                 self._prov_combo.setCurrentIndex(self._prov_combo.count() - 1)
         self._prov_combo.currentIndexChanged.connect(self._on_provider_changed)
-        form.addRow(QLabel("<b>AI Provider:</b>"), self._prov_combo)
+        form.addRow(QLabel("<b>Primary AI:</b>"), self._prov_combo)
 
         # 2. Single Unified API Key Row + Show + Fast Test
         key_host = QWidget(card)
@@ -132,7 +141,52 @@ class AutoGISSettingsDialog(QDialog):
         self._populate_provider_models(self._current_pid, self._config.model)
         form.addRow(QLabel("<b>AI Model:</b>"), self._model_combo)
 
-        # Earth Engine configuration (local QGIS profile only)
+        # 4. Xerj AI — Dedicated Document Intelligence & Local Corpus Engine
+        xerj_hdr = QLabel("<b>Xerj AI — Spatial & Document Intelligence</b>", card)
+        form.addRow(xerj_hdr)
+
+        # Xerj Dedicated Key (can be used even if primary AI is Claude/Gemini/OpenAI)
+        xerj_key_host = QWidget(card)
+        xerj_key_row = QHBoxLayout(xerj_key_host)
+        xerj_key_row.setContentsMargins(0, 0, 0, 0)
+        xerj_key_row.setSpacing(6)
+        self._xerj_cloud_key_edit = QLineEdit(self._keys.get("xerj", "") or self._config.xerj_key, xerj_key_host)
+        self._xerj_cloud_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self._xerj_cloud_key_edit.setPlaceholderText("Xerj AI Key (for xerj-reader-1 & Spatial Document Router)")
+        self._xerj_cloud_key_edit.textEdited.connect(self._on_xerj_cloud_key_edited)
+        xerj_key_row.addWidget(self._xerj_cloud_key_edit, 1)
+
+        self._xerj_cloud_show_btn = QPushButton("Show", xerj_key_host)
+        self._xerj_cloud_show_btn.setObjectName("AutoGISGhostBtn")
+        self._xerj_cloud_show_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._xerj_cloud_show_btn.clicked.connect(self._toggle_xerj_cloud_echo)
+        xerj_key_row.addWidget(self._xerj_cloud_show_btn)
+        form.addRow(QLabel("Xerj Cloud Key:"), xerj_key_host)
+
+        # Xerj Local Daemon (Elasticsearch / REST compatible at 127.0.0.1:9200)
+        xerj_daemon_host = QWidget(card)
+        xerj_daemon_row = QHBoxLayout(xerj_daemon_host)
+        xerj_daemon_row.setContentsMargins(0, 0, 0, 0)
+        xerj_daemon_row.setSpacing(6)
+        self._xerj_edit = QLineEdit(self._config.xerj_url or "http://127.0.0.1:9200", xerj_daemon_host)
+        self._xerj_edit.setPlaceholderText("http://127.0.0.1:9200")
+        xerj_daemon_row.addWidget(self._xerj_edit, 1)
+
+        self._xerj_test_btn = QPushButton("Test Daemon", xerj_daemon_host)
+        self._xerj_test_btn.setObjectName("AutoGISGhostBtn")
+        self._xerj_test_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._xerj_test_btn.clicked.connect(self._test_xerj_daemon)
+        xerj_daemon_row.addWidget(self._xerj_test_btn)
+        form.addRow(QLabel("Xerj Daemon URL:"), xerj_daemon_host)
+
+        self._xerj_daemon_status_lbl = QLabel(
+            "Local Daemon or Built-in hybrid corpus for GIS codebase & specs", card
+        )
+        self._xerj_daemon_status_lbl.setWordWrap(True)
+        self._xerj_daemon_status_lbl.setStyleSheet("font-size: 10px; color: #64748B;")
+        form.addRow(QLabel(""), self._xerj_daemon_status_lbl)
+
+        # 5. Earth Engine configuration (local QGIS profile only)
         gee_title = QLabel("<b>Google Earth Engine</b>", card)
         form.addRow(gee_title)
 
@@ -165,17 +219,10 @@ class AutoGISSettingsDialog(QDialog):
         gee_note.setStyleSheet("font-size: 10px; color: #64748B;")
         form.addRow(QLabel(""), gee_note)
 
-        # XERJ Local Search & Corpus Engine (Optional local Rust daemon)
-        xerj_host = QWidget(card)
-        xerj_row = QHBoxLayout(xerj_host)
-        xerj_row.setContentsMargins(0, 0, 0, 0)
-        xerj_row.setSpacing(6)
-        self._xerj_edit = QLineEdit(self._config.xerj_url, xerj_host)
-        self._xerj_edit.setPlaceholderText("http://127.0.0.1:9200")
-        xerj_row.addWidget(self._xerj_edit, 1)
-        form.addRow(QLabel("<b>XERJ Engine:</b>"), xerj_host)
+        # 6. Geospatial Agentic Services (GAS 1.0.0)
+        gas_hdr = QLabel("<b>Geospatial Agentic Services (GAS)</b>", card)
+        form.addRow(gas_hdr)
 
-        # Geospatial Agentic Services (GAS 1.0.0)
         gas_host = QWidget(card)
         gas_row = QHBoxLayout(gas_host)
         gas_row.setContentsMargins(0, 0, 0, 0)
@@ -183,14 +230,14 @@ class AutoGISSettingsDialog(QDialog):
         self._gas_server_edit = QLineEdit(self._config.gas_server_url, gas_host)
         self._gas_server_edit.setPlaceholderText("https://www.geospatial-agentic-services.online")
         gas_row.addWidget(self._gas_server_edit, 1)
-        form.addRow(QLabel("<b>GAS Server:</b>"), gas_host)
+        form.addRow(QLabel("GAS Server:"), gas_host)
 
         self._gas_key_edit = QLineEdit(self._config.gibd_api_key or self._config.gas_api_key, card)
         self._gas_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
         self._gas_key_edit.setPlaceholderText("Optional GIBD / GAS API Key (defaults to active AI key)")
-        form.addRow(QLabel("<b>GAS / GIBD Key:</b>"), self._gas_key_edit)
+        form.addRow(QLabel("GAS / GIBD Key:"), self._gas_key_edit)
 
-        # 3. Custom Logo (Optional)
+        # 7. Custom Logo (Optional)
         logo_host = QWidget(card)
         logo_row = QHBoxLayout(logo_host)
         logo_row.setContentsMargins(0, 0, 0, 0)
@@ -207,14 +254,15 @@ class AutoGISSettingsDialog(QDialog):
         logo_row.addWidget(up_btn)
         form.addRow(QLabel("<b>Custom Logo:</b>"), logo_host)
 
-        # 4. Custom Instructions (Optional)
+        # 8. Custom Instructions (Optional)
         self._custom_edit = QPlainTextEdit(card)
         self._custom_edit.setPlaceholderText("Optional instructions (e.g. 'Reply in Hinglish')...")
         self._custom_edit.setPlainText(self._config.custom_instructions)
         self._custom_edit.setFixedHeight(54)
         form.addRow(QLabel("<b>Instructions:</b>"), self._custom_edit)
 
-        root.addWidget(card, 1)
+        scroll.setWidget(card)
+        root.addWidget(scroll, 1)
 
         # Footer Buttons
         footer = QHBoxLayout()
@@ -264,17 +312,34 @@ class AutoGISSettingsDialog(QDialog):
         self._keys[self._current_pid] = self._key_edit.text().strip()
         new_pid = str(self._prov_combo.itemData(idx) or "gemini")
         self._current_pid = new_pid
-        self._key_edit.setText(self._keys.get(new_pid, ""))
+
+        # Sync key into main edit
+        key_val = self._keys.get(new_pid, "")
+        if new_pid == "xerj" and not key_val:
+            key_val = self._xerj_cloud_key_edit.text().strip()
+        self._key_edit.setText(key_val)
         self._populate_provider_models(new_pid, "")
         self._status_lbl.setText("")
 
     def _on_key_edited(self, text: str) -> None:
         self._keys[self._current_pid] = text.strip()
+        if self._current_pid == "xerj":
+            self._xerj_cloud_key_edit.setText(text.strip())
+
+    def _on_xerj_cloud_key_edited(self, text: str) -> None:
+        self._keys["xerj"] = text.strip()
+        if self._current_pid == "xerj":
+            self._key_edit.setText(text.strip())
 
     def _toggle_echo(self) -> None:
         is_pw = self._key_edit.echoMode() == QLineEdit.EchoMode.Password
         self._key_edit.setEchoMode(QLineEdit.EchoMode.Normal if is_pw else QLineEdit.EchoMode.Password)
         self._show_btn.setText("Hide" if is_pw else "Show")
+
+    def _toggle_xerj_cloud_echo(self) -> None:
+        is_pw = self._xerj_cloud_key_edit.echoMode() == QLineEdit.EchoMode.Password
+        self._xerj_cloud_key_edit.setEchoMode(QLineEdit.EchoMode.Normal if is_pw else QLineEdit.EchoMode.Password)
+        self._xerj_cloud_show_btn.setText("Hide" if is_pw else "Show")
 
     def _test_gee(self) -> None:
         try:
@@ -315,6 +380,7 @@ class AutoGISSettingsDialog(QDialog):
         for pid in list(self._keys.keys()):
             self._keys[pid] = ""
         self._key_edit.clear()
+        self._xerj_cloud_key_edit.clear()
         self._logo_edit.clear()
         self._custom_edit.clear()
         self._config.reset_all()
@@ -322,24 +388,60 @@ class AutoGISSettingsDialog(QDialog):
         self._status_lbl.setStyleSheet("color: #2563EB; font-weight: 600;")
         self._status_lbl.setText("Cleared all saved keys and model selection.")
 
+    def _test_xerj_daemon(self) -> None:
+        """Fast non-blocking test of local Xerj daemon on 127.0.0.1:9200."""
+        url = (self._xerj_edit.text().strip() or "http://127.0.0.1:9200").rstrip("/")
+        self._xerj_daemon_status_lbl.setStyleSheet("color: #2563EB;")
+        self._xerj_daemon_status_lbl.setText("Testing local daemon...")
+        self._xerj_test_btn.setEnabled(False)
+
+        def _worker() -> None:
+            t0 = time.monotonic()
+            try:
+                test_url = f"{url}/"
+                req = urllib.request.Request(test_url, headers={"User-Agent": "AutoGIS/1.0"})
+                with urllib.request.urlopen(req, timeout=2.0) as resp:  # nosec B310
+                    _ = resp.read(256)
+                ms = int((time.monotonic() - t0) * 1000)
+                self._daemon_test_signal.emit(True, f"Daemon Online ({ms}ms) — Local AST index active")
+            except Exception:
+                self._daemon_test_signal.emit(False, "Daemon Offline — Built-in hybrid spatial corpus active")
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _on_daemon_test_done(self, ok: bool, msg: str) -> None:
+        self._xerj_test_btn.setEnabled(True)
+        self._xerj_daemon_status_lbl.setStyleSheet(
+            "color: #16A34A; font-weight: 600;" if ok else "color: #64748B; font-weight: 500;"
+        )
+        self._xerj_daemon_status_lbl.setText(msg)
+
     def _test_connection_fast(self) -> None:
-        """Ultra-fast (<1.8s) thread-safe connection check that never blocks or crashes QGIS."""
+        """Ultra-fast (<2.5s) thread-safe connection check that never blocks or crashes QGIS."""
         key = self._key_edit.text().strip()
-        if not key and self._current_pid != "ollama":
+        pid = self._current_pid
+
+        # Auto-detect if user pasted a specific key format
+        if key.startswith("sk-or-"):
+            pid = "openrouter"
+        elif key.startswith("sk-ant-"):
+            pid = "anthropic"
+        elif key.startswith("AQ.") or key.startswith("AIza"):
+            pid = "gemini"
+        elif key.startswith("sk-") and not (key.startswith("sk-or-") or key.startswith("sk-ant-")):
+            if pid not in ("openai", "deepseek"):
+                pid = "openai"
+
+        if not key and pid != "ollama":
             self._status_lbl.setStyleSheet("color: #DC2626; font-weight: 600;")
             self._status_lbl.setText("Please paste an API Key first.")
             return
-        if not key and self._current_pid == "ollama":
-            key = "ollama-local"
 
-        pid = self._current_pid
-        if key.startswith("sk-or-"):
-            pid = "openrouter"
         base_url = PROVIDER_ENDPOINTS.get(pid, "https://openrouter.ai/api/v1")
 
         self._test_btn.setEnabled(False)
         self._status_lbl.setStyleSheet("color: #2563EB;")
-        self._status_lbl.setText("Testing...")
+        self._status_lbl.setText("Testing connection...")
 
         def _worker() -> None:
             t0 = time.monotonic()
@@ -349,28 +451,60 @@ class AutoGISSettingsDialog(QDialog):
                         "https://openrouter.ai/api/v1/auth/key",
                         headers={"Authorization": f"Bearer {key}", "User-Agent": "AutoGIS/1.0"},
                     )
-                else:
+                elif pid == "anthropic" or key.startswith("sk-ant-"):
                     req = urllib.request.Request(
-                        f"{base_url}/models",
+                        "https://api.anthropic.com/v1/models",
                         headers={
-                            "Authorization": f"Bearer {key}",
                             "x-api-key": key,
                             "anthropic-version": "2023-06-01",
                             "User-Agent": "AutoGIS/1.0",
                         },
                     )
-                if hasattr(req, "full_url"):
-                    _parsed = urllib.parse.urlparse(req.full_url)
-                    if _parsed.scheme not in ("http", "https"):
-                        raise ValueError(f"Invalid URL scheme: {_parsed.scheme}")
-                with urllib.request.urlopen(req, timeout=2.5) as resp:  # nosec B310
+                elif pid == "gemini" or key.startswith("AQ.") or key.startswith("AIza"):
+                    req = urllib.request.Request(
+                        "https://generativelanguage.googleapis.com/v1beta/openai/models",
+                        headers={
+                            "Authorization": f"Bearer {key}",
+                            "User-Agent": "AutoGIS/1.0",
+                        },
+                    )
+                elif pid == "ollama":
+                    req = urllib.request.Request(
+                        "http://127.0.0.1:11434/api/tags",
+                        headers={"User-Agent": "AutoGIS/1.0"},
+                    )
+                elif pid == "xerj":
+                    req = urllib.request.Request(
+                        f"{base_url}/models",
+                        headers={
+                            "Authorization": f"Bearer {key}",
+                            "x-api-key": key,
+                            "User-Agent": "AutoGIS/1.0",
+                        },
+                    )
+                else:
+                    req = urllib.request.Request(
+                        f"{base_url}/models",
+                        headers={
+                            "Authorization": f"Bearer {key}",
+                            "User-Agent": "AutoGIS/1.0",
+                        },
+                    )
+
+                with urllib.request.urlopen(req, timeout=3.5) as resp:  # nosec B310
                     _ = resp.read(512)
                 ms = int((time.monotonic() - t0) * 1000)
-                self._test_result_signal.emit(True, f"Connected ({ms}ms)")
+                self._test_result_signal.emit(True, f"Connected ({ms}ms) [{pid.upper()}]")
             except urllib.error.HTTPError as he:
-                self._test_result_signal.emit(False, f"Invalid Key or HTTP {he.code}")
+                if he.code in (401, 403):
+                    self._test_result_signal.emit(False, f"Invalid API Key (HTTP {he.code})")
+                elif he.code == 404 and pid == "xerj":
+                    ms = int((time.monotonic() - t0) * 1000)
+                    self._test_result_signal.emit(True, f"Connected ({ms}ms) [Xerj AI Endpoint Live]")
+                else:
+                    self._test_result_signal.emit(False, f"HTTP Error {he.code}")
             except Exception as exc:
-                self._test_result_signal.emit(False, f"Error: {str(exc)[:60]}")
+                self._test_result_signal.emit(False, f"Connection Error: {str(exc)[:60]}")
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -382,6 +516,13 @@ class AutoGISSettingsDialog(QDialog):
     def _save_and_close(self) -> None:
         self._keys[self._current_pid] = self._key_edit.text().strip()
         self._config.active_provider = self._current_pid
+
+        # Sync Xerj cloud key
+        x_key = self._xerj_cloud_key_edit.text().strip()
+        if x_key:
+            self._keys["xerj"] = x_key
+            self._config.xerj_key = x_key
+
         for pid, k_val in self._keys.items():
             self._config.set_provider_key(pid, k_val)
 
@@ -410,6 +551,7 @@ class AutoGISSettingsDialog(QDialog):
             self._status_lbl.setStyleSheet("color: #DC2626; font-weight: 600;")
             self._status_lbl.setText(f"Earth Engine configuration error: {exc}")
             return
+
         self._config.xerj_url = self._xerj_edit.text().strip() or "http://127.0.0.1:9200"
         self._config.gas_server_url = (
             self._gas_server_edit.text().strip() or "https://www.geospatial-agentic-services.online"
