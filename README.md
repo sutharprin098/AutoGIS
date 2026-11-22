@@ -25,17 +25,6 @@ Execute natural language spatial workflows with **GeoSAM-v2 zero-shot segmentati
 
 ---
 
-## ⚡ Real Zero-Shot AI Segmentation (In Action)
-
-AutoGIS extracts building footprints, roads, and land features directly from high-resolution satellite raster layers (Google Satellite, Sentinel-2, Drone Orthomosaics) using overlapped windowed GeoSAM-v2 without freezing QGIS:
-
-<div align="center">
-  <img src="docs/geosam_demo.png" alt="GeoSAM Building Segmentation Demo" width="65%" />
-  <p><em>Extracted 24 building footprints in 63 ms with automatic CRS Web Mercator reprojection.</em></p>
-</div>
-
----
-
 ## 🌟 Core Capabilities
 
 | Feature | Description | Architecture / Source |
@@ -94,8 +83,16 @@ AutoGIS autonomously plans, runs, verifies geometry, and loads styled layers int
 
 ---
 
+## 👨‍💻 Author & Contact
+
+**Prince Suthar**  
+- 📧 **Email**: [official.princesuthar@gmail.com](mailto:official.princesuthar@gmail.com)  
+- 🌐 **Website**: [autogis.princesite.in](https://autogis.princesite.in)  
+- 🐙 **GitHub**: [@sutharprin098](https://github.com/sutharprin098)
+
+---
+
 ## 📜 License & Compliance
 
 - **License**: GNU General Public License v3.0 (GPL-3.0)
 - **QGIS Compliance**: 100% Open-Source, zero proprietary binaries, zero hardcoded secrets. Fully adheres to [Official QGIS Plugin Guidelines](https://plugins.qgis.org/).
-- **Author**: Prince Suthar ([@sutharprin098](https://github.com/sutharprin098))
