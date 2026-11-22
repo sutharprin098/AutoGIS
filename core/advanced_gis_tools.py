@@ -14,9 +14,6 @@ from qgis.core import (
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
     QgsFillSymbol,
-    QgsFontUtils,
-    QgsGradientColorRamp,
-    QgsGradientStop,
     QgsLayoutExporter,
     QgsLayoutItemLabel,
     QgsLayoutItemLegend,
@@ -638,7 +635,6 @@ def tool_export_publication_map(iface, args: dict[str, Any]) -> dict[str, Any]:
     boundary = _find_active_boundary_layer(inferred_place)
 
     # Ensure all visible GDAL rasters are clipped to the boundary polygon
-    root = proj.layerTreeRoot()
     thematic_rasters: list[QgsRasterLayer] = []
     visible_vectors: list[QgsVectorLayer] = []
     basemap_layers: list[QgsMapLayer] = []
@@ -1378,10 +1374,10 @@ def tool_query_xerj_corpus(iface, args: dict[str, Any], run_on_main=None) -> dic
                             "file": fname,
                             "path": fpath,
                             "score": f_score,
-                            "excerpt": txt[first_pos : first_pos + 500].strip(),
+                            "excerpt": txt[first_pos:first_pos + 500].strip(),
                         })
                 except Exception as err:
-                    _ = err  # nosec B110
+                    _ = err
         workspace_hits.sort(key=lambda x: float(x.get("score") or 0), reverse=True)
         workspace_hits = workspace_hits[:limit]
 
@@ -1401,13 +1397,12 @@ def tool_query_xerj_corpus(iface, args: dict[str, Any], run_on_main=None) -> dic
 # =============================================================================
 # VeriGeo & 100+ Layer Datacube & MCDM Tool Handlers
 # =============================================================================
-from .verigeo_bridge import VeriGeoBridge
-from .datacube_engine import StreamingDatacube, LayerDescriptor, DatacubeGridSpec
-from .autonomous_mcdm import AutonomousMCDMEngine, Criterion
+from .verigeo_bridge import VeriGeoBridge  # noqa: E402
+from .datacube_engine import StreamingDatacube  # noqa: E402
+from .autonomous_mcdm import AutonomousMCDMEngine  # noqa: E402
 
 _GLOBAL_DATACUBE = StreamingDatacube()
 _GLOBAL_MCDM_ENGINE = AutonomousMCDMEngine()
-
 
 
 def _normalize_args(iface_or_params: Any = None, args: dict[str, Any] | None = None, **kwargs) -> tuple[Any, dict[str, Any]]:
@@ -1418,6 +1413,7 @@ def _normalize_args(iface_or_params: Any = None, args: dict[str, Any] | None = N
     if not params and isinstance(iface_or_params, dict):
         params = iface_or_params
     return iface_or_params, params or {}
+
 
 def tool_verigeo_verify_workflow(iface_or_params: Any = None, args: dict[str, Any] | None = None, run_on_main: Any = None, **kwargs) -> dict[str, Any]:
     """Run VeriGeo Neuro-Symbolic Verification and Topological Repair on spatial layers."""
@@ -1473,7 +1469,7 @@ def tool_verigeo_maup_and_physics_guard(iface_or_params: Any = None, args: dict[
     )
     spatial_dep = bridge.compute_spatial_autocorrelation(
         values=params.get("sample_values", [10.0, 12.0, 15.0, 20.0, 25.0, 30.0, 32.0, 40.0]),
-        coords=params.get("sample_coords", [(0,0), (1,0), (2,0), (3,0), (0,1), (1,1), (2,1), (3,1)]),
+        coords=params.get("sample_coords", [(0, 0), (1, 0), (2, 0), (3, 0), (0, 1), (1, 1), (2, 1), (3, 1)]),
     )
 
     return {
@@ -1560,13 +1556,11 @@ def tool_autonomous_datalake_crawl(iface_or_params: Any = None, args: dict[str, 
     }
 
 
-
-
 def tool_xerj_document_intelligence(iface_or_params: Any = None, args: dict[str, Any] | None = None, run_on_main: Any = None, **kwargs) -> dict[str, Any]:
     """AI Document Router & Deep Spatial Extraction (Xerj AI vs Primary LLM). Only routes to Xerj AI if user has provided Xerj API key."""
     _, params = _normalize_args(iface_or_params, args, **kwargs)
     from .config import AutoGISConfig
-    from .xerj_ai_router import AIDocumentRouter, XerjAIClient
+    from .xerj_ai_router import AIDocumentRouter
 
     cfg = AutoGISConfig()
     path = str(params.get("path") or "").strip()

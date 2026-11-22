@@ -517,7 +517,7 @@ class AutoGISMCPBridge:
                 self._httpd.shutdown()
                 self._httpd.server_close()
             except Exception as err:
-                _ = err  # nosec B110
+                _ = err
             self._httpd = None
         if self._thread is not None:
             self._thread.join(timeout=2.0)

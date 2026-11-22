@@ -18,12 +18,9 @@ from __future__ import annotations
 
 import base64
 import html
-import io
 import json
 import math
 import os
-import re
-import sys
 import tempfile
 import time
 import urllib.error
@@ -33,33 +30,22 @@ from typing import Any
 
 from qgis.core import (
     QgsCategorizedSymbolRenderer,
-    QgsColorRampShader,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
-    QgsFeature,
-    QgsField,
     QgsFillSymbol,
-    QgsGeometry,
     QgsGraduatedSymbolRenderer,
     QgsMapLayer,
     QgsMarkerSymbol,
-    QgsPointXY,
     QgsProject,
-    QgsRasterBandStats,
     QgsRasterLayer,
-    QgsRasterShader,
-    QgsRectangle,
     QgsRendererCategory,
     QgsRendererRange,
-    QgsSingleBandPseudoColorRenderer,
     QgsSingleSymbolRenderer,
-    QgsUnitTypes,
     QgsVectorLayer,
 )
-from qgis.PyQt.QtCore import Qt, QVariant
 from qgis.PyQt.QtGui import QColor, QFont, QImage, QPainter
 
-from .config import AutoGISConfig, data_dir, log_info, log_warn
+from .config import AutoGISConfig, data_dir, log_warn
 
 # Try to import PIL for animated GIF synthesis
 try:
@@ -1718,4 +1704,3 @@ def tool_detect_buildings_from_raster(iface, args: dict[str, Any], run_on_main=N
         "geojson_file": out_geojson,
         "message": f"Successfully detected {len(features)} building footprints totaling {total_area:,.1f} m² from raster.",
     }
-

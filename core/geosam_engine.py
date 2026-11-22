@@ -9,7 +9,6 @@ import numpy as np
 
 from qgis.core import (
     QgsCoordinateReferenceSystem,
-    QgsCoordinateTransform,
     QgsFeature,
     QgsField,
     QgsFields,
@@ -19,7 +18,6 @@ from qgis.core import (
     QgsRasterLayer,
     QgsRectangle,
     QgsVectorLayer,
-    QgsWkbTypes,
 )
 from qgis.PyQt.QtCore import QSize, QVariant
 
@@ -83,8 +81,8 @@ def _render_tile_to_numpy(
             res = run_on_main(_do_render)
             if res is not None:
                 return res
-        except Exception:
-            pass
+        except Exception as _err:
+            _ = _err
 
     return _do_render()
 
@@ -186,9 +184,6 @@ def _detect_features_in_chip(
 
         # 3. High-contrast edge detection & adaptive thresholding
         edges = cv2.Canny(blurred, 40, 120)
-        adapt_thresh = cv2.adaptiveThreshold(
-            blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, 2
-        )
 
         # 4. Otsu thresholding on luminance
         _, otsu = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)

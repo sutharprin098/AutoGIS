@@ -24,16 +24,7 @@ if os.path.isdir(VERIGEO_PATH) and VERIGEO_PATH not in sys.path:
     sys.path.insert(0, VERIGEO_PATH)
 
 try:
-    import verigeo
-    from verigeo.protocol import (
-        EQUAL_AREA_OPERATORS,
-        METRIC_REQUIRED_OPERATORS,
-        SPATIAL_STAT_OPERATORS,
-        AxiomCheckResult,
-        NeuroSymbolicGeoVerifier,
-        compute_optimal_metric_crs,
-        pycnophylactic_areal_interpolation,
-    )
+    from verigeo.protocol import NeuroSymbolicGeoVerifier
     VERIGEO_INSTALLED = True
 except Exception:
     VERIGEO_INSTALLED = False
@@ -51,7 +42,7 @@ class VeriGeoBridge:
     @staticmethod
     def repair_geometry(geom: Any, sliver_threshold: float = 0.05) -> Tuple[Any, Dict[str, Any]]:
         """Repairs invalid geometries, closes rings, snaps micro-gaps, and filters sliver polygons.
-        
+
         Sliver Ratio: 4 * pi * Area / (Perimeter^2) (Isoperimetric Quotient).
         If quotient < sliver_threshold (default 0.05) and area is small, geometry is considered a sliver artifact.
         """
@@ -211,7 +202,7 @@ class VeriGeoBridge:
     @staticmethod
     def verify_physical_conservation(domain: str, metrics: Dict[str, float]) -> Dict[str, Any]:
         """Enforces first-principles physical invariants in AutoGIS pipelines.
-        
+
         Supported domains:
         - 'hydrology': Mass balance: Infiltration + Runoff + Evapotranspiration <= Precipitation
         - 'carbon_biomass': Thermodynamic limits: Net Primary Productivity (NPP) <= 3500 g C/m2/yr

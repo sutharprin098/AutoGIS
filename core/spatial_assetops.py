@@ -16,7 +16,7 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QVariant
 
-from .config import log_info, log_warn
+from .config import log_info
 
 # ── IBM AssetOpsBench Knowledge Graph: Failure Modes, Symptoms & Remediation ──
 FMSR_KNOWLEDGE_GRAPH: dict[str, list[dict[str, Any]]] = {
@@ -134,13 +134,13 @@ def _make_point_geom(x: float, y: float) -> QgsGeometry:
     if hasattr(QgsGeometry, "fromPointXY"):
         try:
             return QgsGeometry.fromPointXY(QgsPointXY(x, y))
-        except Exception:
-            pass
+        except Exception as _err:
+            _ = _err
     if hasattr(QgsGeometry, "fromWkt"):
         try:
             return QgsGeometry.fromWkt(f"POINT({x} {y})")
-        except Exception:
-            pass
+        except Exception as _err:
+            _ = _err
     return QgsGeometry.fromRect(QgsRectangle(x - 0.0005, y - 0.0005, x + 0.0005, y + 0.0005))
 
 
@@ -148,14 +148,14 @@ def _make_line_geom(pts: list[tuple[float, float]]) -> QgsGeometry:
     if hasattr(QgsGeometry, "fromPolylineXY"):
         try:
             return QgsGeometry.fromPolylineXY([QgsPointXY(px, py) for px, py in pts])
-        except Exception:
-            pass
+        except Exception as _err:
+            _ = _err
     if hasattr(QgsGeometry, "fromWkt"):
         try:
             coords = ", ".join(f"{px} {py}" for px, py in pts)
             return QgsGeometry.fromWkt(f"LINESTRING({coords})")
-        except Exception:
-            pass
+        except Exception as _err:
+            _ = _err
     x0, y0 = pts[0]
     x1, y1 = pts[-1]
     return QgsGeometry.fromRect(QgsRectangle(min(x0, x1), min(y0, y1), max(x0, x1) + 0.001, max(y0, y1) + 0.001))

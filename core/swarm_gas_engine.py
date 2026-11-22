@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from typing import Any
 
-from .config import log_info, log_warn
+from .config import log_info
 
 
 def run_gas_multi_agent_swarm(

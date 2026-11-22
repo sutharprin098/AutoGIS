@@ -14,8 +14,8 @@ Combines:
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 
@@ -68,7 +68,7 @@ class AutonomousMCDMEngine:
     @staticmethod
     def solve_ahp_matrix(matrix: np.ndarray) -> Tuple[np.ndarray, float, bool]:
         """Calculates priority weights vector and checks consistency ratio (CR < 0.10).
-        
+
         Returns:
             (weights_vector, consistency_ratio, is_consistent)
         """
@@ -99,7 +99,7 @@ class AutonomousMCDMEngine:
     @staticmethod
     def compute_shannon_entropy_weights(data_matrix: np.ndarray) -> np.ndarray:
         """Derives objective weights from spatial variation across criteria using Shannon's Information Entropy.
-        
+
         data_matrix shape: (m_samples, n_criteria)
         """
         m, n = data_matrix.shape
@@ -142,7 +142,7 @@ class AutonomousMCDMEngine:
         is_benefit: List[bool]
     ) -> np.ndarray:
         """Executes TOPSIS ranking over a 2D sample array (samples x criteria).
-        
+
         Returns:
             Relative Closeness Coefficient (CC_i) in [0.0, 100.0]
         """

@@ -24,7 +24,7 @@ import os
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 USER_AGENT = "AutoGIS-EarthEngine/1.0.8 (+https://github.com/sutharprin098/AutoGIS)"
 PLANETARY_COMPUTER_STAC = "https://planetarycomputer.microsoft.com/api/stac/v1/search"
@@ -249,6 +249,7 @@ class AutonomousDataLakeCrawler:
         return {
             "status": "SUCCESS",
             "bbox": bbox,
+            "overpass_query": overpass_query.strip(),
             "infrastructure_layers": [
                 {"id": "osm_power_lines", "type": "vector", "feature": "power=line", "role": "proximity_criterion"},
                 {"id": "osm_substations", "type": "vector", "feature": "power=substation", "role": "proximity_criterion"},

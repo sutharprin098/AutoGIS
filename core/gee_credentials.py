@@ -11,6 +11,7 @@ from typing import Any
 
 from .config import AutoGISConfig
 
+
 def get_oauth_credentials_project() -> str:
     """Read default project ID from ~/.config/earthengine/credentials if present."""
     cred_path = os.path.expanduser("~/.config/earthengine/credentials")

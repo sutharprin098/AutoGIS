@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import re
 import time
 from typing import Any
@@ -9,14 +8,11 @@ from qgis.core import (
     QgsExpression,
     QgsFeature,
     QgsFeatureRequest,
-    QgsField,
-    QgsFields,
     QgsProject,
     QgsVectorLayer,
 )
-from qgis.PyQt.QtCore import QVariant
 
-from .config import log_info, log_warn
+from .config import log_info
 
 
 def execute_georag_query(
@@ -27,7 +23,7 @@ def execute_georag_query(
     output_layer_name: str = "",
 ) -> dict[str, Any]:
     """Execute GeoRAG Spatial Database Query over local vector layers, GeoPackage, or SpatiaLite.
-    
+
     Translates natural language spatial intent or Spatial SQL queries into executed spatial selections,
     attribute filters, and new vector sub-layers.
     """
@@ -37,18 +33,18 @@ def execute_georag_query(
     # 1. Resolve Target Layer
     lyr: QgsVectorLayer | None = None
     if target_layer_or_database:
-        for l in proj.mapLayers().values():
-            if isinstance(l, QgsVectorLayer) and (l.name() == target_layer_or_database or l.id() == target_layer_or_database):
-                lyr = l
+        for cand in proj.mapLayers().values():
+            if isinstance(cand, QgsVectorLayer) and (cand.name() == target_layer_or_database or cand.id() == target_layer_or_database):
+                lyr = cand
                 break
 
     if lyr is None and iface and iface.activeLayer() and isinstance(iface.activeLayer(), QgsVectorLayer):
         lyr = iface.activeLayer()
 
     if lyr is None:
-        for l in proj.mapLayers().values():
-            if isinstance(l, QgsVectorLayer):
-                lyr = l
+        for cand in proj.mapLayers().values():
+            if isinstance(cand, QgsVectorLayer):
+                lyr = cand
                 break
 
     if lyr is None or not lyr.isValid():
@@ -72,7 +68,6 @@ def execute_georag_query(
         expr_str = cleaned_where
     else:
         # Heuristic Natural Language to Expression Translation
-        available_fields = [f.name() for f in lyr.fields()]
         field_names_lower = {f.name().lower(): f.name() for f in lyr.fields()}
 
         # Numerical comparison patterns (e.g. area > 500, population < 10000)

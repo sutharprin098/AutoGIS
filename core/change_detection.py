@@ -5,22 +5,18 @@ import time
 from typing import Any
 
 from qgis.core import (
-    QgsColorRampShader,
     QgsFeature,
     QgsField,
     QgsFields,
     QgsGeometry,
     QgsProject,
     QgsRasterLayer,
-    QgsRasterShader,
     QgsRectangle,
-    QgsSingleBandPseudoColorRenderer,
     QgsVectorLayer,
 )
 from qgis.PyQt.QtCore import QVariant
-from qgis.PyQt.QtGui import QColor
 
-from .config import log_info, log_warn
+from .config import log_info
 
 
 def run_spatial_change_detection(
@@ -32,7 +28,7 @@ def run_spatial_change_detection(
     output_layer_name: str = "",
 ) -> dict[str, Any]:
     """Execute Automated Spatial Change Detection (Deforestation, Urban Sprawl, Wildfires).
-    
+
     Computes multi-temporal pixel differencing, generates hotspot polygons of land conversion / forest loss,
     and returns exact surface area statistics in hectares and square kilometers.
     """
@@ -41,9 +37,9 @@ def run_spatial_change_detection(
 
     # 1. Resolve Rasters
     def _find_raster(name_or_p: str) -> QgsRasterLayer | None:
-        for l in proj.mapLayers().values():
-            if isinstance(l, QgsRasterLayer) and (l.name() == name_or_p or l.id() == name_or_p):
-                return l
+        for lyr in proj.mapLayers().values():
+            if isinstance(lyr, QgsRasterLayer) and (lyr.name() == name_or_p or lyr.id() == name_or_p):
+                return lyr
         if os.path.exists(name_or_p):
             r = QgsRasterLayer(name_or_p, os.path.splitext(os.path.basename(name_or_p))[0])
             if r.isValid():

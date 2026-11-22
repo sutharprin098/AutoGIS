@@ -127,14 +127,14 @@ def log_info(msg: str) -> None:
     try:
         QgsMessageLog.logMessage(str(msg), "AutoGIS", level=0)
     except Exception as err:
-        _ = err  # nosec B110
+        _ = err
 
 
 def log_warn(msg: str) -> None:
     try:
         QgsMessageLog.logMessage(str(msg), "AutoGIS", level=1)
     except Exception as err:
-        _ = err  # nosec B110
+        _ = err
 
 
 def data_dir() -> str:
@@ -177,7 +177,7 @@ class AutoGISConfig:
             self._qs.setValue(self._k(key), val)
             self._qs.sync()
         except Exception as err:
-            _ = err  # nosec B110
+            _ = err
 
     def get_bool(self, key: str, default: bool = True) -> bool:
         raw = self.get_str(key, "1" if default else "0")
@@ -220,11 +220,11 @@ class AutoGISConfig:
             try:
                 self._qs.remove(self._k(k))
             except Exception as err:
-                _ = err  # nosec B110
+                _ = err
         try:
             self._qs.sync()
         except Exception as err:
-            _ = err  # nosec B110
+            _ = err
 
     @property
     def active_provider(self) -> str:
@@ -259,7 +259,6 @@ class AutoGISConfig:
         }
         k = key_map.get(provider_id, "api_key")
         self.set_str(k, value)
-
 
     @property
     def gee_project_id(self) -> str:

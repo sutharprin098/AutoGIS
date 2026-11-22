@@ -306,8 +306,8 @@ class AutoGISPanel(QWidget):
             from qgis.core import QgsProject
             QgsProject.instance().layersAdded.connect(self._populate_layer_selector)
             QgsProject.instance().layersRemoved.connect(self._populate_layer_selector)
-        except Exception:
-            pass
+        except Exception as _err:
+            _ = _err
 
     def _sync_model_combo(self) -> None:
         self._model_combo.blockSignals(True)
@@ -395,8 +395,8 @@ class AutoGISPanel(QWidget):
                 if lyr.isValid():
                     tag = "🛰️" if isinstance(lyr, QgsRasterLayer) else "📍"
                     self._layer_selector.addItem(f"{tag} {lyr.name()}", lyr.name())
-        except Exception:
-            pass
+        except Exception as _err:
+            _ = _err
 
         if curr_text:
             idx = self._layer_selector.findData(curr_text)
@@ -502,6 +502,7 @@ class AutoGISPanel(QWidget):
 
             def _worker():
                 res = _listen()
+
                 def _done():
                     self._voice_btn.setText("Voice")
                     self._voice_btn.setEnabled(True)

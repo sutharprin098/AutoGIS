@@ -4,7 +4,7 @@ import html
 import os
 import re
 
-from qgis.PyQt.QtCore import QPointF, QRectF, QSize, Qt
+from qgis.PyQt.QtCore import QPointF, QRectF, Qt
 from qgis.PyQt.QtGui import (
     QBrush,
     QColor,
@@ -41,7 +41,7 @@ def is_dark_theme() -> bool:
         if app is not None:
             bg = app.palette().window().color()
             return bg.lightness() < 110
-    except Exception as _err:  # nosec B110
+    except Exception as _err:
         _ = _err
     return False
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import concurrent.futures
 import json
-import time
 import urllib.error
 import urllib.parse
 import urllib.request

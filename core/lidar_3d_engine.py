@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import time
 from typing import Any
 
@@ -10,13 +9,12 @@ from qgis.core import (
     QgsFields,
     QgsGeometry,
     QgsProject,
-    QgsRasterLayer,
     QgsRectangle,
     QgsVectorLayer,
 )
 from qgis.PyQt.QtCore import QVariant
 
-from .config import log_info, log_warn
+from .config import log_info
 
 
 def run_drone_lidar_lod2_pipeline(
@@ -28,7 +26,7 @@ def run_drone_lidar_lod2_pipeline(
     output_layer_name: str = "",
 ) -> dict[str, Any]:
     """Execute Drone & LiDAR Processing to construct 3D LoD-2 City Models and Canopy Height Models.
-    
+
     Extracts Normalized Digital Surface Models (nDSM), calculates building heights, assigns roof profiles,
     and produces 3D-extruded LoD-2 building vector layers ready for QGIS 3D View rendering.
     """
@@ -115,8 +113,8 @@ def run_drone_lidar_lod2_pipeline(
         vlyr.setCustomProperty("3d/enabled", True)
         vlyr.setCustomProperty("3d/extrusion_height", "height_m")
         vlyr.setCustomProperty("3d/altitude_clamping", "terrain")
-    except Exception:
-        pass
+    except Exception as _err:
+        _ = _err
 
     if iface and iface.mapCanvas():
         iface.mapCanvas().refresh()

@@ -97,7 +97,7 @@ class AutoGISPlugin:
         if self.dock is not None:
             try:
                 self.dock.visibilityChanged.disconnect(self._on_visibility_changed)
-            except Exception as _err:  # nosec B110
+            except Exception as _err:
                 _ = _err
             if self.dock.panel is not None:
                 try:
@@ -106,7 +106,7 @@ class AutoGISPlugin:
                     if hasattr(self.dock.panel._engine, "_mcp_bridge") and self.dock.panel._engine._mcp_bridge:
                         self.dock.panel._engine._mcp_bridge.stop()
                     self.dock.panel._status_banner.stop_status()
-                except Exception as _err:  # nosec B110
+                except Exception as _err:
                     _ = _err
             if self.iface:
                 self.iface.removeDockWidget(self.dock)

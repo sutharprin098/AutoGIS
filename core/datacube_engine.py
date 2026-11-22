@@ -9,11 +9,9 @@ Key Capabilities:
 
 from __future__ import annotations
 
-import json
 import math
-import os
 from dataclasses import asdict, dataclass, field
-from typing import Any, Callable, Dict, Generator, Iterator, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
 import numpy as np
 
@@ -113,7 +111,7 @@ class StreamingDatacube:
 
     def iter_chunks(self) -> Generator[Dict[str, Any], None, None]:
         """Iterates through 512x512 spatial tiles (chunks) across the entire bounding box.
-        
+
         Yields chunk metadata: window bounds, col_off, row_off, chunk_w, chunk_h.
         """
         if not self.grid_spec:
@@ -148,7 +146,7 @@ class StreamingDatacube:
         output_sink: Optional[Callable[[np.ndarray, Dict[str, Any]], None]] = None,
     ) -> Dict[str, Any]:
         """Executes a composite calculation over 100+ layers without loading everything into memory.
-        
+
         Evaluates one chunk at a time, keeping RAM consumption constant (O(chunk_size^2)).
         """
         tiles_processed = 0

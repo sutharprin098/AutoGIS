@@ -103,12 +103,12 @@ def tool_gee_image_preview(args: dict[str, Any]) -> dict[str, Any]:
 
 
 # --- AutoGIS integrated Earth Engine download tools ---
-import datetime as _gee_dt
-import os as _gee_os
-import tempfile as _gee_tempfile
-import urllib.request as _gee_urllib
-import urllib.parse as _gee_urlparse
-import zipfile as _gee_zipfile
+import datetime as _gee_dt  # noqa: E402
+import os as _gee_os  # noqa: E402
+import tempfile as _gee_tempfile  # noqa: E402
+import urllib.request as _gee_urllib  # noqa: E402
+import urllib.parse as _gee_urlparse  # noqa: E402
+import zipfile as _gee_zipfile  # noqa: E402
 
 
 def _resolve_boundary_info_threadsafe(place: str, run_on_main=None) -> tuple[list[float] | None, str, dict | None]:
@@ -192,7 +192,7 @@ def _gee_bbox(args, run_on_main=None):
     w, s, e, n = bbox
     if not (-180 <= w < e <= 180 and -90 <= s < n <= 90):
         raise ValueError("Invalid bbox coordinates.")
-    if (e-w)*(n-s) > 4:
+    if (e - w) * (n - s) > 4:
         raise ValueError("AOI too large for direct download; use a smaller bbox.")
     return bbox, resolved
 
@@ -245,31 +245,36 @@ def _gee_download_and_load(image, args, iface=None, run_on_main=None, name="Eart
         parsed_url = _gee_urlparse.urlparse(url)
         if parsed_url.scheme not in ("http", "https") or not parsed_url.netloc:
             raise ValueError(f"Invalid Earth Engine download URL scheme: {parsed_url.scheme}")
-        req = _gee_urllib.Request(url, headers={"User-Agent":"AutoGIS-Studio/1.0"})
+        req = _gee_urllib.Request(url, headers={"User-Agent": "AutoGIS-Studio/1.0"})
         size = 0
         with _gee_urllib.urlopen(req, timeout=120) as response, open(temp_path, "wb") as out:  # nosec B310
             while True:
-                chunk = response.read(1024*1024)
-                if not chunk: break
+                chunk = response.read(1024 * 1024)
+                if not chunk:
+                    break
                 size += len(chunk)
-                if size > 128*1024*1024:
+                if size > 128 * 1024 * 1024:
                     raise ValueError("Direct download exceeded 128 MiB. Reduce the AOI or use a task-based export.")
                 out.write(chunk)
-        if not size: raise RuntimeError("Earth Engine returned an empty file.")
+        if not size:
+            raise RuntimeError("Earth Engine returned an empty file.")
         if _gee_zipfile.is_zipfile(temp_path):
             with _gee_zipfile.ZipFile(temp_path) as zf:
-                members = [n for n in zf.namelist() if n.lower().endswith((".tif",".tiff")) and ".." not in n.split("/") and not n.startswith("/")]
-                if not members: raise RuntimeError("Earth Engine ZIP contains no GeoTIFF.")
-                with zf.open(members[0]) as src, open(output,"wb") as dst:
+                members = [n for n in zf.namelist() if n.lower().endswith((".tif", ".tiff")) and ".." not in n.split("/") and not n.startswith("/")]
+                if not members:
+                    raise RuntimeError("Earth Engine ZIP contains no GeoTIFF.")
+                with zf.open(members[0]) as src, open(output, "wb") as dst:
                     while True:
-                        chunk = src.read(1024*1024)
-                        if not chunk: break
+                        chunk = src.read(1024 * 1024)
+                        if not chunk:
+                            break
                         dst.write(chunk)
         else:
             _gee_os.replace(temp_path, output)
         if not _gee_os.path.isfile(output) or _gee_os.path.getsize(output) < 100:
             raise RuntimeError("Downloaded GeoTIFF is missing or invalid.")
         layer_name = str(args.get("layer_name") or name)
+
         def _load():
             from qgis.core import QgsProject, QgsRasterLayer
             from .advanced_gis_tools import auto_order_project_layers, tool_style_raster_layer
@@ -293,17 +298,23 @@ def _gee_download_and_load(image, args, iface=None, run_on_main=None, name="Eart
             if iface and iface.mapCanvas():
                 iface.mapCanvas().setExtent(layer.extent())
                 iface.mapCanvas().refresh()
-            return {"layer_id":layer.id(),"layer_name":layer.name(),"width":layer.width(),
-                    "height":layer.height(),"bands":layer.bandCount(),"crs":layer.crs().authid(),
-                    "clipped_to_boundary": clipped_to_poly, "boundary_layer": boundary_name or None}
+            return {
+                "layer_id": layer.id(), "layer_name": layer.name(), "width": layer.width(),
+                "height": layer.height(), "bands": layer.bandCount(), "crs": layer.crs().authid(),
+                "clipped_to_boundary": clipped_to_poly, "boundary_layer": boundary_name or None,
+            }
         loaded = run_on_main(_load, timeout=60) if run_on_main else _load()
-        return {"status":"success","provider":"Google Earth Engine","project_id":get_gee_config().get("project_id",""),
-                "area":area,"bbox":bbox,"scale_m":scale,"output_crs":crs,"file_path":output,
-                "file_size_bytes":_gee_os.path.getsize(output),**loaded}
+        return {
+            "status": "success", "provider": "Google Earth Engine", "project_id": get_gee_config().get("project_id", ""),
+            "area": area, "bbox": bbox, "scale_m": scale, "output_crs": crs, "file_path": output,
+            "file_size_bytes": _gee_os.path.getsize(output), **loaded,
+        }
     finally:
         try:
-            if _gee_os.path.exists(temp_path): _gee_os.remove(temp_path)
-        except OSError: pass
+            if _gee_os.path.exists(temp_path):
+                _gee_os.remove(temp_path)
+        except OSError as _err:
+            _ = _err
 
 
 def tool_gee_download_dem(args, iface=None, run_on_main=None):
@@ -316,55 +327,63 @@ def tool_gee_download_dem(args, iface=None, run_on_main=None):
     payload["layer_name"] = args.get("layer_name") or (place + " DEM").strip() or "Earth Engine DEM"
     image = ee.Image(dataset).select([band])
     out = _gee_download_and_load(image, payload, iface, run_on_main, _gee_safe_slug(payload["layer_name"]), default_palette="terrain")
-    out.update({"dataset_id":dataset,"band":band,"product":"DEM"})
+    out.update({"dataset_id": dataset, "band": band, "product": "DEM"})
     return out
 
 
 def tool_gee_export_image(args, iface=None, run_on_main=None):
     ee = _ee()
     image_id = str(args.get("image_id") or "").strip()
-    if not image_id: raise ValueError("image_id is required.")
+    if not image_id:
+        raise ValueError("image_id is required.")
     image = ee.Image(image_id)
     bands = args.get("bands")
     if bands:
-        if not isinstance(bands,(list,tuple)) or not 1 <= len(bands) <= 12:
+        if not isinstance(bands, (list, tuple)) or not 1 <= len(bands) <= 12:
             raise ValueError("bands must contain 1-12 band names.")
         image = image.select([str(b) for b in bands])
-    name = str(args.get("layer_name") or image_id.replace("/","_"))
-    out = _gee_download_and_load(image,args,iface,run_on_main,_gee_safe_slug(name))
-    out.update({"image_id":image_id,"bands":list(bands) if bands else "all"})
+    name = str(args.get("layer_name") or image_id.replace("/", "_"))
+    out = _gee_download_and_load(image, args, iface, run_on_main, _gee_safe_slug(name))
+    out.update({"image_id": image_id, "bands": list(bands) if bands else "all"})
     return out
 
 
 def tool_gee_compute_index(args, iface=None, run_on_main=None):
     ee = _ee()
     index = str(args.get("index") or "NDVI").upper()
-    pairs = {"NDVI":("B8","B4"),"NDWI":("B3","B8"),"NDBI":("B11","B8")}
-    if index not in pairs: raise ValueError("index must be NDVI, NDWI, or NDBI.")
+    pairs = {"NDVI": ("B8", "B4"), "NDWI": ("B3", "B8"), "NDBI": ("B11", "B8")}
+    if index not in pairs:
+        raise ValueError("index must be NDVI, NDWI, or NDBI.")
     bbox, _ = _gee_bbox(args, run_on_main=run_on_main)
     today = _gee_dt.date.today()
-    start = str(args.get("start_date") or (today-_gee_dt.timedelta(days=365)).isoformat())
+    start = str(args.get("start_date") or (today - _gee_dt.timedelta(days=365)).isoformat())
     end = str(args.get("end_date") or today.isoformat())
-    if start >= end: raise ValueError("start_date must be earlier than end_date.")
+    if start >= end:
+        raise ValueError("start_date must be earlier than end_date.")
     region = ee.Geometry.Rectangle(bbox)
     max_cloud = float(args.get("max_cloud_cover", 30))
-    collection = (ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED").filterDate(start,end)
+    collection = (ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED").filterDate(start, end)
                   .filterBounds(region).filter(ee.Filter.lte("CLOUDY_PIXEL_PERCENTAGE", max_cloud)))
     count = int(_retry_gee_with_oauth_project(lambda: collection.size().getInfo()))
     if count == 0 and max_cloud < 50:
-        collection = (ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED").filterDate(start,end)
+        collection = (ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED").filterDate(start, end)
                       .filterBounds(region).filter(ee.Filter.lte("CLOUDY_PIXEL_PERCENTAGE", 50.0)))
         count = int(_retry_gee_with_oauth_project(lambda: collection.size().getInfo()))
-    if count == 0: raise RuntimeError("No Sentinel-2 images found for this area/date range; expand the date range or cloud threshold.")
-    a,b = pairs[index]
-    image = collection.median().normalizedDifference([a,b]).rename(index)
-    payload = dict(args); payload["bbox"] = bbox; payload["scale"] = int(args.get("scale") or 10)
+    if count == 0:
+        raise RuntimeError("No Sentinel-2 images found for this area/date range; expand the date range or cloud threshold.")
+    a, b = pairs[index]
+    image = collection.median().normalizedDifference([a, b]).rename(index)
+    payload = dict(args)
+    payload["bbox"] = bbox
+    payload["scale"] = int(args.get("scale") or 10)
     payload["layer_name"] = args.get("layer_name") or (index + " " + str(args.get("place") or "AOI"))
     palette_map = {"NDVI": "rdylgn", "NDWI": "blues", "NDBI": "reds"}
     out = _gee_download_and_load(
         image, payload, iface, run_on_main, _gee_safe_slug(payload["layer_name"]),
         default_palette=palette_map.get(index, "rdylgn")
     )
-    out.update({"product":index,"dataset_id":"COPERNICUS/S2_SR_HARMONIZED","image_count":count,
-                "start_date":start,"end_date":end,"band_math":f"normalizedDifference({a}, {b})"})
+    out.update({
+        "product": index, "dataset_id": "COPERNICUS/S2_SR_HARMONIZED", "image_count": count,
+        "start_date": start, "end_date": end, "band_math": f"normalizedDifference({a}, {b})",
+    })
     return out

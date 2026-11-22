@@ -211,7 +211,7 @@ def test_xerj_router_with_api_key_spatial_document():
     res = AIDocumentRouter.route_document_reading(
         doc_path="solar_farm_specs.pdf",
         text_content="Coordinates: 26.9124, 75.7873. EPSG:32643 UTM zone. Slope: 3.2 deg. Solar GHI: 5.85 kWh/m2. Bounding box overlay with Sentinel-2 NDVI.",
-        xerj_api_key="xerj-live-token-secret-xyz",
+        xerj_api_key="xerj-live-token-secret-xyz",  # pragma: allowlist secret
         primary_llm_name="Gemini 2.5 Flash",
     )
     assert res["decision"] == "XERJ_AI"
@@ -229,7 +229,7 @@ def test_xerj_router_with_api_key_general_document():
     res = AIDocumentRouter.route_document_reading(
         doc_path="meeting_notes.txt",
         text_content="Team meeting on Monday morning at 10 AM to discuss marketing strategy and quarterly sales budget.",
-        xerj_api_key="xerj-live-token-secret-xyz",
+        xerj_api_key="xerj-live-token-secret-xyz",  # pragma: allowlist secret
         primary_llm_name="Gemini 2.5 Flash",
     )
     assert res["decision"] == "PRIMARY_LLM"

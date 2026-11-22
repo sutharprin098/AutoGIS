@@ -22,7 +22,7 @@ import re
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 USER_AGENT = "AutoGIS-XerjAIRouter/1.0.8 (+https://github.com/sutharprin098/AutoGIS)"
 DEFAULT_XERJ_BASE_URL = "https://platform.xerj.ai/v1"
@@ -163,7 +163,7 @@ class AIDocumentRouter:
         primary_llm_name: str = "Google Gemini",
     ) -> Dict[str, Any]:
         """Decides whether Xerj AI or Primary LLM reads and parses the document.
-        
+
         CRUCIAL RULE: Only uses Xerj AI if the user has explicitly provided a Xerj API key or endpoint.
         """
         has_xerj_key = bool(xerj_api_key.strip())

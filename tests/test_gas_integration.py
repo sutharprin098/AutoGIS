@@ -43,15 +43,15 @@ def test_gas_config_defaults_and_persistence():
     assert cfg.gas_registry_url == "https://www.geospatial-agentic-services.online/registry"
     cfg.gas_server_url = "http://127.0.0.1:4042/"
     assert cfg.gas_server_url == "http://127.0.0.1:4042"
-    cfg.gibd_api_key = "test-gibd-key"
-    assert cfg.gibd_api_key == "test-gibd-key"
+    cfg.gibd_api_key = "test-gibd-key"  # pragma: allowlist secret
+    assert cfg.gibd_api_key == "test-gibd-key"  # pragma: allowlist secret
     # Restore defaults
     cfg.gas_server_url = DEFAULT_GAS_SERVER_URL
     cfg.gibd_api_key = ""
 
 
 def test_gas_client_request_builder_and_file_encoding(tmp_path):
-    client = GasClient("http://127.0.0.1:4042", default_credentials={"GIBD_API_KEY": "k1"}, load_capabilities=False)
+    client = GasClient("http://127.0.0.1:4042", default_credentials={"GIBD_API_KEY": "k1"}, load_capabilities=False)  # pragma: allowlist secret
 
     sample_geojson = tmp_path / "points.geojson"
     sample_geojson.write_text(
@@ -81,7 +81,7 @@ def test_gas_client_request_builder_and_file_encoding(tmp_path):
     assert req_body["inputs"]["input_datasets"][0]["filename"] == "points.geojson"
     assert req_body["parameters"]["distance_m"] == 500
     assert req_body["parameters"]["model"] == "gpt-4o-mini"
-    assert req_body["credentials"]["GIBD_API_KEY"] == "k1"
+    assert req_body["credentials"]["GIBD_API_KEY"] == "k1"  # pragma: allowlist secret
 
 
 def test_local_autogis_gas_server_and_client_end_to_end(tmp_path):

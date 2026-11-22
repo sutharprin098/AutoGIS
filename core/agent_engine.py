@@ -14,7 +14,7 @@ from qgis.PyQt.QtCore import QCoreApplication, QObject, QTimer, pyqtSignal
 from .config import DEFAULT_BASE_URL, FALLBACK_CHAIN, AutoGISConfig, log_info, log_warn
 from .document_tools import summarize_attached_path
 from .extended_gis_tools import _read_persistent_memory
-from .gis_tools import GISToolSpec, _tool_get_project_overview, build_autogis_tools
+from .gis_tools import GISToolSpec, build_autogis_tools
 
 MAX_AUTONOMOUS_STEPS = 30
 
@@ -155,8 +155,8 @@ def repair_and_parse_json(raw_args: str) -> dict[str, Any]:
         parsed = json.loads(raw)
         if isinstance(parsed, dict):
             return parsed
-    except Exception:
-        pass
+    except Exception as _err:
+        _ = _err
 
     # 2. Strip markdown code fences ```json ... ```
     cleaned = raw
@@ -169,8 +169,8 @@ def repair_and_parse_json(raw_args: str) -> dict[str, Any]:
                 parsed = json.loads(cleaned)
                 if isinstance(parsed, dict):
                     return parsed
-            except Exception:
-                pass
+            except Exception as _err:
+                _ = _err
 
     # 3. Strip trailing commas before } or ]
     import re
@@ -179,8 +179,8 @@ def repair_and_parse_json(raw_args: str) -> dict[str, Any]:
         parsed = json.loads(cleaned_commas)
         if isinstance(parsed, dict):
             return parsed
-    except Exception:
-        pass
+    except Exception as _err:
+        _ = _err
 
     # 4. Extract outer { ... }
     b_start = cleaned.find("{")
@@ -192,8 +192,8 @@ def repair_and_parse_json(raw_args: str) -> dict[str, Any]:
             parsed = json.loads(snippet_commas)
             if isinstance(parsed, dict):
                 return parsed
-        except Exception:
-            pass
+        except Exception as _err:
+            _ = _err
 
     # 5. ast.literal_eval fallback (single-quoted python dicts)
     try:
@@ -201,8 +201,8 @@ def repair_and_parse_json(raw_args: str) -> dict[str, Any]:
         eval_res = ast.literal_eval(cleaned)
         if isinstance(eval_res, dict):
             return eval_res
-    except Exception:
-        pass
+    except Exception as _err:
+        _ = _err
 
     return {}
 

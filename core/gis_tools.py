@@ -47,7 +47,7 @@ from qgis.core import (
 from qgis.PyQt.QtCore import QSize, QVariant
 from qgis.PyQt.QtGui import QColor, QFont, QImage
 
-from .config import data_dir, log_info, log_warn
+from .config import data_dir, log_warn
 
 _NO_GEOM_FLAG = getattr(
     QgsFeatureRequest,
@@ -190,7 +190,7 @@ def _auto_metric_crs_for_layer(lyr: QgsMapLayer) -> QgsCoordinateReferenceSystem
             utm_crs = QgsCoordinateReferenceSystem(f"EPSG:{epsg_code}")
             if utm_crs.isValid():
                 return utm_crs
-    except Exception as _err:  # nosec B110
+    except Exception as _err:
         _ = _err
     return QgsCoordinateReferenceSystem("EPSG:3857")
 
@@ -339,7 +339,7 @@ def _tool_inspect_layer(iface, args: dict) -> dict:
                             "mean": round(float(st.mean), 4) if not math.isnan(st.mean) else None,
                             "std_dev": round(float(st.stdDev), 4) if not math.isnan(st.stdDev) else None,
                         })
-        except Exception as _err:  # nosec B110
+        except Exception as _err:
             _ = _err
         if band_stats:
             res["band_statistics"] = band_stats
@@ -1132,7 +1132,7 @@ def _tool_run_processing_algorithm(iface, args: dict) -> dict:
         )
         try:
             ctx.setInvalidGeometryCheck(skip_flag)
-        except Exception as _err:  # nosec B110
+        except Exception as _err:
             _ = _err
         feedback = QgsProcessingFeedback()
         result = processing.run(alg_id, params, context=ctx, feedback=feedback)
@@ -1141,7 +1141,7 @@ def _tool_run_processing_algorithm(iface, args: dict) -> dict:
         if feedback is not None:
             try:
                 fb_log = feedback.textLog()[-1200:]
-            except Exception as _err:  # nosec B110
+            except Exception as _err:
                 _ = _err
         return {
             "error": f"Processing algorithm '{alg_id}' failed: {exc}",
@@ -1161,7 +1161,7 @@ def _tool_run_processing_algorithm(iface, args: dict) -> dict:
                     taken = ctx.temporaryLayerStore().takeMapLayer(val)
                     if taken is not None:
                         val = taken
-            except Exception as _err:  # nosec B110
+            except Exception as _err:
                 _ = _err
             _PROCESSING_LAYER_REFS.append(val)
             if output_name and k == "OUTPUT":
@@ -1296,7 +1296,7 @@ def _safe_reproject_layer(lyr: QgsVectorLayer, target_crs: QgsCoordinateReferenc
             taken = ctx.temporaryLayerStore().takeMapLayer(out)
             if taken is not None:
                 out = taken
-        except Exception as _err:  # nosec B110
+        except Exception as _err:
             _ = _err
         _PROCESSING_LAYER_REFS.append(out)
         return out
@@ -1462,13 +1462,13 @@ def _tool_capture_map_canvas(iface, args: dict) -> dict:
                     "width": pix.width(),
                     "height": pix.height(),
                 }
-        except Exception as _err:  # nosec B110
+        except Exception as _err:
             _ = _err
         try:
             canvas.saveAsImage(out_path)
             if os.path.exists(out_path):
                 return {"status": "captured", "image_path": out_path}
-        except Exception as _err:  # nosec B110
+        except Exception as _err:
             _ = _err
 
     width = max(320, min(int(args.get("width") or 800), 1600))
@@ -1503,7 +1503,6 @@ def _tool_execute_pyqgis(iface, args: dict) -> dict:  # noqa: C901
         }
 
     # ── 2. AST-level dangerous pattern warnings ───────────────────────────────
-    _DANGEROUS = {"os.system", "subprocess", "eval", "exec", "open"}
     try:
         tree = ast.parse(code)
         warnings_list = []
@@ -1632,7 +1631,7 @@ def _tool_execute_pyqgis(iface, args: dict) -> dict:  # noqa: C901
     except NameError as exc:
         tb = traceback.format_exc()
         lineno = _extract_lineno(tb, "<AutoGIS_PyQGIS>")
-        curr_layers = [l.name() for l in _proj.mapLayers().values()]
+        curr_layers = [lyr.name() for lyr in _proj.mapLayers().values()]
         return {
             "error": str(exc),
             "error_type": "NameError",
@@ -1673,7 +1672,7 @@ def _tool_execute_pyqgis(iface, args: dict) -> dict:  # noqa: C901
     except Exception as exc:
         tb = traceback.format_exc()
         lineno = _extract_lineno(tb, "<AutoGIS_PyQGIS>")
-        curr_layers = [l.name() for l in _proj.mapLayers().values()]
+        curr_layers = [lyr.name() for lyr in _proj.mapLayers().values()]
         return {
             "error": str(exc),
             "error_type": type(exc).__name__,
@@ -1742,8 +1741,8 @@ def _tool_update_agent_plan(iface, args: dict) -> dict:
     }
 
 
-from .document_tools import tool_read_uploaded_file_or_pdf
-from .live_data_tools import (
+from .document_tools import tool_read_uploaded_file_or_pdf  # noqa: E402
+from .live_data_tools import (  # noqa: E402
     tool_compute_road_route,
     tool_fetch_osm_features,
     tool_fetch_place_boundary,
@@ -1752,11 +1751,11 @@ from .live_data_tools import (
     tool_load_saved_qgis_connection,
 )
 
-from .gee_tools import (
+from .gee_tools import (  # noqa: E402
     tool_gee_download_dem, tool_gee_export_image, tool_gee_compute_index,
     tool_gee_image_collection, tool_gee_image_preview,
 )
-from .advanced_gis_tools import (
+from .advanced_gis_tools import (  # noqa: E402
     tool_autonomous_datalake_crawl,
     tool_xerj_document_intelligence,
     tool_autonomous_mcdm_100plus,
@@ -1772,7 +1771,7 @@ from .advanced_gis_tools import (
     tool_verigeo_maup_and_physics_guard,
     tool_verigeo_verify_workflow,
 )
-from .extended_gis_tools import (
+from .extended_gis_tools import (  # noqa: E402
     tool_analyze_map_vision,
     tool_classify_crops_sentinel1_sar,
     tool_create_map_graticule,
@@ -1787,7 +1786,7 @@ from .extended_gis_tools import (
     tool_manage_agent_memory,
     tool_visualize_3d_terrain,
 )
-from .gas_tools import (
+from .gas_tools import (  # noqa: E402
     tool_gas_describe_agent,
     tool_gas_discover_agents,
     tool_gas_execute_task,
@@ -1795,17 +1794,22 @@ from .gas_tools import (
     tool_gas_registry_search,
 )
 
+
 def _gee_dem(iface, args: dict, run_on_main=None) -> dict:
     return tool_gee_download_dem(args, iface=iface, run_on_main=run_on_main)
+
 
 def _gee_export(iface, args: dict, run_on_main=None) -> dict:
     return tool_gee_export_image(args, iface=iface, run_on_main=run_on_main)
 
+
 def _gee_index(iface, args: dict, run_on_main=None) -> dict:
     return tool_gee_compute_index(args, iface=iface, run_on_main=run_on_main)
 
+
 def _gee_collection(iface, args: dict, run_on_main=None) -> dict:
     return tool_gee_image_collection(args)
+
 
 def _gee_preview(iface, args: dict, run_on_main=None) -> dict:
     return tool_gee_image_preview(args)
@@ -2539,43 +2543,96 @@ def build_autogis_tools() -> dict[str, GISToolSpec]:
     ]
 
     specs.extend([
-        GISToolSpec(name="gee_download_dem",
+        GISToolSpec(
+            name="gee_download_dem",
             description="Download a real DEM from the user's authenticated Google Earth Engine project, save a GeoTIFF locally and load it into QGIS. For 'Delhi ka DEM', call immediately with place='Delhi, India'. Defaults to NASA/NASADEM_HGT/001 elevation at 30 m.",
-            risk="write", parameters={"type":"object","properties":{
-                "place":{"type":"string","description":"Place, e.g. Delhi, India."},
-                "bbox":{"type":"array","items":{"type":"number"},"description":"Optional [west,south,east,north] EPSG:4326."},
-                "dataset_id":{"type":"string","description":"Default NASA/NASADEM_HGT/001."},
-                "band":{"type":"string","description":"Default elevation."},
-                "scale":{"type":"integer","description":"Output resolution in meters; default 30."},
-                "crs":{"type":"string","description":"Output CRS; default EPSG:32643 for Delhi, otherwise EPSG:4326."},
-                "layer_name":{"type":"string"}}, "required":[]}, handler=_gee_dem),
-        GISToolSpec(name="gee_export_image",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "place": {"type": "string", "description": "Place, e.g. Delhi, India."},
+                    "bbox": {"type": "array", "items": {"type": "number"}, "description": "Optional [west,south,east,north] EPSG:4326."},
+                    "dataset_id": {"type": "string", "description": "Default NASA/NASADEM_HGT/001."},
+                    "band": {"type": "string", "description": "Default elevation."},
+                    "scale": {"type": "integer", "description": "Output resolution in meters; default 30."},
+                    "crs": {"type": "string", "description": "Output CRS; default EPSG:32643 for Delhi, otherwise EPSG:4326."},
+                    "layer_name": {"type": "string"},
+                },
+                "required": [],
+            },
+            handler=_gee_dem,
+        ),
+        GISToolSpec(
+            name="gee_export_image",
             description="Export an accessible Google Earth Engine image asset to a bounded GeoTIFF and load it into QGIS. Use image_id, optional bands, place or bbox, scale and CRS.",
-            risk="write", parameters={"type":"object","properties":{
-                "image_id":{"type":"string"},"bands":{"type":"array","items":{"type":"string"}},
-                "place":{"type":"string"},"bbox":{"type":"array","items":{"type":"number"}},
-                "scale":{"type":"integer"},"crs":{"type":"string"},"layer_name":{"type":"string"}},
-                "required":["image_id"]}, handler=_gee_export),
-        GISToolSpec(name="gee_compute_index",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "image_id": {"type": "string"},
+                    "bands": {"type": "array", "items": {"type": "string"}},
+                    "place": {"type": "string"},
+                    "bbox": {"type": "array", "items": {"type": "number"}},
+                    "scale": {"type": "integer"},
+                    "crs": {"type": "string"},
+                    "layer_name": {"type": "string"},
+                },
+                "required": ["image_id"],
+            },
+            handler=_gee_export,
+        ),
+        GISToolSpec(
+            name="gee_compute_index",
             description="Compute Sentinel-2 median composite NDVI, NDWI or NDBI in Earth Engine for a bounded place/bbox and date range, export a GeoTIFF and load it in QGIS. Defaults to the latest year.",
-            risk="write", parameters={"type":"object","properties":{
-                "index":{"type":"string","enum":["NDVI","NDWI","NDBI"]},"place":{"type":"string"},
-                "bbox":{"type":"array","items":{"type":"number"}},"start_date":{"type":"string"},
-                "end_date":{"type":"string"},"max_cloud_cover":{"type":"number"},
-                "scale":{"type":"integer"},"crs":{"type":"string"},"layer_name":{"type":"string"}},
-                "required":["index"]}, handler=_gee_index),
-        GISToolSpec(name="gee_image_collection",
+            risk="write",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "index": {"type": "string", "enum": ["NDVI", "NDWI", "NDBI"]},
+                    "place": {"type": "string"},
+                    "bbox": {"type": "array", "items": {"type": "number"}},
+                    "start_date": {"type": "string"},
+                    "end_date": {"type": "string"},
+                    "max_cloud_cover": {"type": "number"},
+                    "scale": {"type": "integer"},
+                    "crs": {"type": "string"},
+                    "layer_name": {"type": "string"},
+                },
+                "required": ["index"],
+            },
+            handler=_gee_index,
+        ),
+        GISToolSpec(
+            name="gee_image_collection",
             description="Inspect an Earth Engine image collection and return image count and first-image metadata for a bounded region and date range.",
-            risk="read", parameters={"type":"object","properties":{
-                "collection_id":{"type":"string"},"start_date":{"type":"string"},"end_date":{"type":"string"},
-                "bbox":{"type":"array","items":{"type":"number"}}},
-                "required":["start_date","end_date","bbox"]}, handler=_gee_collection),
-        GISToolSpec(name="gee_image_preview",
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "collection_id": {"type": "string"},
+                    "start_date": {"type": "string"},
+                    "end_date": {"type": "string"},
+                    "bbox": {"type": "array", "items": {"type": "number"}},
+                },
+                "required": ["start_date", "end_date", "bbox"],
+            },
+            handler=_gee_collection,
+        ),
+        GISToolSpec(
+            name="gee_image_preview",
             description="Preview an Earth Engine image by asset ID and bands for a bounded bbox.",
-            risk="read", parameters={"type":"object","properties":{
-                "image_id":{"type":"string"},"bands":{"type":"array","items":{"type":"string"}},
-                "bbox":{"type":"array","items":{"type":"number"}}},
-                "required":["image_id","bbox"]}, handler=_gee_preview),
+            risk="read",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "image_id": {"type": "string"},
+                    "bands": {"type": "array", "items": {"type": "string"}},
+                    "bbox": {"type": "array", "items": {"type": "number"}},
+                },
+                "required": ["image_id", "bbox"],
+            },
+            handler=_gee_preview,
+        ),
         GISToolSpec(
             name="inspect_raster_layer",
             description="Inspect a raster layer (DEM, NDVI, NDWI, Slope, LULC, Satellite) in detail: band count, pixel resolution, CRS, extent, NoData value, and band statistics (min, max, mean, std_dev).",

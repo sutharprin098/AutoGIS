@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import concurrent.futures
 import json
 import math
 import os
@@ -21,7 +20,7 @@ from qgis.core import (
     QgsVectorLayer,
 )
 
-from .config import data_dir, log_info, log_warn
+from .config import data_dir, log_warn
 
 USER_AGENT = "AutoGIS-Studio/1.0 (+https://autogis.princesite.in/ - contact: sutharprince098@gmail.com)"
 
@@ -112,7 +111,7 @@ def _canvas_bbox_wgs84(iface) -> list[float] | None:
                             round(ext.xMaximum(), 6),
                             round(ext.yMaximum(), 6),
                         ]
-    except Exception as _err:  # nosec B110
+    except Exception as _err:
         _ = _err
 
     if not iface or not iface.mapCanvas():
@@ -200,7 +199,7 @@ def _resolve_place_bbox_wgs84(place: str) -> tuple[list[float] | None, str]:
                             round(ext.xMaximum(), 6),
                             round(ext.yMaximum(), 6),
                         ], lyr.name()
-    except Exception as _err:  # nosec B110
+    except Exception as _err:
         _ = _err
 
     hits = _geocode_nominatim(place, with_polygon=False, limit=5)
@@ -368,7 +367,7 @@ def _stitch_osm_rings(way_segments: list[list[list[float]]]) -> list[list[list[f
                     changed = True
                     break
                 if cand[-1] == tail:
-                    current.extend( reversed(cand[:-1]))
+                    current.extend(reversed(cand[:-1]))
                     open_runs.pop(idx)
                     changed = True
                     break
@@ -1183,7 +1182,7 @@ def _apply_raster_transparency(rlayer: QgsRasterLayer) -> None:
             tr.setTransparentSingleValuePixelList([sp])
             rlayer.renderer().setRasterTransparency(tr)
         rlayer.triggerRepaint()
-    except Exception as _err:  # nosec B110
+    except Exception as _err:
         _ = _err
 
 
@@ -1208,7 +1207,7 @@ def _apply_pseudocolor_ramp(layer: QgsRasterLayer, items: list[tuple[float, str,
         renderer = QgsSingleBandPseudoColorRenderer(layer.dataProvider(), 1, shader)
         layer.setRenderer(renderer)
         layer.triggerRepaint()
-    except Exception as _err:  # nosec B110
+    except Exception as _err:
         _ = _err
 
 
@@ -1348,7 +1347,7 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
                 rect = QgsRectangle(bbox_4326[0], bbox_4326[1], bbox_4326[2], bbox_4326[3])
                 iface.mapCanvas().setExtent(rect)
                 iface.mapCanvas().refresh()
-            except Exception as _err:  # nosec B110
+            except Exception as _err:
                 _ = _err
 
     # ========================================================================
@@ -1382,7 +1381,6 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
         def _calc_index_on_main() -> dict:
             from .gis_tools import _PROCESSING_LAYER_REFS
             from qgis.core import QgsProject, QgsRasterLayer, QgsVectorLayer
-            from qgis.PyQt.QtCore import QCoreApplication
             import processing
             import tempfile
             import shutil
@@ -1503,9 +1501,8 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
             finally:
                 try:
                     shutil.rmtree(work_dir, ignore_errors=True)
-                except Exception as _cleanup_err:  # nosec B110
+                except Exception as _cleanup_err:
                     log_warn(f"Temporary cleanup notice: {_cleanup_err}")
-
 
         return run_on_main(_calc_index_on_main) if callable(run_on_main) else _calc_index_on_main()
 
@@ -1551,7 +1548,7 @@ def tool_fetch_stac_earth_data(iface, args: dict, run_on_main=None) -> dict:
                 out_p = p_res.get("OUTPUT", target_out)
                 if os.path.exists(out_p):
                     res_layer = QgsRasterLayer(out_p, f"Copernicus {'Slope (Degrees)' if is_slope else 'Hillshade'}{place_suffix}", "gdal")
-            except Exception as _err:  # nosec B110
+            except Exception as _err:
                 _ = _err
 
             if res_layer is not None and res_layer.isValid():

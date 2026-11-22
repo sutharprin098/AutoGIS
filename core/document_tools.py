@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import base64
-import csv
-import io
 import json
 import os
 import re
@@ -63,7 +60,7 @@ def _extract_pdf_builtin_stream(path: str, max_chars: int = 18000, search_query:
             try:
                 decomp = zlib.decompress(stream_bytes, wbits)
                 break
-            except Exception as _err:  # nosec B112
+            except Exception as _err:
                 _ = _err
                 continue
         if decomp is None:
@@ -142,7 +139,7 @@ def extract_pdf_content(
             "pages_returned": len(pages_out),
             "text_preview": "\n\n".join(pages_out)[:max_chars],
         }
-    except Exception as _err:  # nosec B110
+    except Exception as _err:
         _ = _err
 
     # 2. Try pypdf / PyPDF2 if available
@@ -171,7 +168,7 @@ def extract_pdf_content(
                 "pages_returned": len(pages_out),
                 "text_preview": "\n\n".join(pages_out)[:max_chars],
             }
-        except Exception as _err:  # nosec B112
+        except Exception as _err:
             _ = _err
             continue
 
@@ -305,7 +302,7 @@ def summarize_attached_path(path: str, max_chars: int = 6000) -> str:
                 lines = [fh.readline().strip() for _ in range(15)]
             preview = "\n".join(x for x in lines if x)
             return f"📊 **Attached CSV/TSV**: `{path}` ({size_str})\n```csv\n{preview[:max_chars]}\n```"
-        except Exception as _err:  # nosec B110
+        except Exception as _err:
             _ = _err
 
     if ext in (".txt", ".md", ".py", ".sql", ".json", ".geojson", ".kml", ".xml", ".yaml", ".yml", ".ini", ".log"):
@@ -313,7 +310,7 @@ def summarize_attached_path(path: str, max_chars: int = 6000) -> str:
             with open(path, "r", encoding="utf-8", errors="replace") as fh:
                 snippet = fh.read(max_chars)
             return f"📄 **Attached File**: `{path}` ({size_str})\n```text\n{snippet}\n```"
-        except Exception as _err:  # nosec B110
+        except Exception as _err:
             _ = _err
 
     return f"🗺️ **Attached Spatial/Media File**: `{path}` ({size_str}, type `{ext}` — can be loaded via `load_dataset` or `read_uploaded_file_or_pdf`)"
@@ -407,7 +404,7 @@ def tool_read_uploaded_file_or_pdf(iface, args: dict) -> dict:
             primary_llm_name=cfg.active_provider.capitalize(),
         )
         res["ai_router_decision"] = routing_info
-    except Exception as exc:  # nosec B110
+    except Exception as exc:
         # Safe fallback if optional AI document router is offline
         res["ai_router_decision"] = {"status": "FALLBACK_PRIMARY_LLM", "error": str(exc)}
 

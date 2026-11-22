@@ -84,7 +84,7 @@ class ProjectCheckpointManager:
 
     def rollback(self) -> dict[str, Any]:
         """Roll back project to the most recent checkpoint state.
-        
+
         Removes any layers that were added after the checkpoint was taken,
         restores the project CRS if altered, and refreshes the canvas.
         """
@@ -123,15 +123,15 @@ class ProjectCheckpointManager:
             if restored_lyr:
                 try:
                     self._iface.setActiveLayer(restored_lyr)
-                except Exception:
-                    pass
+                except Exception as _err:
+                    _ = _err
 
         # Refresh map canvas
         if self._iface and self._iface.mapCanvas():
             try:
                 self._iface.mapCanvas().refresh()
-            except Exception:
-                pass
+            except Exception as _err:
+                _ = _err
 
         msg = f"Successfully rolled back to: '{checkpoint.description}'"
         if removed_layer_names:

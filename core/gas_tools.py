@@ -33,7 +33,7 @@ from typing import Any
 
 from qgis.core import QgsMapLayer, QgsProject, QgsRasterLayer, QgsVectorFileWriter, QgsVectorLayer
 
-from .config import AutoGISConfig, data_dir, log_info, log_warn
+from .config import AutoGISConfig, data_dir, log_warn
 
 DEFAULT_GAS_SERVER_URL = "https://www.geospatial-agentic-services.online"
 DEFAULT_GAS_REGISTRY_URL = "https://www.geospatial-agentic-services.online/registry"
@@ -521,7 +521,7 @@ class GasClient:
             err_body = ""
             try:
                 err_body = he.read().decode("utf-8", errors="replace")
-            except Exception as _err:  # nosec B110
+            except Exception as _err:
                 _ = _err
             raise GasClientError(f"GAS stream failed with HTTP {he.code}: {err_body or he.reason}") from he
 

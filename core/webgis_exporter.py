@@ -8,7 +8,6 @@ from typing import Any
 
 from qgis.core import (
     QgsCoordinateReferenceSystem,
-    QgsCoordinateTransform,
     QgsJsonExporter,
     QgsProject,
     QgsVectorLayer,
@@ -26,7 +25,7 @@ def export_project_to_interactive_webgis(
     enable_3d: bool = True,
 ) -> dict[str, Any]:
     """Export current QGIS canvas layers to a standalone, production-ready interactive WebGIS application.
-    
+
     Creates a responsive single-file HTML web application featuring MapLibre GL JS vector rendering,
     layer visibility controls, popup attribute inspection, 3D building extrusion, and dark/satellite basemaps.
     """
@@ -58,7 +57,7 @@ def export_project_to_interactive_webgis(
         if lyr.crs().isValid() and lyr.crs() != wgs84:
             exporter.setSourceCrs(lyr.crs())
             exporter.setDestinationCrs(wgs84)
-        
+
         geojson_str = exporter.exportFeatures(lyr.getFeatures())
         try:
             parsed = json.loads(geojson_str)
